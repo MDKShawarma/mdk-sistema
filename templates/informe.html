@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
+        
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 15px; padding: 25px; text-align: center; }
+        .card-icon { font-size: 40px; display: block; margin-bottom: 10px; }
+        .card h3 { color: #f4a460; font-size: 14px; margin-bottom: 10px; text-transform: uppercase; }
+        .card p { font-size: 28px; font-weight: bold; }
+
+        .historial { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; }
+        .historial h2 { color: #f4a460; font-size: 20px; margin-bottom: 20px; }
+        .dia-item { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .dia-item:last-child { border-bottom: none; }
+        .dia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .dia-fecha { font-size: 18px; font-weight: bold; color: #f4a460; }
+        .dia-total { font-size: 20px; font-weight: bold; color: #4CAF50; }
+        .dia-pedidos { font-size: 13px; color: #aaa; }
+        .producto-detalle { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: #ccc; }
+        .producto-detalle span:first-child { flex: 2; }
+        .producto-detalle span:nth-child(2) { flex: 1; text-align: center; }
+        .producto-detalle span:last-child { flex: 1; text-align: right; color: #f4a460; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        <a href="/">📊 Panel</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/gastos">💸 Gastos</a>
+        <a href="/gastos_fijos">📋 Fijos</a>
+        <a href="/contador">🧾 Contador</a>
+        <a href="/informe">📈 Informe</a>
+        <a href="/chat">💬 Chat</a>
+        <a href="/clientes">👥 Clientes</a>
+    </div>
+    <div class="content">
+        <h1>📈 Informe de Ventas</h1>
+
+        <div class="cards-grid">
+            <div class="card"><span class="card-icon">💰</span><h3>Ventas Hoy</h3><p>${{ ventas_hoy }}</p></div>
+            <div class="card"><span class="card-icon">📅</span><h3>Ventas Ayer</h3><p>${{ ventas_ayer }}</p></div>
+            <div class="card"><span class="card-icon">🎯</span><h3>Gasto Diario</h3><p>${{ gasto_diario }}</p></div>
+        </div>
+
+        <div class="historial">
+            <h2>📋 Historial Día a Día</h2>
+            {% for dia in historial %}
+            <div class="dia-item">
+                <div class="dia-header">
+                    <span class="dia-fecha">📅 {{ dia.fecha }}</span>
+                    <span class="dia-pedidos">{{ dia.pedidos }} pedidos</span>
+                    <span class="dia-total">${{ dia.total }}</span>
+                </div>
+                {% for prod in dia.productos %}
+                <div class="producto-detalle">
+                    <span>{{ prod.nombre }}</span>
+                    <span>x{{ prod.cantidad }}</span>
+                    <span>${{ prod.total }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
+        .btn-agregar { background-color: #4CAF50; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; margin-bottom: 10px; }
+        .btn-reset { background-color: #f44336; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
+        .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+        .stock-card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 15px; }
+        .stock-card .nombre { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        .stock-card .categoria { color: #aaa; font-size: 12px; margin-bottom: 10px; }
+        .stock-card .stock-actual { font-size: 28px; color: #f4a460; margin-bottom: 15px; }
+        .stock-card .stock-actual.bajo { color: #f44336; }
+        .stock-card form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .stock-card input[type="number"] { width: 70px; padding: 8px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 14px; }
+        .stock-card button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-sumar { background-color: #4CAF50; color: white; }
+        .btn-restar { background-color: #f44336; color: white; }
+        .btn-fijar { background-color: #f4a460; color: #121212; }
+        .btn-eliminar-prod { background-color: #ff4444; color: white; }
+        .unidad { font-size: 12px; color: #aaa; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100; }
+        .modal-contenido { background-color: #1e1e1e; border: 1px solid #f4a460; border-radius: 12px; padding: 25px; width: 90%; max-width: 400px; }
+        .modal-contenido h3 { color: #f4a460; margin-bottom: 20px; }
+        .modal-contenido input, .modal-contenido select { width: 100%; padding: 10px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
+        .modal-contenido button { width: 100%; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        {% if empleado %}
+        <a href="/empleado">👨‍🍳 Menú Empleado</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/gastos">💸 Gastos</a>
+        {% else %}
+        <a href="/">📊 Panel</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/gastos">💸 Gastos</a>
+        <a href="/gastos_fijos">📋 Fijos</a>
+        <a href="/contador">🧾 Contador</a>
+        <a href="/informe">📈 Informe</a>
+        <a href="/chat">💬 Chat</a>
+        <a href="/clientes">👥 Clientes</a>
+        {% endif %}
+    </div>
+    <div class="content">
+        <h1>🔄 Stock de Ingredientes</h1>
+        {% if not empleado %}
+        <button class="btn-agregar" onclick="abrirModal()">➕ Agregar Producto</button>
+        <form method="POST" action="/stock" onsubmit="return confirm('¿Resetear todo el stock a 0?');" style="display:inline;">
+            <button type="submit" name="accion" value="reset" class="btn-reset">🧹 Resetear Todo</button>
+        </form>
+        {% endif %}
+        <div class="stock-grid">
+            {% for i in ingredientes %}
+            <div class="stock-card">
+                <div class="nombre">{{ i[1] }}</div>
+                <div class="categoria">{{ i[2] }}</div>
+                <div class="stock-actual {{ 'bajo' if i[3] <= i[5] else '' }}">{{ i[3] }} <span class="unidad">{{ i[4] }}</span></div>
+                <form method="POST" action="/stock" style="display:inline;">
+                    <input type="hidden" name="ingrediente_id" value="{{ i[0] }}">
+                    <input type="number" name="cantidad" value="1" min="0.1" step="0.1">
+                    <button type="submit" name="accion" value="sumar" class="btn-sumar">+</button>
+                    <button type="submit" name="accion" value="restar" class="btn-restar">-</button>
+                    <button type="submit" name="accion" value="fijar" class="btn-fijar">Fijar</button>
+                </form>
+                {% if not empleado %}
+                <form method="POST" action="/eliminar_ingrediente/{{ i[0] }}" style="display:inline; margin-top:5px;" onsubmit="return confirm('¿Eliminar este producto?');">
+                    <button type="submit" class="btn-eliminar-prod">🗑️ Eliminar</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if not empleado %}
+    <div class="modal" id="modal-agregar">
+        <div class="modal-contenido">
+            <h3>➕ Nuevo Ingrediente</h3>
+            <form method="POST" action="/agregar_ingrediente">
+                <input type="text" name="nombre" placeholder="Nombre" required>
+                <select name="categoria" required>
+                    <option value="">Categoría...</option>
+                    <option value="bebidas">Bebidas</option>
+                    <option value="carnes">Carnes</option>
+                    <option value="verduras">Verduras</option>
+                    <option value="secos">Secos</option>
+                    <option value="especias">Especias</option>
+                    <option value="salsas">Salsas</option>
+                    <option value="legumbres">Legumbres</option>
+                    <option value="panificados">Panificados</option>
+                    <option value="congelados">Congelados</option>
+                    <option value="postres">Postres</option>
+                </select>
+                <input type="number" name="stock" placeholder="Stock inicial" required step="0.1">
+                <select name="unidad" required>
+                    <option value="">Unidad...</option>
+                    <option value="unidades">Unidades</option>
+                    <option value="kg">Kilogramos</option>
+                    <option value="litros">Litros</option>
+                    <option value="bolsas">Bolsas</option>
+                </select>
+                <input type="number" name="stock_minimo" placeholder="Stock mínimo" required step="0.1">
+                <button type="submit">Guardar</button>
+                <button type="button" style="background-color:#555; color:white; margin-top:5px;" onclick="cerrarModal()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        function abrirModal() { document.getElementById('modal-agregar').style.display = 'flex'; }
+        function cerrarModal() { document.getElementById('modal-agregar').style.display = 'none'; }
+    </script>
+    {% endif %}
+</body>
+</html>

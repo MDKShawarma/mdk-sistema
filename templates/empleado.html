@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empleado - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 12px 20px; border-radius: 20px; font-size: 15px; background-color: #2a2a2a; font-weight: bold; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .content { max-width: 800px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+        h1 { color: #f4a460; margin-bottom: 15px; font-size: 24px; }
+        p { color: #aaa; font-size: 15px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        <a href="/ventas?modo=empleado">💰 Ventas</a>
+        <a href="/productos?modo=empleado">📦 Productos</a>
+        <a href="/stock?modo=empleado">🔄 Stock</a>
+        <a href="/gastos?modo=empleado">💸 Gastos</a>
+    </div>
+    <div class="content">
+        <h1>👨‍🍳 Sistema para Empleados</h1>
+        <p>Seleccioná una opción del menú para comenzar.</p>
+    </div>
+</body>
+</html>

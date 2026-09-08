@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Cliente - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; position: sticky; top: 55px; z-index: 9; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
+        .info-cliente { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .info-item { text-align: center; }
+        .info-item .label { color: #aaa; font-size: 13px; margin-bottom: 5px; }
+        .info-item .valor { font-size: 22px; color: #f4a460; font-weight: bold; }
+        .compras-list { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; }
+        .compras-list h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
+        .compra-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
+        .compra-item:last-child { border-bottom: none; }
+        .compra-item .fecha { flex: 1; font-size: 12px; color: #aaa; }
+        .compra-item .producto { flex: 2; font-size: 14px; }
+        .compra-item .cantidad { flex: 1; text-align: center; font-size: 13px; color: #aaa; }
+        .compra-item .total { flex: 1; text-align: right; font-size: 16px; color: #f4a460; }
+        .compra-item .metodo { flex: 1; text-align: center; font-size: 12px; color: #aaa; }
+        .btn-volver { display: inline-block; background-color: #555; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 14px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        <a href="/">📊 Panel</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/gastos">💸 Gastos</a>
+        <a href="/gastos_fijos">📋 Fijos</a>
+        <a href="/contador">🧾 Contador</a>
+        <a href="/informe">📈 Informe</a>
+        <a href="/chat">💬 Chat</a>
+        <a href="/clientes">👥 Clientes</a>
+    </div>
+    <div class="content">
+        <h1>📋 Historial del Cliente</h1>
+        <div class="info-cliente">
+            <div class="info-item"><div class="label">NOMBRE</div><div class="valor">{{ cliente[1] }}</div></div>
+            <div class="info-item"><div class="label">TELÉFONO</div><div class="valor">{{ cliente[2] }}</div></div>
+            <div class="info-item"><div class="label">TOTAL COMPRAS</div><div class="valor">${{ cliente[3] }}</div></div>
+            <div class="info-item"><div class="label">PEDIDOS</div><div class="valor">{{ cliente[4] }}</div></div>
+        </div>
+        <div class="compras-list">
+            <h2>🧾 Compras Realizadas</h2>
+            {% for compra in compras %}
+            <div class="compra-item">
+                <span class="fecha">{{ compra[6] }}</span>
+                <span class="producto">{{ compra[1] }}</span>
+                <span class="cantidad">x{{ compra[2] }}</span>
+                <span class="metodo">{{ compra[4] }}</span>
+                <span class="total">${{ compra[3] }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="/clientes" class="btn-volver">← Volver a Clientes</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .content { max-width: 800px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+        h1 { color: #f4a460; margin-bottom: 20px; }
+        p { color: #aaa; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        <a href="/?modo=admin">📊 Panel</a>
+        <a href="/ventas?modo=admin">💰 Ventas</a>
+        <a href="/productos?modo=admin">📦 Productos</a>
+        <a href="/stock?modo=admin">🔄 Stock</a>
+        <a href="/gastos?modo=admin">💸 Gastos</a>
+        <a href="/gastos_fijos?modo=admin">📋 Fijos</a>
+        <a href="/contador?modo=admin">🧾 Contador</a>
+        <a href="/informe?modo=admin">📈 Informe</a>
+        <a href="/chat?modo=admin">💬 Chat</a>
+        <a href="/clientes?modo=admin">👥 Clientes</a>
+    </div>
+    <div class="content">
+        <h1>👑 Panel de Sergio</h1>
+        <p>Acceso completo al sistema.</p>
+    </div>
+</body>
+</html>

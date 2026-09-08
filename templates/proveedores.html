@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proveedores - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
+        
+        .form-proveedor { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; max-width: 500px; }
+        .form-proveedor h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
+        .form-proveedor input { width: 100%; padding: 10px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
+        .form-proveedor button { width: 100%; background-color: #f4a460; color: #121212; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; }
+        
+        .proveedores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .proveedor-card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; }
+        .proveedor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .proveedor-nombre { font-size: 18px; font-weight: bold; color: #f4a460; }
+        .proveedor-telefono { color: #aaa; font-size: 14px; margin-bottom: 10px; }
+        .proveedor-telefono a { color: #4CAF50; text-decoration: none; }
+        .proveedor-productos { margin-top: 10px; }
+        .proveedor-productos h4 { color: #f4a460; font-size: 13px; margin-bottom: 5px; }
+        .proveedor-productos ul { list-style: none; padding: 0; }
+        .proveedor-productos li { font-size: 13px; color: #ccc; padding: 2px 0; }
+        .btn-eliminar { background-color: #f44336; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn-eliminar:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        <a href="/">📊 Panel</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/gastos">💸 Gastos</a>
+        <a href="/gastos_fijos">📋 Fijos</a>
+        <a href="/contador">🧾 Contador</a>
+        <a href="/informe">📈 Informe</a>
+        <a href="/proveedores">📞 Proveedores</a>
+        <a href="/chat">💬 Chat</a>
+        <a href="/clientes">👥 Clientes</a>
+    </div>
+    <div class="content">
+        <h1>📞 Proveedores</h1>
+        
+        <div class="form-proveedor">
+            <h2>➕ Agregar Proveedor</h2>
+            <form method="POST" action="/agregar_proveedor">
+                <input type="text" name="nombre" placeholder="Nombre" required>
+                <input type="text" name="telefono" placeholder="Teléfono" required>
+                <input type="text" name="productos" placeholder="Productos (separados por coma)" required>
+                <button type="submit">Guardar</button>
+            </form>
+        </div>
+        
+        <div class="proveedores-grid">
+            {% for p in proveedores %}
+            <div class="proveedor-card">
+                <div class="proveedor-header">
+                    <span class="proveedor-nombre">👤 {{ p[1] }}</span>
+                    <form method="POST" action="/eliminar_proveedor/{{ p[0] }}" onsubmit="return confirm('¿Eliminar proveedor?');">
+                        <button type="submit" class="btn-eliminar">🗑️</button>
+                    </form>
+                </div>
+                <div class="proveedor-telefono">
+                    📱 <a href="https://wa.me/{{ p[2] }}" target="_blank">{{ p[2] }}</a>
+                </div>
+                <div class="proveedor-productos">
+                    <h4>Productos:</h4>
+                    <ul>
+                        {% for prod in p[3].split(',') %}
+                        <li>• {{ prod.strip() }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

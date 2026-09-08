@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comanda #{{ numero_pedido }} - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', monospace; }
+        body { background-color: #fff; color: #000; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .comanda { width: 80mm; max-width: 100%; background: white; padding: 10px; margin-bottom: 20px; }
+        .copy-label { text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+        .header-comanda { text-align: center; margin-bottom: 10px; }
+        .header-comanda h2 { font-size: 18px; }
+        .header-comanda p { font-size: 12px; }
+        .divisor { border-top: 1px dashed #000; margin: 10px 0; }
+        .items-comanda { font-size: 12px; }
+        .item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .item .cantidad { width: 20px; }
+        .item .nombre { flex: 1; }
+        .item .precio { width: 60px; text-align: right; }
+        .nota { font-size: 10px; color: #555; margin-left: 20px; }
+        .total-comanda { text-align: right; font-weight: bold; font-size: 14px; margin-top: 10px; }
+        .metodo-pago { font-size: 12px; margin-top: 5px; }
+        .fecha-hora { font-size: 10px; text-align: center; margin-top: 10px; }
+        @media print {
+            body { padding: 0; }
+            .comanda { margin: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Copia Cliente -->
+    <div class="comanda">
+        <div class="copy-label">🧾 COMANDA - CLIENTE</div>
+        <div class="header-comanda">
+            <h2>MDK SHAWARMA</h2>
+            <p>Pedido #{{ numero_pedido }}</p>
+            <p>{{ fecha }}</p>
+        </div>
+        <div class="divisor"></div>
+        <div class="items-comanda">
+            {% for item in items %}
+            <div class="item">
+                <span class="cantidad">{{ item[2] }}x</span>
+                <span class="nombre">{{ item[1] }}</span>
+                <span class="precio">${{ item[4] }}</span>
+            </div>
+            {% if item[5] %}
+            <div class="nota">↳ {{ item[5] }}</div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <div class="divisor"></div>
+        <div class="total-comanda">TOTAL: ${{ total_pedido }}</div>
+        <div class="metodo-pago">Pago: {{ metodo }}</div>
+        <div class="fecha-hora">¡Gracias por tu compra!</div>
+    </div>
+
+    <!-- Copia Cocina -->
+    <div class="comanda">
+        <div class="copy-label">👨‍🍳 COMANDA - COCINA</div>
+        <div class="header-comanda">
+            <h2>MDK SHAWARMA</h2>
+            <p>Pedido #{{ numero_pedido }}</p>
+            <p>{{ fecha }}</p>
+        </div>
+        <div class="divisor"></div>
+        <div class="items-comanda">
+            {% for item in items %}
+            <div class="item">
+                <span class="cantidad">{{ item[2] }}x</span>
+                <span class="nombre">{{ item[1] }}</span>
+            </div>
+            {% if item[5] %}
+            <div class="nota">↳ {{ item[5] }}</div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <div class="divisor"></div>
+        <div class="fecha-hora">Imprimir y preparar</div>
+    </div>
+
+    <button class="no-print" onclick="window.print()" style="padding:10px 20px; margin-top:20px;">🖨️ Imprimir comandas</button>
+    <a href="/ventas" class="no-print" style="margin-top:10px;">← Volver a Ventas</a>
+</body>
+</html>

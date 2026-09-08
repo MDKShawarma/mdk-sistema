@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gastos - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
+        .form-gasto { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; max-width: 500px; }
+        .form-gasto h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
+        .form-gasto input, .form-gasto select { width: 100%; padding: 10px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
+        .form-gasto button { width: 100%; background-color: #f4a460; color: #121212; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; }
+        .gastos-list { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; }
+        .gastos-list h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
+        .gasto-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
+        .gasto-item:last-child { border-bottom: none; }
+        .gasto-item .concepto { flex: 2; font-size: 14px; }
+        .gasto-item .monto { flex: 1; text-align: right; font-size: 16px; color: #f44336; }
+        .gasto-item .categoria { flex: 1; text-align: center; font-size: 12px; color: #aaa; }
+        .total-gastos { text-align: right; font-size: 20px; font-weight: bold; margin-top: 15px; color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        {% if empleado %}
+        <a href="/empleado">👨‍🍳 Menú Empleado</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/gastos">💸 Gastos</a>
+        {% else %}
+        <a href="/">📊 Panel</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/gastos">💸 Gastos</a>
+        <a href="/gastos_fijos">📋 Fijos</a>
+        <a href="/contador">🧾 Contador</a>
+        <a href="/informe">📈 Informe</a>
+        <a href="/chat">💬 Chat</a>
+        <a href="/clientes">👥 Clientes</a>
+        {% endif %}
+    </div>
+    <div class="content">
+        <h1>💸 Gastos</h1>
+        <div class="form-gasto">
+            <h2>➕ Registrar Gasto</h2>
+            <form method="POST" action="/gastos">
+                <input type="text" name="concepto" placeholder="Concepto (ej: Compra pollo)" required>
+                <input type="number" name="monto" placeholder="Monto $" required step="100">
+                <select name="categoria" required>
+                    <option value="">Categoría...</option>
+                    <option value="mercaderia">Mercadería</option>
+                    <option value="servicios">Servicios</option>
+                    <option value="impuestos">Impuestos</option>
+                    <option value="otros">Otros</option>
+                </select>
+                <button type="submit">💸 Registrar Gasto</button>
+            </form>
+        </div>
+        <div class="gastos-list">
+            <h2>📋 Gastos de Hoy</h2>
+            {% for g in gastos %}
+            <div class="gasto-item">
+                <span class="concepto">{{ g[1] }}</span>
+                <span class="categoria">{{ g[3] }}</span>
+                <span class="monto">${{ g[2] }}</span>
+            </div>
+            {% endfor %}
+            <div class="total-gastos">Total: ${{ total_gastos }}</div>
+        </div>
+    </div>
+</body>
+</html>

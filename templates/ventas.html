@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .main-container { display: flex; gap: 20px; padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; flex-wrap: wrap; }
+        .productos-section { flex: 2; min-width: 280px; }
+        .resumen-section { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 20px; }
+        h1 { color: #f4a460; margin-bottom: 20px; font-size: 26px; }
+        .productos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+        .producto-card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .producto-card:hover { border-color: #f4a460; transform: scale(1.05); }
+        .producto-emoji { font-size: 38px; display: block; margin-bottom: 8px; }
+        .producto-nombre { font-size: 12px; font-weight: bold; display: block; min-height: 30px; }
+        .producto-precio { font-size: 14px; color: #f4a460; margin-top: 4px; }
+        .panel { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 15px; }
+        .panel h2 { color: #f4a460; font-size: 16px; margin-bottom: 10px; }
+        .carrito-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #333; font-size: 13px; gap: 5px; }
+        .carrito-item:last-child { border-bottom: none; }
+        .carrito-nombre { flex: 2; font-size: 13px; }
+        .carrito-cantidad { width: 40px; text-align: center; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 4px; padding: 3px; font-size: 13px; }
+        .carrito-precio { flex: 1; text-align: right; font-size: 13px; color: #f4a460; }
+        .carrito-total { text-align: right; font-size: 16px; font-weight: bold; margin-top: 8px; color: #f4a460; }
+        .btn-eliminar { background-color: #f44336; color: white; border: none; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 11px; }
+        .cliente-select { width: 100%; padding: 10px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+        .pagos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .pago-card { background-color: #2a2a2a; border: 2px solid transparent; border-radius: 10px; padding: 12px 5px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .pago-card.seleccionado { border-color: #f4a460; background-color: #3a3a3a; }
+        .pago-emoji { font-size: 26px; display: block; margin-bottom: 5px; }
+        .pago-nombre { font-size: 12px; font-weight: bold; }
+        .btn-principal { background-color: #f4a460; color: #121212; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; }
+        .btn-secundario { background-color: #555; color: white; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%; margin-top: 8px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100; }
+        .modal-contenido { background-color: #1e1e1e; border: 1px solid #f4a460; border-radius: 12px; padding: 25px; width: 90%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
+        .modal-contenido h3 { color: #f4a460; margin-bottom: 20px; font-size: 20px; }
+        .modal-opcion { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
+        .modal-opcion input { margin-right: 10px; width: 20px; height: 20px; }
+        .modal-botones { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-botones button { flex: 1; }
+        .comanda { max-width: 400px; margin: 20px auto; background-color: #fff; color: #000; font-family: 'Courier New', monospace; padding: 20px; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; }
+        .comanda h2 { text-align: center; font-size: 16px; margin-bottom: 4px; color: #000; }
+        .comanda p { text-align: center; font-size: 12px; margin: 2px 0; }
+        .comanda hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
+        .comanda-total { text-align: center; font-size: 15px; font-weight: bold; margin-top: 5px; }
+        .btn-volver { display: block; max-width: 200px; margin: 15px auto; background-color: #555; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; text-align: center; }
+        .btn-imprimir { display: block; max-width: 200px; margin: 15px auto; background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; }
+        @media print {
+            body * { visibility: hidden; }
+            .comanda, .comanda * { visibility: visible; }
+            .comanda { position: absolute; left: 0; top: 0; width: 100%; margin: 0; box-shadow: none; border-radius: 0; }
+            .btn-volver, .btn-imprimir, button { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        {% if empleado %}
+        <a href="/empleado">👨‍🍳 Menú Empleado</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/gastos">💸 Gastos</a>
+        {% else %}
+        <a href="/">📊 Panel</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/gastos">💸 Gastos</a>
+        <a href="/gastos_fijos">📋 Fijos</a>
+        <a href="/contador">🧾 Contador</a>
+        <a href="/informe">📈 Informe</a>
+        <a href="/chat">💬 Chat</a>
+        <a href="/clientes">👥 Clientes</a>
+        {% endif %}
+    </div>
+
+    {% if comanda %}
+    <div class="comanda">
+        <h2>🧾 COMANDA - CLIENTE</h2>
+        <p>MDK SHAWARMA</p>
+        <p>Pedido #{{ comanda.pedido_id }}</p>
+        <p>{{ comanda.fecha }}</p>
+        <hr>
+        {% for item in comanda.productos_comanda %}
+        <p>{{ item.cantidad }}x {{ item.nombre }}</p>
+        {% if item.notas %}
+        <p style="font-size:11px; color:#555;">↳ {{ item.notas }}</p>
+        {% endif %}
+        {% endfor %}
+        <hr>
+        {% for item in comanda.productos_comanda %}
+        <p>${{ item.precio * item.cantidad }}</p>
+        {% endfor %}
+        <hr>
+        <p class="comanda-total">TOTAL: ${{ comanda.total }}</p>
+        <p>Pago: {{ comanda.metodo_pago }}</p>
+        <p>¡Gracias por tu compra!</p>
+        <hr>
+        <h2>👨‍🍳 COMANDA - COCINA</h2>
+        <p>MDK SHAWARMA</p>
+        <p>Pedido #{{ comanda.pedido_id }}</p>
+        <p>{{ comanda.fecha }}</p>
+        <hr>
+        {% for item in comanda.productos_comanda %}
+        <p>{{ item.cantidad }}x {{ item.nombre }}</p>
+        {% if item.notas %}
+        <p style="font-size:11px; color:#555;">↳ {{ item.notas }}</p>
+        {% endif %}
+        {% endfor %}
+        <hr>
+        <p>Imprimir y preparar</p>
+    </div>
+    <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Comanda</button>
+    {% if empleado %}
+    <a href="/empleado" class="btn-volver">← Volver al Menú</a>
+    {% else %}
+    <a href="/ventas" class="btn-volver">← Volver a Ventas</a>
+    {% endif %}
+    {% else %}
+    <div class="main-container">
+        <div class="productos-section">
+            <h1>💰 Registrar Venta</h1>
+            <div class="productos-grid" id="productos-grid">
+                {% for p in productos %}
+                <div class="producto-card" data-id="{{ p[0] }}" data-nombre="{{ p[1] }}" data-precio="{{ p[2] }}" data-emoji="{{ p[3] }}">
+                    <span class="producto-emoji">{{ p[3] }}</span>
+                    <span class="producto-nombre">{{ p[1] }}</span>
+                    <span class="producto-precio">${{ p[2] }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="resumen-section">
+            <div class="panel">
+                <h2>🛒 Carrito</h2>
+                <div id="carrito-items"></div>
+                <div class="carrito-total" id="carrito-total">Total: $0</div>
+            </div>
+            <div class="panel">
+                <h2>👤 Cliente</h2>
+                <select class="cliente-select" id="cliente-select">
+                    <option value="">Sin cliente</option>
+                    {% for c in clientes %}
+                    <option value="{{ c[0] }}">{{ c[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="panel">
+                <h2>💳 Método de pago</h2>
+                <div class="pagos-grid" id="pagos-grid">
+                    <div class="pago-card" data-metodo="efectivo"><span class="pago-emoji">💵</span><span class="pago-nombre">Efectivo</span></div>
+                    <div class="pago-card" data-metodo="mercadopago"><span class="pago-emoji">📱</span><span class="pago-nombre">MercadoPago</span></div>
+                    <div class="pago-card" data-metodo="tarjeta"><span class="pago-emoji">💳</span><span class="pago-nombre">Tarjeta</span></div>
+                    <div class="pago-card" data-metodo="pedidosya"><span class="pago-emoji">🛵</span><span class="pago-nombre">PedidosYa</span></div>
+                </div>
+            </div>
+            <button class="btn-principal" onclick="registrarVenta()">💰 Registrar Venta</button>
+            <button class="btn-secundario" onclick="vaciarCarrito()">Cancelar</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="modal" id="modal-personalizar">
+        <div class="modal-contenido">
+            <h3 id="modal-titulo">🧂 Personalizar</h3>
+            <div id="modal-opciones"></div>
+            <div class="modal-botones">
+                <button onclick="agregarConPersonalizacion()">Agregar</button>
+                <button class="btn-secundario" onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <form id="form-venta-real" method="POST" action="/ventas" style="display:none;">
+        <input type="hidden" name="carrito" id="carrito-json">
+        <input type="hidden" name="cliente_id" id="cliente-id-real">
+        <input type="hidden" name="metodo_pago" id="metodo-pago-real">
+    </form>
+
+    <script>
+        let carrito = [];
+        let metodoSeleccionado = '';
+        let productoPendiente = null;
+        const productosGrid = document.querySelectorAll('.producto-card');
+        const carritoItems = document.getElementById('carrito-items');
+        const carritoTotal = document.getElementById('carrito-total');
+        const clienteSelect = document.getElementById('cliente-select');
+        const pagosGrid = document.querySelectorAll('.pago-card');
+        const metodoPagoInputReal = document.getElementById('metodo-pago-real');
+        const clienteIdInputReal = document.getElementById('cliente-id-real');
+        const carritoJsonInput = document.getElementById('carrito-json');
+        const formReal = document.getElementById('form-venta-real');
+        const modalPersonalizar = document.getElementById('modal-personalizar');
+        const modalTitulo = document.getElementById('modal-titulo');
+        const modalOpciones = document.getElementById('modal-opciones');
+
+        function abrirModal(producto) {
+            productoPendiente = producto;
+            const nombre = producto.dataset.nombre.toLowerCase();
+            modalOpciones.innerHTML = '';
+            if (nombre.includes('shawarma') || nombre.includes('falafel')) {
+                modalTitulo.textContent = '🧂 Personalizar';
+                const opciones = [
+                    { value: 'sin repollo', label: 'Sin repollo' },
+                    { value: 'sin tomate', label: 'Sin tomate' },
+                    { value: 'sin cebolla', label: 'Sin cebolla' },
+                    { value: 'sin salsa', label: 'Sin salsa' }
+                ];
+                opciones.forEach(op => {
+                    const label = document.createElement('label');
+                    label.className = 'modal-opcion';
+                    label.innerHTML = `<input type="checkbox" class="opcion-ingrediente" value="${op.value}"> ${op.label}`;
+                    modalOpciones.appendChild(label);
+                });
+            } else if (nombre.includes('coca')) {
+                modalTitulo.textContent = '🥤 Especificar Coca';
+                const opciones = [{ value: 'normal', label: 'Normal' }, { value: 'zero', label: 'Zero' }];
+                opciones.forEach(op => {
+                    const label = document.createElement('label');
+                    label.className = 'modal-opcion';
+                    label.innerHTML = `<input type="radio" name="variante" class="opcion-variante" value="${op.value}"> ${op.label}`;
+                    modalOpciones.appendChild(label);
+                });
+            } else if (nombre.includes('agua')) {
+                modalTitulo.textContent = '💧 Especificar Agua';
+                const opciones = [{ value: 'con gas', label: 'Con gas' }, { value: 'sin gas', label: 'Sin gas' }];
+                opciones.forEach(op => {
+                    const label = document.createElement('label');
+                    label.className = 'modal-opcion';
+                    label.innerHTML = `<input type="radio" name="variante" class="opcion-variante" value="${op.value}"> ${op.label}`;
+                    modalOpciones.appendChild(label);
+                });
+            } else if (nombre.includes('sprite')) {
+                modalTitulo.textContent = '🥤 Especificar Sprite';
+                const opciones = [{ value: 'normal', label: 'Normal' }, { value: 'zero', label: 'Zero' }];
+                opciones.forEach(op => {
+                    const label = document.createElement('label');
+                    label.className = 'modal-opcion';
+                    label.innerHTML = `<input type="radio" name="variante" class="opcion-variante" value="${op.value}"> ${op.label}`;
+                    modalOpciones.appendChild(label);
+                });
+            } else if (nombre.includes('smudis')) {
+                modalTitulo.textContent = '🧃 Elegir gusto de Smudis';
+                const opciones = [
+                    { value: 'multifruta', label: 'Multifruta' },
+                    { value: 'pomelo', label: 'Pomelo' },
+                    { value: 'manzana', label: 'Manzana' },
+                    { value: 'naranja', label: 'Naranja' }
+                ];
+                opciones.forEach(op => {
+                    const label = document.createElement('label');
+                    label.className = 'modal-opcion';
+                    label.innerHTML = `<input type="radio" name="variante" class="opcion-variante" value="${op.value}"> ${op.label}`;
+                    modalOpciones.appendChild(label);
+                });
+            }
+            modalPersonalizar.style.display = 'flex';
+        }
+
+        productosGrid.forEach(card => {
+            card.addEventListener('click', function() {
+                const nombre = this.dataset.nombre.toLowerCase();
+                if (nombre.includes('shawarma') || nombre.includes('falafel') || nombre.includes('coca') || nombre.includes('agua') || nombre.includes('smudis') || nombre.includes('sprite')) {
+                    abrirModal(this);
+                } else {
+                    agregarAlCarrito(this.dataset.id, this.dataset.nombre, parseFloat(this.dataset.precio), '');
+                }
+            });
+        });
+
+        function agregarConPersonalizacion() {
+            const seleccionadas = Array.from(modalOpciones.querySelectorAll('.opcion-ingrediente'))
+                .filter(op => op.checked)
+                .map(op => op.value);
+            const variante = modalOpciones.querySelector('.opcion-variante:checked');
+            const notas = seleccionadas.length > 0 ? seleccionadas.join(', ') : (variante ? variante.value : '');
+            if (productoPendiente) {
+                agregarAlCarrito(productoPendiente.dataset.id, productoPendiente.dataset.nombre, parseFloat(productoPendiente.dataset.precio), notas);
+                cerrarModal();
+            }
+        }
+
+        function cerrarModal() {
+            modalPersonalizar.style.display = 'none';
+            productoPendiente = null;
+        }
+
+        function agregarAlCarrito(id, nombre, precio, notas) {
+            const itemExistente = carrito.find(i => i.id === id && i.notas === notas);
+            if (itemExistente) {
+                itemExistente.cantidad += 1;
+            } else {
+                carrito.push({ id, nombre, precio, cantidad: 1, notas });
+            }
+            actualizarCarrito();
+        }
+
+        function actualizarCarrito() {
+            carritoItems.innerHTML = '';
+            let total = 0;
+            carrito.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'carrito-item';
+                div.innerHTML = `
+                    <span class="carrito-nombre">${item.nombre}${item.notas ? ' (' + item.notas + ')' : ''}</span>
+                    <input type="number" class="carrito-cantidad" value="${item.cantidad}" min="1" onchange="cambiarCantidad(${index}, this.value)">
+                    <span class="carrito-precio">$${(item.precio * item.cantidad).toFixed(0)}</span>
+                    <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">🗑️</button>
+                `;
+                carritoItems.appendChild(div);
+                total += item.precio * item.cantidad;
+            });
+            carritoTotal.textContent = 'Total: $' + total.toFixed(0);
+        }
+
+        function cambiarCantidad(index, nuevaCantidad) {
+            const cantidad = parseInt(nuevaCantidad);
+            if (cantidad > 0) {
+                carrito[index].cantidad = cantidad;
+                actualizarCarrito();
+            }
+        }
+
+        function eliminarDelCarrito(index) {
+            carrito.splice(index, 1);
+            actualizarCarrito();
+        }
+
+        function vaciarCarrito() {
+            carrito = [];
+            actualizarCarrito();
+            pagosGrid.forEach(c => c.classList.remove('seleccionado'));
+            metodoSeleccionado = '';
+            clienteSelect.value = '';
+        }
+
+        function registrarVenta() {
+            if (carrito.length === 0) { alert('Agregá productos al carrito primero'); return; }
+            if (!metodoSeleccionado) { alert('Elegí un método de pago'); return; }
+            carritoJsonInput.value = JSON.stringify(carrito);
+            clienteIdInputReal.value = clienteSelect.value;
+            formReal.submit();
+        }
+
+        pagosGrid.forEach(card => {
+            card.addEventListener('click', function() {
+                pagosGrid.forEach(c => c.classList.remove('seleccionado'));
+                this.classList.add('seleccionado');
+                metodoSeleccionado = this.dataset.metodo;
+                metodoPagoInputReal.value = metodoSeleccionado;
+            });
+        });
+    </script>
+</body>
+</html>

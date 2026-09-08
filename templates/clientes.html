@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes - MDK Shawarma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
+        .header h2 { color: #f4a460; font-size: 22px; }
+        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
+        .menu a:hover { background-color: #f4a460; color: #121212; }
+        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
+        .form-cliente { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; max-width: 500px; }
+        .form-cliente h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
+        .form-cliente input { width: 100%; padding: 10px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
+        .form-cliente button { width: 100%; background-color: #f4a460; color: #121212; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; }
+        .clientes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .cliente-card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; text-align: center; }
+        .cliente-card h3 { font-size: 18px; margin-bottom: 5px; }
+        .cliente-card .telefono { color: #aaa; font-size: 13px; margin-bottom: 10px; }
+        .cliente-card .compras { font-size: 22px; color: #f4a460; margin-bottom: 10px; }
+        .cliente-card .pedidos { font-size: 13px; color: #aaa; margin-bottom: 15px; }
+        .btn-ver { display: inline-block; background-color: #4CAF50; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .btn-eliminar { background-color: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-eliminar:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="menu">
+        <a href="/">📊 Panel</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/gastos">💸 Gastos</a>
+        <a href="/gastos_fijos">📋 Fijos</a>
+        <a href="/contador">🧾 Contador</a>
+        <a href="/informe">📈 Informe</a>
+        <a href="/chat">💬 Chat</a>
+        <a href="/clientes">👥 Clientes</a>
+    </div>
+    <div class="content">
+        <h1>👥 Clientes</h1>
+        <div class="form-cliente">
+            <h2>➕ Registrar Cliente</h2>
+            <form method="POST" action="/clientes">
+                <input type="text" name="nombre" placeholder="Nombre del cliente" required>
+                <input type="text" name="telefono" placeholder="Teléfono" required>
+                <button type="submit">Guardar Cliente</button>
+            </form>
+        </div>
+        <div class="clientes-grid">
+            {% for c in clientes %}
+            <div class="cliente-card">
+                <h3>{{ c[1] }}</h3>
+                <div class="telefono">📞 {{ c[2] }}</div>
+                <div class="compras">${{ c[3] }}</div>
+                <div class="pedidos">{{ c[4] }} pedidos</div>
+                <a href="/cliente/{{ c[0] }}" class="btn-ver">Ver Historial</a>
+                <form method="POST" action="/eliminar_cliente/{{ c[0] }}" style="display:inline; margin-left:5px;" onsubmit="return confirm('¿Eliminar este cliente?');">
+                    <button type="submit" class="btn-eliminar">🗑️</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
