@@ -1,16 +1,28 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 import json
 import subprocess
 import re
 from datetime import datetime
+import functools
 
 app = Flask(__name__)
+app.secret_key = 'mdk_secret_key_2026'
+
+CONTRASENA = 'MDK2026'
 
 def get_db():
     conn = sqlite3.connect('mdk.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+def login_requerido(f):
+    @functools.wraps(f)
+    def decorador(*args, **kwargs):
+        if not session.get('autenticado'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorador
 
 def limpiar_respuesta(texto):
     texto = re.sub(r'\x1b\[[0-9;]*[KkDdCc]', '', texto)
@@ -94,11 +106,28 @@ def es_empleado():
     ip = request.remote_addr
     return ip != '127.0.0.1'
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        contrasena = request.form.get('contrasena', '')
+        if contrasena == CONTRASENA:
+            session['autenticado'] = True
+            return redirect(url_for('inicio'))
+        else:
+            return render_template('login.html', error="Contraseña incorrecta")
+    return render_template('login.html', error=None)
+
+@app.route('/logout')
+def logout():
+    session['autenticado'] = False
+    return redirect(url_for('login'))
+
 @app.route('/empleado')
 def empleado():
     return render_template('empleado.html')
 
 @app.route('/')
+@login_requerido
 def inicio():
     conn = get_db()
     cursor = conn.cursor()
@@ -120,6 +149,7 @@ def inicio():
     return render_template('inicio.html', ventas_hoy=ventas_hoy, pedidos_hoy=pedidos_hoy, gasto_diario=gasto_diario, stock_bajo=stock_bajo, total_productos=total_productos, total_clientes=total_clientes, ingredientes_bajos=ingredientes_bajos)
 
 @app.route('/productos', methods=['GET', 'POST'])
+@login_requerido
 def productos():
     conn = get_db()
     cursor = conn.cursor()
@@ -137,6 +167,7 @@ def productos():
     return render_template('productos.html', productos=productos, empleado=empleado)
 
 @app.route('/agregar_producto', methods=['POST'])
+@login_requerido
 def agregar_producto():
     nombre = request.form.get('nombre')
     categoria = request.form.get('categoria')
@@ -154,6 +185,7 @@ def agregar_producto():
     return redirect(url_for('productos'))
 
 @app.route('/stock', methods=['GET', 'POST'])
+@login_requerido
 def stock():
     conn = get_db()
     cursor = conn.cursor()
@@ -181,6 +213,7 @@ def stock():
     return render_template('stock.html', ingredientes=ingredientes, empleado=empleado)
 
 @app.route('/ventas', methods=['GET', 'POST'])
+@login_requerido
 def ventas():
     conn = get_db()
     cursor = conn.cursor()
@@ -253,6 +286,7 @@ def ventas():
     return render_template('ventas.html', ventas=ventas, productos=productos, clientes=clientes, comanda=comanda, empleado=empleado)
 
 @app.route('/gastos', methods=['GET', 'POST'])
+@login_requerido
 def gastos():
     conn = get_db()
     cursor = conn.cursor()
@@ -272,9 +306,8 @@ def gastos():
     return render_template('gastos.html', gastos=gastos, total_gastos=total_gastos, empleado=empleado)
 
 @app.route('/gastos_fijos', methods=['GET', 'POST'])
+@login_requerido
 def gastos_fijos():
-    if es_empleado():
-        return redirect(url_for('empleado'))
     conn = get_db()
     cursor = conn.cursor()
     if request.method == 'POST':
@@ -304,9 +337,8 @@ def gastos_fijos():
     return render_template('gastos_fijos.html', gastos=gastos, total=total)
 
 @app.route('/contador')
+@login_requerido
 def contador():
-    if es_empleado():
-        return redirect(url_for('empleado'))
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE strftime('%m', fecha) = strftime('%m', 'now')")
@@ -342,9 +374,8 @@ def contador():
                          ventas_semana=ventas_semana)
 
 @app.route('/informe')
+@login_requerido
 def informe():
-    if es_empleado():
-        return redirect(url_for('empleado'))
     conn = get_db()
     cursor = conn.cursor()
     
@@ -397,9 +428,8 @@ def informe():
                          historial=historial)
 
 @app.route('/clientes', methods=['GET', 'POST'])
+@login_requerido
 def clientes():
-    if es_empleado():
-        return redirect(url_for('empleado'))
     conn = get_db()
     cursor = conn.cursor()
     if request.method == 'POST':
@@ -414,6 +444,7 @@ def clientes():
     return render_template('clientes.html', clientes=clientes)
 
 @app.route('/eliminar_cliente/<int:cliente_id>', methods=['POST'])
+@login_requerido
 def eliminar_cliente(cliente_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -423,6 +454,7 @@ def eliminar_cliente(cliente_id):
     return redirect(url_for('clientes'))
 
 @app.route('/cliente/<int:cliente_id>')
+@login_requerido
 def cliente_detalle(cliente_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -443,6 +475,7 @@ def cliente_detalle(cliente_id):
     return render_template('cliente_detalle.html', cliente=cliente, compras=compras)
 
 @app.route('/proveedores')
+@login_requerido
 def proveedores():
     conn = get_db()
     cursor = conn.cursor()
@@ -452,6 +485,7 @@ def proveedores():
     return render_template('proveedores.html', proveedores=proveedores)
 
 @app.route('/agregar_proveedor', methods=['POST'])
+@login_requerido
 def agregar_proveedor():
     nombre = request.form.get('nombre')
     telefono = request.form.get('telefono')
@@ -468,6 +502,7 @@ def agregar_proveedor():
     return redirect(url_for('proveedores'))
 
 @app.route('/eliminar_proveedor/<int:proveedor_id>', methods=['POST'])
+@login_requerido
 def eliminar_proveedor(proveedor_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -477,9 +512,8 @@ def eliminar_proveedor(proveedor_id):
     return redirect(url_for('proveedores'))
 
 @app.route('/chat', methods=['GET', 'POST'])
+@login_requerido
 def chat():
-    if es_empleado():
-        return redirect(url_for('empleado'))
     respuesta = ""
     pregunta = ""
     if request.method == 'POST':

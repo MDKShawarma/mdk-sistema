@@ -3,47 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ingreso - MDK Shawarma</title>
+    <title>Login - IA Solutions</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #121212; color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
         .login-container { background-color: #1e1e1e; border: 1px solid #333; border-radius: 15px; padding: 40px; text-align: center; max-width: 400px; width: 90%; }
         .login-container h1 { color: #f4a460; font-size: 28px; margin-bottom: 10px; }
         .login-container p { color: #aaa; font-size: 14px; margin-bottom: 30px; }
-        .btn-empleado { background-color: #4CAF50; color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 18px; width: 100%; margin-bottom: 20px; }
-        .btn-admin { background-color: #f4a460; color: #121212; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 18px; width: 100%; margin-bottom: 10px; }
-        .password-input { width: 100%; padding: 12px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 16px; margin-bottom: 10px; text-align: center; }
+        input { width: 100%; padding: 12px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 16px; margin-bottom: 15px; text-align: center; }
+        button { background-color: #f4a460; color: #121212; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; }
         .error { color: #f44336; font-size: 14px; margin-bottom: 10px; }
+        .btn-empleado { background-color: #4CAF50; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%; margin-top: 10px; text-decoration: none; display: inline-block; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h1>🍽️ MDK SHAWARMA</h1>
-        <p>Sistema de Gestión</p>
-
-        <form method="POST" action="/login">
-            <input type="hidden" name="rol" value="empleado">
-            <button type="submit" class="btn-empleado">👨‍🍳 Soy Empleado</button>
-        </form>
-
-        <form method="POST" action="/login" id="form-admin" style="display:none;">
-            <input type="hidden" name="rol" value="admin">
-            <input type="password" name="contrasena" class="password-input" placeholder="Contraseña" required>
-            <button type="submit" class="btn-admin">👑 Ingresar como Sergio</button>
-        </form>
-
+        <h1>🔐 IA Solutions</h1>
+        <p>Ingresá la contraseña para continuar</p>
+        
         {% if error %}
         <p class="error">{{ error }}</p>
         {% endif %}
-
-        <button onclick="mostrarAdmin()" class="btn-admin" id="btn-mostrar-admin">👑 Soy Sergio</button>
+        
+        <form method="POST">
+            <input type="password" name="contrasena" placeholder="Contraseña" required>
+            <button type="submit">Ingresar</button>
+        </form>
+        
+        <a href="/empleado" class="btn-empleado">👨‍🍳 Soy Empleado</a>
     </div>
-
-    <script>
-        function mostrarAdmin() {
-            document.getElementById('form-admin').style.display = 'block';
-            document.getElementById('btn-mostrar-admin').style.display = 'none';
-        }
-    </script>
 </body>
 </html>
