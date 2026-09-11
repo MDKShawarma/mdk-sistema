@@ -3,49 +3,47 @@ import sqlite3
 conn = sqlite3.connect('mdk.db')
 cursor = conn.cursor()
 
-# 1. Actualizar nombres en ingredientes para que coincidan con productos
-cursor.execute("UPDATE ingredientes SET nombre = 'COCAS' WHERE nombre = 'Coca Cola'")
-cursor.execute("UPDATE ingredientes SET nombre = 'AGUAS' WHERE nombre = 'Agua con gas' OR nombre = 'Agua sin gas'")
-cursor.execute("UPDATE ingredientes SET nombre = 'Smudis' WHERE nombre LIKE 'Smudis%'")
+# Eliminar los Smudis viejos
+cursor.execute("DELETE FROM ingredientes WHERE nombre LIKE 'JUGO - Smudis%'")
 
-# 2. Eliminar Smudis divididos si existen
-cursor.execute("DELETE FROM ingredientes WHERE nombre LIKE 'Smudis%'")
-
-# 3. Agregar Sprite, Sprite Zero y Fanta al stock
-nuevos = [
-    ("SPRITE", "bebidas", 4, "unidades", 3),
-    ("SPRITE ZERO", "bebidas", 6, "unidades", 3),
-    ("FANTA", "bebidas", 9, "unidades", 3),
+# Cargar los nuevos Smudis
+smudis = [
+    ("JUGO - Smudis Pomelo", "JUGOS", 7, "unidades", 3),
+    ("JUGO - Smudis Manzana", "JUGOS", 7, "unidades", 3),
+    ("JUGO - Smudis Multifruta", "JUGOS", 7, "unidades", 3),
+    ("JUGO - Smudis Naranja/Frutilla", "JUGOS", 6, "unidades", 3),
 ]
 
-for item in nuevos:
-    cursor.execute("SELECT id FROM ingredientes WHERE nombre = ?", (item[0],))
-    if cursor.fetchone() is None:
-        cursor.execute(
-            "INSERT INTO ingredientes (nombre, categoria, stock_actual, unidad, stock_minimo) VALUES (?, ?, ?, ?, ?)",
-            item
-        )
+for jugo in smudis:
+    cursor.execute(
+        "INSERT INTO ingredientes (nombre, categoria, stock_actual, unidad, stock_minimo) VALUES (?, ?, ?, ?, ?)",
+        jugo
+    )
 
-# 4. Verificar si los productos existen en la tabla productos (ventas)
-# Si no existen, los agregamos
-productos_ventas = [
-    ("SPRITE", "Bebidas", 4000, 4),
-    ("SPRITE ZERO", "Bebidas", 4000, 6),
-    ("FANTA", "Bebidas", 4000, 9),
-]
+# Agregar Fernet Cola
+cursor.execute("SELECT id FROM productos WHERE nombre = 'FERNET COLA'")
+if not cursor.fetchone():
+    cursor.execute("""
+        INSERT INTO productos (nombre, categoria, precio, stock, stock_minimo)
+        VALUES (?, ?, ?, ?, ?)
+    """, ("FERNET COLA", "Bebidas con alcohol", 5000, 10, 2))
+    print("✅ Fernet Cola agregado como producto")
+else:
+    cursor.execute("UPDATE productos SET precio = 5000 WHERE nombre = 'FERNET COLA'")
+    print("✅ Fernet Cola actualizado")
 
-for prod in productos_ventas:
-    cursor.execute("SELECT id FROM productos WHERE nombre = ?", (prod[0],))
-    if cursor.fetchone() is None:
-        cursor.execute(
-            "INSERT INTO productos (nombre, categoria, precio, stock) VALUES (?, ?, ?, ?)",
-            prod
-        )
+cursor.execute("SELECT id FROM ingredientes WHERE nombre = 'TRAGO - Fernet Cola'")
+if not cursor.fetchone():
+    cursor.execute("""
+        INSERT INTO ingredientes (nombre, categoria, stock_actual, unidad, stock_minimo)
+        VALUES (?, ?, ?, ?, ?)
+    """, ("TRAGO - Fernet Cola", "TRAGOS", 0, "unidades", 0))
+    print("✅ Fernet Cola agregado al stock")
 
 conn.commit()
 conn.close()
 
-print("Cambios realizados correctamente")
-print("- Nombres actualizados en stock")
-print("- Sprite, Sprite Zero y Fanta agregados")
-print("- Smudis unificados")
+print("\n✅ Actualización completada")
+print("\nSmudis actualizados:")
+for s in smudis:
+    print(f"  - {s[0]}")
