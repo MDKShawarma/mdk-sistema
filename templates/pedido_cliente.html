@@ -88,7 +88,6 @@
             text-align: center;
         }
         
-        /* PERSONALIZACIÓN */
         .personalizacion {
             display: none;
             margin-top: 15px;
@@ -128,7 +127,6 @@
             font-weight: bold;
         }
         
-        /* CARRITO FIJO ABAJO */
         .carrito-fijo {
             position: fixed;
             bottom: 0;
@@ -165,7 +163,6 @@
         .btn-confirmar:disabled { background-color: #333; color: #666; cursor: not-allowed; }
         .btn-confirmar:active { transform: scale(0.98); }
         
-        /* FORMULARIO */
         .formulario {
             background-color: #121212;
             border: 2px solid #f4a460;
@@ -222,7 +219,6 @@
             background-color: #1a2a1a;
         }
         
-        /* MENSAJE DE ÉXITO */
         .exito {
             display: none;
             position: fixed;
@@ -301,7 +297,7 @@
     <label>¿Cómo vas a pagar?</label>
     <select id="metodo_pago">
         <option value="">Seleccionar...</option>
-        <option value="aguardar">Aguardá a ser llamado</option>
+        <option value="efectivo">Efectivo</option>
         <option value="mercadopago">MercadoPago</option>
     </select>
     
@@ -335,7 +331,6 @@
         personalizaciones[p.id] = [];
     });
 
-    // Detectar tipo de producto
     function getTipoPersonalizacion(nombre) {
         const n = nombre.toLowerCase();
         if (n.includes('shawarma') || n.includes('falafel')) {
@@ -359,7 +354,6 @@
         return null;
     }
 
-    // Orden de importancia
     function ordenImportancia(nombre) {
         const n = nombre.toLowerCase();
         if (n.includes('shawarma') && !n.includes('combo')) return 0;
@@ -378,7 +372,6 @@
         const contenedor = document.getElementById('contenido');
         contenedor.innerHTML = '';
 
-        // Ordenar productos por importancia
         const productosOrdenados = [...productos].sort((a, b) => {
             const ordenA = ordenImportancia(a.nombre);
             const ordenB = ordenImportancia(b.nombre);
@@ -386,7 +379,6 @@
             return a.nombre.localeCompare(b.nombre);
         });
 
-        // Agrupar por categoría
         const categorias = {};
         productosOrdenados.forEach(p => {
             let cat = p.categoria.toUpperCase();
@@ -398,7 +390,6 @@
             categorias[cat].push(p);
         });
 
-        // Orden de categorías
         const ordenCategorias = ['PLATOS PRINCIPALES', 'COMIDAS', 'POSTRES', 'BEBIDAS'];
         const categoriasOrdenadas = Object.keys(categorias).sort((a, b) => {
             const ia = ordenCategorias.indexOf(a);
