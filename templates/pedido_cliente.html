@@ -40,14 +40,17 @@
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             transition: all 0.2s;
         }
         .producto.activo {
             border-color: #4CAF50;
             background-color: #1a2a1a;
+        }
+        
+        .producto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .producto-info { flex: 1; }
@@ -73,21 +76,9 @@
             justify-content: center;
         }
         
-        .btn-restar {
-            background-color: #f44336;
-            color: white;
-        }
-        .btn-restar:disabled {
-            background-color: #333;
-            color: #666;
-            cursor: not-allowed;
-        }
-        
-        .btn-sumar {
-            background-color: #4CAF50;
-            color: white;
-        }
-        
+        .btn-restar { background-color: #f44336; color: white; }
+        .btn-restar:disabled { background-color: #333; color: #666; cursor: not-allowed; }
+        .btn-sumar { background-color: #4CAF50; color: white; }
         .btn-cantidad:active { transform: scale(0.95); }
         
         .cantidad {
@@ -95,6 +86,46 @@
             font-weight: bold;
             min-width: 30px;
             text-align: center;
+        }
+        
+        /* PERSONALIZACIÓN */
+        .personalizacion {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #444;
+        }
+        .personalizacion.visible { display: block; }
+        
+        .personalizacion-titulo {
+            color: #f4a460;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .opciones-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .opcion-check {
+            background-color: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: #ccc;
+            user-select: none;
+        }
+        .opcion-check.seleccionada {
+            border-color: #f44336;
+            background-color: #2a1a1a;
+            color: #fff;
+            font-weight: bold;
         }
         
         /* CARRITO FIJO ABAJO */
@@ -131,14 +162,10 @@
             cursor: pointer;
             width: 100%;
         }
-        .btn-confirmar:disabled {
-            background-color: #333;
-            color: #666;
-            cursor: not-allowed;
-        }
+        .btn-confirmar:disabled { background-color: #333; color: #666; cursor: not-allowed; }
         .btn-confirmar:active { transform: scale(0.98); }
         
-        /* FORMULARIO DE DATOS */
+        /* FORMULARIO */
         .formulario {
             background-color: #121212;
             border: 2px solid #f4a460;
@@ -187,7 +214,7 @@
             border-radius: 10px;
             text-align: center;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
         }
         .opcion-servicio.seleccionada {
@@ -244,10 +271,9 @@
 </div>
 
 <div class="content" id="contenido">
-    <!-- Productos se cargan acá con JavaScript -->
+    <!-- Productos se cargan con JavaScript -->
 </div>
 
-<!-- CARRITO FIJO ABAJO -->
 <div class="carrito-fijo" id="carrito-fijo">
     <div class="carrito-total">
         <span class="label">TOTAL:</span>
@@ -258,7 +284,6 @@
     </button>
 </div>
 
-<!-- FORMULARIO DE DATOS (oculto al inicio) -->
 <div class="formulario" id="formulario" style="display: none;">
     <h2>👤 Tus datos</h2>
     <label>Nombre completo:</label>
@@ -273,15 +298,10 @@
         <div class="opcion-servicio" onclick="elegirServicio('para_llevar', this)">🥡 Para llevar</div>
     </div>
     
-    <div id="campo-mesa" style="display:none;">
-        <label>Número de mesa:</label>
-        <input type="number" id="mesa" placeholder="Ej: 5" min="1">
-    </div>
-    
     <label>¿Cómo vas a pagar?</label>
     <select id="metodo_pago">
         <option value="">Seleccionar...</option>
-        <option value="mozo">Al mozo</option>
+        <option value="aguardar">Aguardá a ser llamado</option>
         <option value="mercadopago">MercadoPago</option>
     </select>
     
@@ -292,69 +312,160 @@
     <button class="btn-confirmar" style="background-color:#555; margin-top:10px;" onclick="volverAlMenu()">← Volver al menú</button>
 </div>
 
-<!-- MENSAJE DE ÉXITO -->
 <div class="exito" id="exito">
     <div class="exito-contenido">
         <h2>✅ ¡Pedido Confirmado!</h2>
         <p>Gracias <span id="nombre-exito"></span></p>
         <p>Tu pedido fue enviado a la cocina</p>
         <div class="numero">N° <span id="numero-pedido"></span></div>
-        <p>En breve te lo llevamos 🍽️</p>
+        <p>🔔 Aguardá a ser llamado</p>
         <button onclick="nuevoPedido()">Hacer otro pedido</button>
     </div>
 </div>
 
 <script>
-    // Productos desde el servidor
     const productos = {{ productos_json | safe }};
     
     let cantidades = {};
+    let personalizaciones = {};
     let servicioSeleccionado = '';
 
-    // Inicializar cantidades
     productos.forEach(p => {
         cantidades[p.id] = 0;
+        personalizaciones[p.id] = [];
     });
 
-    // Renderizar productos por categoría
+    // Detectar tipo de producto
+    function getTipoPersonalizacion(nombre) {
+        const n = nombre.toLowerCase();
+        if (n.includes('shawarma') || n.includes('falafel')) {
+            return {
+                titulo: '🧂 ¿Qué querés sacarle?',
+                opciones: ['Sin repollo', 'Sin tomate', 'Sin cebolla', 'Sin salsa']
+            };
+        }
+        if (n.includes('coca')) {
+            return {
+                titulo: '🥤 Elegí el tipo',
+                opciones: ['Normal', 'Zero']
+            };
+        }
+        if (n.includes('agua')) {
+            return {
+                titulo: '💧 Elegí el tipo',
+                opciones: ['Con gas', 'Sin gas']
+            };
+        }
+        return null;
+    }
+
+    // Orden de importancia
+    function ordenImportancia(nombre) {
+        const n = nombre.toLowerCase();
+        if (n.includes('shawarma') && !n.includes('combo')) return 0;
+        if (n.includes('falafel') && !n.includes('combo')) return 1;
+        if (n.includes('fatay') && !n.includes('combo')) return 2;
+        if (n.includes('humus')) return 3;
+        if (n.includes('kebbe')) return 4;
+        if (n.includes('combo')) return 5;
+        if (n.includes('papas')) return 6;
+        if (n.includes('nuggets')) return 7;
+        if (n.includes('postre') || n.includes('helado') || n.includes('deditos') || n.includes('baklava')) return 8;
+        return 9;
+    }
+
     function renderizarProductos() {
         const contenedor = document.getElementById('contenido');
         contenedor.innerHTML = '';
 
-        // Agrupar por categoría
-        const categorias = {};
-        productos.forEach(p => {
-            if (!categorias[p.categoria]) {
-                categorias[p.categoria] = [];
-            }
-            categorias[p.categoria].push(p);
+        // Ordenar productos por importancia
+        const productosOrdenados = [...productos].sort((a, b) => {
+            const ordenA = ordenImportancia(a.nombre);
+            const ordenB = ordenImportancia(b.nombre);
+            if (ordenA !== ordenB) return ordenA - ordenB;
+            return a.nombre.localeCompare(b.nombre);
         });
 
-        // Renderizar cada categoría
-        Object.keys(categorias).forEach(cat => {
+        // Agrupar por categoría
+        const categorias = {};
+        productosOrdenados.forEach(p => {
+            let cat = p.categoria.toUpperCase();
+            if (cat.includes('BEBIDA')) cat = 'BEBIDAS';
+            if (cat.includes('COMIDA')) cat = 'PLATOS PRINCIPALES';
+            if (cat.includes('POSTRE')) cat = 'POSTRES';
+            
+            if (!categorias[cat]) categorias[cat] = [];
+            categorias[cat].push(p);
+        });
+
+        // Orden de categorías
+        const ordenCategorias = ['PLATOS PRINCIPALES', 'COMIDAS', 'POSTRES', 'BEBIDAS'];
+        const categoriasOrdenadas = Object.keys(categorias).sort((a, b) => {
+            const ia = ordenCategorias.indexOf(a);
+            const ib = ordenCategorias.indexOf(b);
+            if (ia === -1 && ib === -1) return a.localeCompare(b);
+            if (ia === -1) return 1;
+            if (ib === -1) return -1;
+            return ia - ib;
+        });
+
+        categoriasOrdenadas.forEach(cat => {
             const titulo = document.createElement('div');
             titulo.className = 'categoria-titulo';
-            titulo.textContent = cat.toUpperCase();
+            titulo.textContent = cat;
             contenedor.appendChild(titulo);
 
             categorias[cat].forEach(prod => {
                 const div = document.createElement('div');
                 div.className = 'producto';
                 div.id = 'producto-' + prod.id;
+                
+                const personalizacion = getTipoPersonalizacion(prod.nombre);
+                let personalizacionHTML = '';
+                
+                if (personalizacion) {
+                    personalizacionHTML = `
+                        <div class="personalizacion" id="pers-${prod.id}">
+                            <div class="personalizacion-titulo">${personalizacion.titulo}</div>
+                            <div class="opciones-grid">
+                                ${personalizacion.opciones.map(op => `
+                                    <div class="opcion-check" onclick="toggleOpcion(${prod.id}, '${op}', this)">${op}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
                 div.innerHTML = `
-                    <div class="producto-info">
-                        <div class="producto-nombre">${prod.nombre}</div>
-                        <div class="producto-precio">$${prod.precio.toLocaleString()}</div>
+                    <div class="producto-header">
+                        <div class="producto-info">
+                            <div class="producto-nombre">${prod.nombre}</div>
+                            <div class="producto-precio">$${prod.precio.toLocaleString()}</div>
+                        </div>
+                        <div class="cantidad-control">
+                            <button class="btn-cantidad btn-restar" onclick="restar(${prod.id})" id="restar-${prod.id}" disabled>−</button>
+                            <span class="cantidad" id="cantidad-${prod.id}">0</span>
+                            <button class="btn-cantidad btn-sumar" onclick="sumar(${prod.id})">+</button>
+                        </div>
                     </div>
-                    <div class="cantidad-control">
-                        <button class="btn-cantidad btn-restar" onclick="restar(${prod.id})" id="restar-${prod.id}" disabled>−</button>
-                        <span class="cantidad" id="cantidad-${prod.id}">0</span>
-                        <button class="btn-cantidad btn-sumar" onclick="sumar(${prod.id})">+</button>
-                    </div>
+                    ${personalizacionHTML}
                 `;
                 contenedor.appendChild(div);
             });
         });
+    }
+
+    function toggleOpcion(id, opcion, elemento) {
+        const lista = personalizaciones[id];
+        const index = lista.indexOf(opcion);
+        
+        if (index === -1) {
+            lista.push(opcion);
+            elemento.classList.add('seleccionada');
+        } else {
+            lista.splice(index, 1);
+            elemento.classList.remove('seleccionada');
+        }
     }
 
     function sumar(id) {
@@ -378,14 +489,18 @@
             const cantidadSpan = document.getElementById('cantidad-' + prod.id);
             const productDiv = document.getElementById('producto-' + prod.id);
             const btnRestar = document.getElementById('restar-' + prod.id);
+            const persDiv = document.getElementById('pers-' + prod.id);
             
             if (cantidadSpan) cantidadSpan.textContent = cant;
             if (btnRestar) btnRestar.disabled = cant === 0;
+            
             if (productDiv) {
                 if (cant > 0) {
                     productDiv.classList.add('activo');
+                    if (persDiv) persDiv.classList.add('visible');
                 } else {
                     productDiv.classList.remove('activo');
+                    if (persDiv) persDiv.classList.remove('visible');
                 }
             }
 
@@ -402,7 +517,6 @@
     function mostrarFormulario() {
         document.getElementById('contenido').style.display = 'none';
         document.querySelectorAll('.categoria-titulo').forEach(e => e.style.display = 'none');
-        document.querySelectorAll('.producto').forEach(e => e.style.display = 'none');
         document.getElementById('formulario').style.display = 'block';
         window.scrollTo(0, 0);
     }
@@ -410,7 +524,6 @@
     function volverAlMenu() {
         document.getElementById('contenido').style.display = 'block';
         document.querySelectorAll('.categoria-titulo').forEach(e => e.style.display = 'block');
-        document.querySelectorAll('.producto').forEach(e => e.style.display = 'flex');
         document.getElementById('formulario').style.display = 'none';
         window.scrollTo(0, 0);
     }
@@ -419,42 +532,33 @@
         servicioSeleccionado = tipo;
         document.querySelectorAll('.opcion-servicio').forEach(e => e.classList.remove('seleccionada'));
         elemento.classList.add('seleccionada');
-        
-        if (tipo === 'local') {
-            document.getElementById('campo-mesa').style.display = 'block';
-        } else {
-            document.getElementById('campo-mesa').style.display = 'none';
-        }
     }
 
     function confirmarPedido() {
         const nombre = document.getElementById('nombre').value.trim();
         const telefono = document.getElementById('telefono').value.trim();
         const metodo = document.getElementById('metodo_pago').value;
-        const mesa = document.getElementById('mesa').value;
         const notas = document.getElementById('notas').value;
 
         if (!nombre) { alert('Por favor, ingresá tu nombre'); return; }
         if (!telefono) { alert('Por favor, ingresá tu teléfono'); return; }
         if (!servicioSeleccionado) { alert('Elegí si vas a comer en el local o para llevar'); return; }
-        if (servicioSeleccionado === 'local' && !mesa) { alert('Ingresá el número de mesa'); return; }
         if (!metodo) { alert('Elegí el método de pago'); return; }
 
-        // Armar carrito
         const carrito = [];
         productos.forEach(prod => {
             if (cantidades[prod.id] > 0) {
+                const opciones = personalizaciones[prod.id] || [];
                 carrito.push({
                     id: prod.id,
                     nombre: prod.nombre,
                     precio: prod.precio,
                     cantidad: cantidades[prod.id],
-                    notas: ''
+                    notas: opciones.join(', ')
                 });
             }
         });
 
-        // Enviar por formulario
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/nuevo_pedido';
@@ -463,7 +567,7 @@
             nombre: nombre,
             telefono: telefono,
             tipo_servicio: servicioSeleccionado,
-            mesa: mesa,
+            mesa: '',
             metodo_pago: metodo,
             notas: notas,
             carrito: JSON.stringify(carrito)
@@ -485,7 +589,6 @@
         location.reload();
     }
 
-    // Iniciar
     renderizarProductos();
     actualizarInterfaz();
 </script>
