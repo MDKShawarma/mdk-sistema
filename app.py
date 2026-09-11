@@ -521,6 +521,119 @@ def chat():
         if pregunta:
             respuesta = preguntar_deepseek(pregunta)
     return render_template('chat.html', respuesta=respuesta, pregunta=pregunta)
+@app.route('/pedido')
+def pedido_cliente():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nombre, precio, categoria FROM productos WHERE stock > 0 ORDER BY categoria, nombre")
+    productos_raw = cursor.fetchall()
+    
+    productos_json = json.dumps([
+        {"id": p[0], "nombre": p[1], "precio": p[2], "categoria": p[3]}
+        for p in productos_raw
+    ])
+    
+    conn.close()
+    return render_template('pedido_cliente.html', productos_json=productos_json)
 
+@app.route('/nuevo_pedido', methods=['POST'])
+def nuevo_pedido():
+    nombre = request.form.get('nombre')
+    telefono = request.form.get('telefono')
+    tipo_servicio = request.form.get('tipo_servicio')
+    mesa = request.form.get('mesa', '')
+    metodo_pago = request.form.get('metodo_pago')
+    notas = request.form.get('notas', '')
+    carrito_json = request.form.get('carrito')
+    
+    if not nombre or not telefono or not carrito_json:
+        return "Faltan datos", 400
+    
+    carrito = json.loads(carrito_json)
+    total_general = 0
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Buscar o crear cliente
+    cursor.execute("SELECT id FROM clientes WHERE telefono = ?", (telefono,))
+    cliente = cursor.fetchone()
+    
+    if cliente:
+        cliente_id = cliente[0]
+    else:
+        # Crear cliente nuevo con el año
+        nombre_con_año = f"{nombre} Cliente {datetime.now().year}"
+        cursor.execute(
+            "INSERT INTO clientes (nombre, telefono) VALUES (?, ?)",
+            (nombre_con_año, telefono)
+        )
+        cliente_id = cursor.lastrowid
+    
+    # Calcular total y registrar venta
+    for item in carrito:
+        producto_id = int(item['id'])
+        cantidad = int(item['cantidad'])
+        
+        cursor.execute("SELECT nombre, precio, stock FROM productos WHERE id = ?", (producto_id,))
+        producto = cursor.fetchone()
+        
+        if not producto or producto[2] < cantidad:
+            conn.close()
+            return f"Error: stock insuficiente para {item['nombre']}", 400
+        
+        total_item = producto[1] * cantidad
+        total_general += total_item
+        
+        # Crear notas con la información del cliente
+        notas_completas = f"Mesa: {mesa} | {tipo_servicio} | Pago: {metodo_pago}"
+        if notas:
+            notas_completas += f" | Notas: {notas}"
+        
+        cursor.execute('''
+            INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id))
+        
+        cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
+    
+    # Actualizar estadísticas del cliente
+    cursor.execute('''
+        UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1 
+        WHERE id = ?
+    ''', (total_general, cliente_id))
+    
+    conn.commit()
+    
+    # Obtener el número de pedido
+    pedido_id = cursor.lastrowid
+    
+    conn.close()
+    
+    # Aquí iría la impresión automática
+    # Por ahora redirigimos a una página de confirmación
+    return f"""
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Pedido Confirmado</title>
+        <style>
+            body {{ background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 50px; }}
+            h1 {{ color: #4CAF50; }}
+            .info {{ background-color: #1e1e1e; padding: 20px; border-radius: 10px; max-width: 500px; margin: 20px auto; }}
+            a {{ color: #f4a460; }}
+        </style>
+    </head>
+    <body>
+        <h1>✅ ¡Pedido Confirmado!</h1>
+        <div class="info">
+            <p>Gracias <strong>{nombre}</strong>, tu pedido fue enviado a la cocina.</p>
+            <p>Total: <strong>${total_general:,.0f}</strong></p>
+            <p>En breve te lo llevamos.</p>
+        </div>
+        <a href="/pedido">← Hacer otro pedido</a>
+    </body>
+    </html>
+    """
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

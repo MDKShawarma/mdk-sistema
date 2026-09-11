@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDK Shawarma - Hacer Pedido</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #121212; color: white; min-height: 100vh; }
+        .header { background-color: #1e1e1e; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
+        .header h2 { color: #f4a460; font-size: 24px; }
+        .header p { color: #aaa; font-size: 14px; margin-top: 5px; }
+        
+        .content { max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #f4a460; margin-bottom: 20px; font-size: 24px; text-align: center; }
+        h2 { color: #f4a460; font-size: 18px; margin: 20px 0 10px 0; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        
+        .producto-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background-color: #1e1e1e; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 10px;
+            border: 1px solid #333;
+        }
+        .producto-item:hover { border-color: #f4a460; }
+        .producto-info { flex: 1; }
+        .producto-nombre { font-size: 16px; font-weight: bold; }
+        .producto-precio { color: #f4a460; font-size: 15px; margin-top: 3px; }
+        .producto-acciones { display: flex; align-items: center; gap: 10px; }
+        .btn-sumar { 
+            background-color: #f4a460; 
+            color: #121212; 
+            border: none; 
+            width: 35px; 
+            height: 35px; 
+            border-radius: 50%; 
+            font-size: 20px; 
+            font-weight: bold; 
+            cursor: pointer;
+        }
+        .btn-sumar:hover { opacity: 0.8; }
+        .cantidad { font-size: 18px; font-weight: bold; min-width: 30px; text-align: center; }
+        
+        .carrito { 
+            background-color: #1e1e1e; 
+            border: 2px solid #f4a460; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-top: 20px;
+            position: sticky;
+            bottom: 20px;
+        }
+        .carrito h3 { color: #f4a460; margin-bottom: 15px; font-size: 18px; }
+        .carrito-item { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; }
+        .carrito-total { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-top: 15px; 
+            padding-top: 15px; 
+            border-top: 1px solid #333;
+            font-size: 18px;
+            font-weight: bold;
+            color: #f4a460;
+        }
+        
+        .btn-confirmar { 
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 10px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 15px;
+        }
+        .btn-confirmar:hover { opacity: 0.9; }
+        .btn-confirmar:disabled { background-color: #555; cursor: not-allowed; }
+        
+        .form-cliente { 
+            background-color: #1e1e1e; 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-top: 20px;
+        }
+        .form-cliente h3 { color: #f4a460; margin-bottom: 15px; font-size: 18px; }
+        .form-cliente input, .form-cliente select { 
+            width: 100%; 
+            padding: 12px; 
+            background-color: #2a2a2a; 
+            color: white; 
+            border: 1px solid #f4a460; 
+            border-radius: 8px; 
+            font-size: 15px; 
+            margin-bottom: 10px;
+        }
+        .form-cliente label { display: block; margin-bottom: 5px; color: #ccc; font-size: 14px; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal-contenido {
+            background-color: #1e1e1e;
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+        }
+        .modal-contenido h2 { color: #4CAF50; margin-bottom: 15px; font-size: 24px; }
+        .modal-contenido p { color: #ccc; margin-bottom: 20px; }
+        .modal-contenido button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>🍽️ MDK SHAWARMA</h2>
+        <p>Hacé tu pedido desde el celular</p>
+    </div>
+
+    <div class="content">
+        <h1>📋 Nuestro Menú</h1>
+
+        <form method="POST" action="/nuevo_pedido" id="form-pedido">
+            
+            <h2>🍖 PLATOS PRINCIPALES</h2>
+            <div id="platos-principales"></div>
+
+            <h2>🥤 BEBIDAS</h2>
+            <div id="bebidas"></div>
+
+            <div class="form-cliente">
+                <h3>👤 Tus datos</h3>
+                <label>Nombre completo:</label>
+                <input type="text" name="nombre" id="nombre" placeholder="Ej: Juan Pérez" required>
+                
+                <label>Teléfono:</label>
+                <input type="text" name="telefono" id="telefono" placeholder="Ej: 1123456789" required>
+                
+                <label>¿Dónde vas a comer?</label>
+                <select name="tipo_servicio" id="tipo_servicio" required onchange="mostrarMesa()">
+                    <option value="">Seleccionar...</option>
+                    <option value="local">En el local</option>
+                    <option value="para_llevar">Para llevar</option>
+                </select>
+                
+                <div id="campo-mesa" style="display:none;">
+                    <label>Número de mesa:</label>
+                    <input type="number" name="mesa" id="mesa" placeholder="Ej: 5" min="1">
+                </div>
+                
+                <label>¿Cómo vas a pagar?</label>
+                <select name="metodo_pago" id="metodo_pago" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="mozo">Al mozo</option>
+                    <option value="mercadopago">MercadoPago</option>
+                </select>
+                
+                <label>Anotaciones especiales (opcional):</label>
+                <input type="text" name="notas" id="notas" placeholder="Ej: sin cebolla, sin tomate">
+            </div>
+
+            <div class="carrito">
+                <h3>🛒 Tu pedido</h3>
+                <div id="carrito-items"></div>
+                <div class="carrito-total">
+                    <span>TOTAL:</span>
+                    <span id="carrito-total">$0</span>
+                </div>
+                <button type="button" class="btn-confirmar" id="btn-confirmar" onclick="confirmarPedido()" disabled>
+                    ✅ Confirmar Pedido
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal" id="modal-exito">
+        <div class="modal-contenido">
+            <h2>✅ ¡Pedido Confirmado!</h2>
+            <p>Tu pedido fue enviado a la cocina. En breve te lo llevamos.</p>
+            <p style="font-size: 14px; margin-top: 10px;">N° de pedido: <strong id="numero-pedido"></strong></p>
+            <button onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        // Productos cargados desde el sistema
+        const productos = {{ productos_json | safe }};
+        
+        let carrito = {};
+
+        function renderizarProductos() {
+            const platosDiv = document.getElementById('platos-principales');
+            const bebidasDiv = document.getElementById('bebidas');
+            
+            productos.forEach(prod => {
+                const div = document.createElement('div');
+                div.className = 'producto-item';
+                
+                const categoria = prod.categoria.toLowerCase();
+                const esBebida = categoria.includes('bebida') || categoria.includes('gaseosa') || 
+                                categoria.includes('jugo') || categoria.includes('vino') || 
+                                categoria.includes('cerveza') || categoria.includes('agua');
+                
+                div.innerHTML = `
+                    <div class="producto-info">
+                        <div class="producto-nombre">${prod.nombre}</div>
+                        <div class="producto-precio">$${prod.precio.toLocaleString()}</div>
+                    </div>
+                    <div class="producto-acciones">
+                        <button type="button" class="btn-sumar" onclick="agregar(${prod.id}, '${prod.nombre}', ${prod.precio})">+</button>
+                    </div>
+                `;
+                
+                if (esBebida) {
+                    bebidasDiv.appendChild(div);
+                } else {
+                    platosDiv.appendChild(div);
+                }
+            });
+        }
+
+        function agregar(id, nombre, precio) {
+            if (!carrito[id]) {
+                carrito[id] = { id, nombre, precio, cantidad: 0 };
+            }
+            carrito[id].cantidad++;
+            actualizarCarrito();
+        }
+
+        function eliminar(id) {
+            if (carrito[id]) {
+                carrito[id].cantidad--;
+                if (carrito[id].cantidad <= 0) {
+                    delete carrito[id];
+                }
+                actualizarCarrito();
+            }
+        }
+
+        function actualizarCarrito() {
+            const carritoDiv = document.getElementById('carrito-items');
+            carritoDiv.innerHTML = '';
+            let total = 0;
+            let hayProductos = false;
+
+            Object.values(carrito).forEach(item => {
+                const subtotal = item.precio * item.cantidad;
+                total += subtotal;
+                hayProductos = true;
+                
+                const div = document.createElement('div');
+                div.className = 'carrito-item';
+                div.innerHTML = `
+                    <span>${item.cantidad}x ${item.nombre}</span>
+                    <span>$${subtotal.toLocaleString()}</span>
+                `;
+                carritoDiv.appendChild(div);
+            });
+
+            if (!hayProductos) {
+                carritoDiv.innerHTML = '<p style="color:#666; text-align:center; padding:10px;">Todavía no agregaste productos</p>';
+            }
+
+            document.getElementById('carrito-total').textContent = '$' + total.toLocaleString();
+            
+            const btn = document.getElementById('btn-confirmar');
+            btn.disabled = !hayProductos;
+            
+            // Guardar carrito en campo oculto
+            document.getElementById('carrito-input').value = JSON.stringify(Object.values(carrito));
+        }
+
+        function mostrarMesa() {
+            const tipo = document.getElementById('tipo_servicio').value;
+            const campoMesa = document.getElementById('campo-mesa');
+            if (tipo === 'local') {
+                campoMesa.style.display = 'block';
+                document.getElementById('mesa').required = true;
+            } else {
+                campoMesa.style.display = 'none';
+                document.getElementById('mesa').required = false;
+            }
+        }
+
+        function confirmarPedido() {
+            const carritoArray = Object.values(carrito);
+            if (carritoArray.length === 0) {
+                alert('Agregá productos al carrito primero');
+                return;
+            }
+            
+            const nombre = document.getElementById('nombre').value;
+            const telefono = document.getElementById('telefono').value;
+            const tipo = document.getElementById('tipo_servicio').value;
+            const metodo = document.getElementById('metodo_pago').value;
+            
+            if (!nombre || !telefono || !tipo || !metodo) {
+                alert('Completá todos los datos');
+                return;
+            }
+            
+            // Enviar el pedido
+            const form = document.getElementById('form-pedido');
+            const inputCarrito = document.createElement('input');
+            inputCarrito.type = 'hidden';
+            inputCarrito.name = 'carrito';
+            inputCarrito.value = JSON.stringify(carritoArray);
+            form.appendChild(inputCarrito);
+            
+            form.submit();
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-exito').style.display = 'none';
+            location.reload();
+        }
+
+        // Inicializar
+        renderizarProductos();
+        actualizarCarrito();
+    </script>
+</body>
+</html>
