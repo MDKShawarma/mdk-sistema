@@ -351,6 +351,12 @@
                 opciones: ['Con gas', 'Sin gas']
             };
         }
+        if (n.includes('naranja') && n.includes('frutilla')) {
+            return {
+                titulo: '🍊 Elegí el gusto',
+                opciones: ['Naranja', 'Frutilla']
+            };
+        }
         return null;
     }
 
