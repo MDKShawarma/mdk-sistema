@@ -521,6 +521,7 @@ def chat():
         if pregunta:
             respuesta = preguntar_deepseek(pregunta)
     return render_template('chat.html', respuesta=respuesta, pregunta=pregunta)
+
 @app.route('/pedido')
 def pedido_cliente():
     conn = get_db()
@@ -562,7 +563,6 @@ def nuevo_pedido():
     if cliente:
         cliente_id = cliente[0]
     else:
-        # Crear cliente nuevo con el año
         nombre_con_año = f"{nombre} Cliente {datetime.now().year}"
         cursor.execute(
             "INSERT INTO clientes (nombre, telefono) VALUES (?, ?)",
@@ -585,10 +585,11 @@ def nuevo_pedido():
         total_item = producto[1] * cantidad
         total_general += total_item
         
-        # Crear notas con la información del cliente
-        notas_completas = f"Mesa: {mesa} | {tipo_servicio} | Pago: {metodo_pago}"
+        notas_completas = f"{tipo_servicio} | Pago: {metodo_pago}"
+        if item.get('notas'):
+            notas_completas += f" | {item['notas']}"
         if notas:
-            notas_completas += f" | Notas: {notas}"
+            notas_completas += f" | Sugerencia: {notas}"
         
         cursor.execute('''
             INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id)
@@ -597,7 +598,6 @@ def nuevo_pedido():
         
         cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
     
-    # Actualizar estadísticas del cliente
     cursor.execute('''
         UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1 
         WHERE id = ?
@@ -605,35 +605,61 @@ def nuevo_pedido():
     
     conn.commit()
     
-    # Obtener el número de pedido
     pedido_id = cursor.lastrowid
+    
+    # Calcular demora estimada según pedidos en la última hora
+    cursor.execute("""
+        SELECT COUNT(*) FROM ventas 
+        WHERE fecha >= datetime('now', '-1 hour')
+    """)
+    pedidos_ultima_hora = cursor.fetchone()[0]
+    
+    if pedidos_ultima_hora >= 10:
+        demora_texto = "45-60 minutos"
+        demora_color = "#f44336"
+    elif pedidos_ultima_hora >= 6:
+        demora_texto = "30-45 minutos"
+        demora_color = "#ff9800"
+    elif pedidos_ultima_hora >= 3:
+        demora_texto = "20-30 minutos"
+        demora_color = "#ffc107"
+    else:
+        demora_texto = "10-15 minutos"
+        demora_color = "#4CAF50"
     
     conn.close()
     
-    # Aquí iría la impresión automática
-    # Por ahora redirigimos a una página de confirmación
     return f"""
     <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Pedido Confirmado</title>
         <style>
-            body {{ background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 50px; }}
-            h1 {{ color: #4CAF50; }}
-            .info {{ background-color: #1e1e1e; padding: 20px; border-radius: 10px; max-width: 500px; margin: 20px auto; }}
-            a {{ color: #f4a460; }}
+            body {{ background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }}
+            h1 {{ color: #4CAF50; font-size: 32px; margin-bottom: 20px; }}
+            .info {{ background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }}
+            .numero {{ font-size: 40px; color: #f4a460; font-weight: bold; margin: 20px 0; }}
+            .demora {{ background-color: {demora_color}20; border: 2px solid {demora_color}; color: {demora_color}; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 18px; font-weight: bold; }}
+            a {{ color: #f4a460; text-decoration: none; font-size: 16px; }}
+            a:hover {{ text-decoration: underline; }}
         </style>
     </head>
     <body>
         <h1>✅ ¡Pedido Confirmado!</h1>
         <div class="info">
-            <p>Gracias <strong>{nombre}</strong>, tu pedido fue enviado a la cocina.</p>
-            <p>Total: <strong>${total_general:,.0f}</strong></p>
-            <p>En breve te lo llevamos.</p>
+            <p>Gracias <strong>{nombre}</strong>,</p>
+            <p>tu pedido fue enviado a la cocina</p>
+            <div class="numero">N° {pedido_id}</div>
+            <div class="demora">
+                ⏱️ Demora estimada: {demora_texto}
+            </div>
+            <p>🔔 Aguardá a ser llamado</p>
         </div>
         <a href="/pedido">← Hacer otro pedido</a>
     </body>
     </html>
     """
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
