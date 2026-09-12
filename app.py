@@ -660,6 +660,8 @@ def nuevo_pedido():
     </body>
     </html>
     """
-
+# Inicializar base de datos al arrancar
+from init_db import inicializar_base_datos
+inicializar_base_datos()
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
