@@ -106,6 +106,16 @@ def es_empleado():
     ip = request.remote_addr
     return ip != '127.0.0.1'
 
+# ============================
+# INICIALIZAR BASE DE DATOS
+# ============================
+from init_db import inicializar_base_datos
+inicializar_base_datos()
+
+# ============================
+# RUTAS
+# ============================
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -556,7 +566,6 @@ def nuevo_pedido():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Buscar o crear cliente
     cursor.execute("SELECT id FROM clientes WHERE telefono = ?", (telefono,))
     cliente = cursor.fetchone()
     
@@ -570,7 +579,6 @@ def nuevo_pedido():
         )
         cliente_id = cursor.lastrowid
     
-    # Calcular total y registrar venta
     for item in carrito:
         producto_id = int(item['id'])
         cantidad = int(item['cantidad'])
@@ -607,7 +615,6 @@ def nuevo_pedido():
     
     pedido_id = cursor.lastrowid
     
-    # Calcular demora estimada según pedidos en la última hora
     cursor.execute("""
         SELECT COUNT(*) FROM ventas 
         WHERE fecha >= datetime('now', '-1 hour')
@@ -660,8 +667,6 @@ def nuevo_pedido():
     </body>
     </html>
     """
-# Inicializar base de datos al arrancar
-from init_db import inicializar_base_datos
-inicializar_base_datos()
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
