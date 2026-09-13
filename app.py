@@ -247,6 +247,10 @@ def ventas():
                     return "Error: stock insuficiente para " + item['nombre'], 400
                 total_general += producto[1] * cantidad
 
+            # Obtener el próximo número de pedido
+            cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
+            numero_pedido = cursor.fetchone()[0]
+
             for item in carrito:
                 producto_id = int(item['id'])
                 cantidad = int(item['cantidad'])
@@ -255,9 +259,9 @@ def ventas():
                 producto = cursor.fetchone()
                 total_item = producto[1] * cantidad
                 cursor.execute('''
-                    INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (producto_id, cantidad, total_item, metodo_pago, notas, cliente_id if cliente_id else None))
+                    INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (producto_id, cantidad, total_item, metodo_pago, notas, cliente_id if cliente_id else None, 'empleado', numero_pedido))
                 cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
 
             if cliente_id:
@@ -266,7 +270,7 @@ def ventas():
             conn.commit()
 
             comanda = {
-                'pedido_id': cursor.lastrowid,
+                'pedido_id': numero_pedido,
                 'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'productos_comanda': carrito,
                 'total': total_general,
@@ -579,6 +583,10 @@ def nuevo_pedido():
         )
         cliente_id = cursor.lastrowid
     
+    # Obtener el próximo número de pedido
+    cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
+    numero_pedido = cursor.fetchone()[0]
+    
     for item in carrito:
         producto_id = int(item['id'])
         cantidad = int(item['cantidad'])
@@ -600,9 +608,9 @@ def nuevo_pedido():
             notas_completas += f" | Sugerencia: {notas}"
         
         cursor.execute('''
-            INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id))
+            INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id, 'qr', numero_pedido))
         
         cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
     
@@ -613,28 +621,32 @@ def nuevo_pedido():
     
     conn.commit()
     
-    pedido_id = cursor.lastrowid
-    
+    # Calcular pedidos pendientes (últimos 30 min)
     cursor.execute("""
         SELECT COUNT(*) FROM ventas 
-        WHERE fecha >= datetime('now', '-1 hour')
+        WHERE fecha >= datetime('now', '-30 minutes')
     """)
-    pedidos_ultima_hora = cursor.fetchone()[0]
+    pedidos_pendientes = cursor.fetchone()[0]
     
-    if pedidos_ultima_hora >= 10:
-        demora_texto = "45-60 minutos"
-        demora_color = "#f44336"
-    elif pedidos_ultima_hora >= 6:
-        demora_texto = "30-45 minutos"
-        demora_color = "#ff9800"
-    elif pedidos_ultima_hora >= 3:
-        demora_texto = "20-30 minutos"
-        demora_color = "#ffc107"
+    # Solo mostrar demora si hay 10 o más pedidos pendientes
+    if pedidos_pendientes >= 15:
+        demora_texto = "60 minutos"
+        mostrar_demora = True
+    elif pedidos_pendientes >= 12:
+        demora_texto = "50 minutos"
+        mostrar_demora = True
+    elif pedidos_pendientes >= 10:
+        demora_texto = "40 minutos"
+        mostrar_demora = True
     else:
-        demora_texto = "10-15 minutos"
-        demora_color = "#4CAF50"
+        demora_texto = ""
+        mostrar_demora = False
     
     conn.close()
+    
+    bloque_demora = ""
+    if mostrar_demora:
+        bloque_demora = f'<div class="demora">⏱️ Demora estimada: {demora_texto}</div>'
     
     return f"""
     <html>
@@ -647,7 +659,7 @@ def nuevo_pedido():
             h1 {{ color: #4CAF50; font-size: 32px; margin-bottom: 20px; }}
             .info {{ background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }}
             .numero {{ font-size: 40px; color: #f4a460; font-weight: bold; margin: 20px 0; }}
-            .demora {{ background-color: {demora_color}20; border: 2px solid {demora_color}; color: {demora_color}; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 18px; font-weight: bold; }}
+            .demora {{ background-color: #ff9800 20; border: 2px solid #ff9800; color: #ff9800; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 18px; font-weight: bold; }}
             a {{ color: #f4a460; text-decoration: none; font-size: 16px; }}
             a:hover {{ text-decoration: underline; }}
         </style>
@@ -657,10 +669,8 @@ def nuevo_pedido():
         <div class="info">
             <p>Gracias <strong>{nombre}</strong>,</p>
             <p>tu pedido fue enviado a la cocina</p>
-            <div class="numero">N° {pedido_id}</div>
-            <div class="demora">
-                ⏱️ Demora estimada: {demora_texto}
-            </div>
+            <div class="numero">N° {numero_pedido}</div>
+            {bloque_demora}
             <p>🔔 Aguardá a ser llamado</p>
         </div>
         <a href="/pedido">← Hacer otro pedido</a>

@@ -1,9 +1,19 @@
 import sqlite3
 import os
 
-# Forzar la inicialización en Render borrando la BD vieja
-
-def inicializar_base_datos():
+def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta, borrarla
+    if os.path.exists('mdk.db'):
+        try:
+            conn_test = sqlite3.connect('mdk.db')
+            cursor_test = conn_test.cursor()
+            cursor_test.execute("PRAGMA table_info(ventas)")
+            columnas = [col[1] for col in cursor_test.fetchall()]
+            conn_test.close()
+            if 'numero_pedido' not in columnas:
+                os.remove('mdk.db')
+                print("🗑️ Base de datos vieja eliminada")
+        except:
+            pass
     """Crea la base de datos con datos iniciales si no existe"""
     
     conn = sqlite3.connect('mdk.db')
@@ -32,6 +42,8 @@ def inicializar_base_datos():
             metodo_pago TEXT,
             notas TEXT,
             cliente_id INTEGER,
+            tipo_origen TEXT DEFAULT 'empleado',
+            numero_pedido INTEGER,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -116,9 +128,9 @@ def inicializar_base_datos():
             ("JUGO - Smudis", "Bebidas", 4500, 27, 5),
             ("AGUA - Con gas", "Bebidas", 3500, 8, 5),
             ("AGUA - Sin gas", "Bebidas", 3500, 8, 5),
-            ("CERVEZA - Artesanal Pampa", "Bebidas", 5000, 5, 3),
-            ("CERVEZA - Andes IPA", "Bebidas", 5000, 8, 3),
-            ("CERVEZA - Andes Roja", "Bebidas", 5000, 5, 3),
+            ("CERVEZA - Artesanal Pampa", "Bebidas con alcohol", 5000, 5, 3),
+            ("CERVEZA - Andes IPA", "Bebidas con alcohol", 5000, 8, 3),
+            ("CERVEZA - Andes Roja", "Bebidas con alcohol", 5000, 5, 3),
             ("FERNET COLA", "Bebidas con alcohol", 5000, 10, 2),
             ("VINO - Partridge", "Bebidas con alcohol", 6000, 1, 0),
             ("VINO - Killka", "Bebidas con alcohol", 8000, 2, 0),
