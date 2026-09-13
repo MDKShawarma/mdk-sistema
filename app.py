@@ -536,7 +536,7 @@ def chat():
 def pedido_cliente():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, nombre, precio, categoria FROM productos WHERE stock > 0 ORDER BY categoria, nombre")
+    cursor.execute("SELECT id, nombre, precio, categoria FROM productos ORDER BY categoria, nombre")
     productos_raw = cursor.fetchall()
     
     productos_json = json.dumps([
@@ -586,9 +586,9 @@ def nuevo_pedido():
         cursor.execute("SELECT nombre, precio, stock FROM productos WHERE id = ?", (producto_id,))
         producto = cursor.fetchone()
         
-        if not producto or producto[2] < cantidad:
+        if not producto:
             conn.close()
-            return f"Error: stock insuficiente para {item['nombre']}", 400
+            return f"Error: producto no encontrado {item['nombre']}", 400
         
         total_item = producto[1] * cantidad
         total_general += total_item

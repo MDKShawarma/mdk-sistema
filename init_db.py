@@ -1,6 +1,8 @@
 import sqlite3
 import os
 
+# Forzar la inicialización en Render borrando la BD vieja
+
 def inicializar_base_datos():
     """Crea la base de datos con datos iniciales si no existe"""
     
