@@ -301,8 +301,8 @@
         <option value="mercadopago">MercadoPago</option>
     </select>
     
-   <label>Sugerencias (opcional):</label>
-   <input type="text" id="notas" placeholder="Ej: mejorar el servicio...">
+    <label>Sugerencias (opcional):</label>
+    <input type="text" id="notas" placeholder="Ej: mejorar el servicio...">
     
     <button class="btn-confirmar" onclick="confirmarPedido()">✅ CONFIRMAR PEDIDO</button>
     <button class="btn-confirmar" style="background-color:#555; margin-top:10px;" onclick="volverAlMenu()">← Volver al menú</button>
@@ -351,15 +351,10 @@
                 opciones: ['Con gas', 'Sin gas']
             };
         }
-                if (n.includes('smudis')) {
+        if (n.includes('smudis')) {
             return {
                 titulo: '🍊 Elegí el gusto',
                 opciones: ['Naranja/Frutilla', 'Pomelo', 'Manzana', 'Multifruta']
-            };
-        }
-            return {
-                titulo: '🍊 Elegí el gusto',
-                opciones: ['Naranja', 'Frutilla', 'Pomelo', 'Manzana', 'Multifruta']
             };
         }
         return null;
