@@ -3,31 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat - MDK Shawarma</title>
+    <title>Chat con IA - MDK Shawarma</title>
+    <link rel="stylesheet" href="/static/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #121212; color: white; min-height: 100vh; }
-        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
-        .header h2 { color: #f4a460; font-size: 22px; }
-        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
-        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
-        .menu a:hover { background-color: #f4a460; color: #121212; }
-        .content { max-width: 800px; margin: 0 auto; padding: 20px; }
-        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
-        .chat-box { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 20px; min-height: 80px; }
-        .chat-box .pregunta { color: #f4a460; font-weight: bold; margin-bottom: 10px; }
-        .chat-box .respuesta { font-size: 15px; line-height: 1.5; }
-        .btn-speak { background-color: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; margin-bottom: 15px; }
-        .form-chat { display: flex; gap: 10px; margin-bottom: 10px; }
-        .form-chat input[type="text"] { flex: 1; padding: 12px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 14px; }
-        .form-chat button { background-color: #f4a460; color: #121212; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
-        .ejemplos { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 15px; }
-        .ejemplos h3 { color: #f4a460; font-size: 14px; margin-bottom: 10px; }
-        .ejemplos p { font-size: 13px; color: #aaa; margin-bottom: 5px; }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .chat-box {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #f4a460;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            min-height: 100px;
+            box-shadow: 0 10px 30px rgba(244, 164, 96, 0.2);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .chat-box .pregunta {
+            color: #f4a460;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .chat-box .respuesta {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+        
+        .btn-speak {
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .btn-speak:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+        
+        .form-chat {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .form-chat input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            background-color: #1a1a1a;
+            color: white;
+            border: 2px solid #444;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        
+        .form-chat input[type="text"]:focus {
+            outline: none;
+            border-color: #f4a460;
+            box-shadow: 0 0 15px rgba(244, 164, 96, 0.3);
+        }
+        
+        .form-chat button {
+            background: linear-gradient(135deg, #f4a460, #d4a017);
+            color: #000;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        
+        .form-chat button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(244, 164, 96, 0.4);
+        }
+        
+        .ejemplos {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+        
+        .ejemplos h3 {
+            color: #f4a460;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .ejemplos p {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            border-left: 3px solid #f4a460;
+            transition: all 0.2s;
+        }
+        
+        .ejemplos p:hover {
+            background: rgba(244, 164, 96, 0.1);
+            transform: translateX(5px);
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="header">
+        <div class="header-logo">
+            <img src="/static/logo.png" alt="MDK Logo">
+            <h2>MDK SHAWARMA</h2>
+        </div>
+        <div class="header-subtitle">Maison du Kebab</div>
+    </div>
+    
     <div class="menu">
         <a href="/">📊 Panel</a>
         <a href="/productos">📦 Productos</a>
@@ -37,32 +150,40 @@
         <a href="/gastos_fijos">📋 Fijos</a>
         <a href="/contador">🧾 Contador</a>
         <a href="/informe">📈 Informe</a>
+        <a href="/proveedores">📞 Proveedores</a>
         <a href="/chat">💬 Chat</a>
         <a href="/clientes">👥 Clientes</a>
     </div>
+    
     <div class="content">
-        <h1>💬 Chat con el Sistema</h1>
-        {% if respuesta %}
-        <div class="chat-box" id="chat-box">
-            <p class="pregunta">👉 {{ pregunta }}</p>
-            <p class="respuesta">🤖 {{ respuesta }}</p>
-        </div>
-        <button class="btn-speak" onclick="leerRespuesta()">🔊 Escuchar respuesta</button>
-        {% endif %}
-        <form method="POST" class="form-chat" id="form-chat" action="/chat">
-            <input type="text" name="pregunta" id="input-pregunta" placeholder="Escribí tu pregunta..." required>
-            <button type="submit">💬 Preguntar</button>
-        </form>
-        <div class="ejemplos">
-            <h3>📋 Preguntas que podés hacer:</h3>
-            <p>• ¿Cuánto vendí hoy?</p>
-            <p>• ¿Qué stock tengo?</p>
-            <p>• ¿Cómo voy con los gastos?</p>
-            <p>• ¿Cuál es mi balance?</p>
-            <p>• ¿Cuál es el producto más vendido?</p>
-            <p>• ¿Cuánta carne me queda?</p>
+        <div class="chat-container">
+            <h1>💬 Chat con IA</h1>
+            
+            {% if respuesta %}
+            <div class="chat-box" id="chat-box">
+                <p class="pregunta">👉 {{ pregunta }}</p>
+                <p class="respuesta">🤖 {{ respuesta }}</p>
+            </div>
+            <button class="btn-speak" onclick="leerRespuesta()">🔊 Escuchar respuesta</button>
+            {% endif %}
+            
+            <form method="POST" class="form-chat" id="form-chat">
+                <input type="text" name="pregunta" id="input-pregunta" placeholder="Escribí tu pregunta..." required>
+                <button type="submit">💬 Preguntar</button>
+            </form>
+            
+            <div class="ejemplos">
+                <h3>📋 Preguntas que podés hacer</h3>
+                <p>💡 ¿Cuánto vendí hoy?</p>
+                <p>💡 ¿Qué stock tengo?</p>
+                <p>💡 ¿Cómo voy con los gastos?</p>
+                <p>💡 ¿Cuál es mi balance?</p>
+                <p>💡 ¿Cuál es el producto más vendido?</p>
+                <p>💡 ¿Cuánta carne me queda?</p>
+            </div>
         </div>
     </div>
+    
     <script>
         function leerRespuesta() {
             var texto = document.querySelector('.respuesta');
@@ -75,9 +196,12 @@
                 speechSynthesis.speak(utterance);
             }
         }
+        
         window.onload = function() {
             var box = document.getElementById('chat-box');
-            if (box) { leerRespuesta(); }
+            if (box) {
+                leerRespuesta();
+            }
         };
     </script>
 </body>

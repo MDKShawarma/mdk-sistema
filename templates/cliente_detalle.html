@@ -4,34 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalle Cliente - MDK Shawarma</title>
+    <link rel="stylesheet" href="/static/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #121212; color: white; min-height: 100vh; }
-        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
-        .header h2 { color: #f4a460; font-size: 22px; }
-        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; position: sticky; top: 55px; z-index: 9; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
-        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
-        .menu a:hover { background-color: #f4a460; color: #121212; }
-        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
-        .info-cliente { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .info-item { text-align: center; }
-        .info-item .label { color: #aaa; font-size: 13px; margin-bottom: 5px; }
-        .info-item .valor { font-size: 22px; color: #f4a460; font-weight: bold; }
-        .compras-list { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; }
-        .compras-list h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
-        .compra-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
+        .info-cliente {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #f4a460;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(244, 164, 96, 0.2);
+        }
+        
+        .info-item {
+            text-align: center;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+        
+        .info-item:hover {
+            border-color: #f4a460;
+            transform: translateY(-3px);
+        }
+        
+        .info-item .label {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .info-item .valor {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f4a460, #d4a017);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .compras-list {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 25px;
+        }
+        
+        .compras-list h2 {
+            color: #f4a460;
+            font-size: 22px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .compra-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 10px;
+            border-bottom: 1px solid #333;
+            border-radius: 10px;
+            transition: all 0.2s;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .compra-item:hover {
+            background: rgba(244, 164, 96, 0.1);
+        }
+        
         .compra-item:last-child { border-bottom: none; }
-        .compra-item .fecha { flex: 1; font-size: 12px; color: #aaa; }
-        .compra-item .producto { flex: 2; font-size: 14px; }
-        .compra-item .cantidad { flex: 1; text-align: center; font-size: 13px; color: #aaa; }
-        .compra-item .total { flex: 1; text-align: right; font-size: 16px; color: #f4a460; }
-        .compra-item .metodo { flex: 1; text-align: center; font-size: 12px; color: #aaa; }
-        .btn-volver { display: inline-block; background-color: #555; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 14px; margin-top: 20px; }
+        
+        .compra-item .fecha {
+            flex: 1;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .compra-item .producto {
+            flex: 2;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .compra-item .cantidad {
+            flex: 0.5;
+            text-align: center;
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        .compra-item .metodo {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .compra-item .total {
+            flex: 1;
+            text-align: right;
+            font-size: 17px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f4a460, #d4a017);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .btn-volver {
+            display: block;
+            max-width: 250px;
+            margin: 25px auto;
+            background: linear-gradient(135deg, #555, #333);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn-volver:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(85, 85, 85, 0.4);
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="header">
+        <div class="header-logo">
+            <img src="/static/logo.png" alt="MDK Logo">
+            <h2>MDK SHAWARMA</h2>
+        </div>
+        <div class="header-subtitle">Maison du Kebab</div>
+    </div>
+    
     <div class="menu">
         <a href="/">📊 Panel</a>
         <a href="/productos">📦 Productos</a>
@@ -41,29 +158,49 @@
         <a href="/gastos_fijos">📋 Fijos</a>
         <a href="/contador">🧾 Contador</a>
         <a href="/informe">📈 Informe</a>
+        <a href="/proveedores">📞 Proveedores</a>
         <a href="/chat">💬 Chat</a>
         <a href="/clientes">👥 Clientes</a>
     </div>
+    
     <div class="content">
         <h1>📋 Historial del Cliente</h1>
+        
         <div class="info-cliente">
-            <div class="info-item"><div class="label">NOMBRE</div><div class="valor">{{ cliente[1] }}</div></div>
-            <div class="info-item"><div class="label">TELÉFONO</div><div class="valor">{{ cliente[2] }}</div></div>
-            <div class="info-item"><div class="label">TOTAL COMPRAS</div><div class="valor">${{ cliente[3] }}</div></div>
-            <div class="info-item"><div class="label">PEDIDOS</div><div class="valor">{{ cliente[4] }}</div></div>
+            <div class="info-item">
+                <div class="label">👤 Nombre</div>
+                <div class="valor">{{ cliente[1] }}</div>
+            </div>
+            <div class="info-item">
+                <div class="label">📞 Teléfono</div>
+                <div class="valor">{{ cliente[2] }}</div>
+            </div>
+            <div class="info-item">
+                <div class="label">💰 Total Compras</div>
+                <div class="valor">${{ cliente[3] }}</div>
+            </div>
+            <div class="info-item">
+                <div class="label">📦 Pedidos</div>
+                <div class="valor">{{ cliente[4] }}</div>
+            </div>
         </div>
+        
         <div class="compras-list">
             <h2>🧾 Compras Realizadas</h2>
             {% for compra in compras %}
             <div class="compra-item">
-                <span class="fecha">{{ compra[6] }}</span>
+                <span class="fecha">📅 {{ compra[6] }}</span>
                 <span class="producto">{{ compra[1] }}</span>
                 <span class="cantidad">x{{ compra[2] }}</span>
                 <span class="metodo">{{ compra[4] }}</span>
                 <span class="total">${{ compra[3] }}</span>
             </div>
             {% endfor %}
+            {% if not compras %}
+            <p style="text-align:center; color:#666; padding:20px;">Este cliente no tiene compras registradas</p>
+            {% endif %}
         </div>
+        
         <a href="/clientes" class="btn-volver">← Volver a Clientes</a>
     </div>
 </body>

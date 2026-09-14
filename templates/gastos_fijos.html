@@ -4,36 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gastos Fijos - MDK Shawarma</title>
+    <link rel="stylesheet" href="/static/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #121212; color: white; min-height: 100vh; }
-        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
-        .header h2 { color: #f4a460; font-size: 22px; }
-        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
-        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
-        .menu a:hover { background-color: #f4a460; color: #121212; }
-        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
-        .form-gasto { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; max-width: 500px; }
-        .form-gasto h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
-        .form-gasto input { width: 100%; padding: 10px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
-        .form-gasto button { width: 100%; background-color: #f4a460; color: #121212; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; }
-        .gastos-list { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; }
-        .gastos-list h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
-        .gasto-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
+        .form-gasto {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .form-gasto h2 {
+            color: #f4a460;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-gasto input {
+            width: 100%;
+            padding: 14px;
+            background-color: #1a1a1a;
+            color: white;
+            border: 2px solid #444;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+        .form-gasto input:focus {
+            outline: none;
+            border-color: #f4a460;
+            box-shadow: 0 0 15px rgba(244, 164, 96, 0.3);
+        }
+        .form-gasto button {
+            width: 100%;
+            background: linear-gradient(135deg, #f4a460, #d4a017);
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .form-gasto button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(244, 164, 96, 0.4);
+        }
+        
+        .gastos-list {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 25px;
+        }
+        .gastos-list h2 {
+            color: #f4a460;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .gasto-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 10px;
+            border-bottom: 1px solid #333;
+            gap: 12px;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .gasto-item:hover {
+            background: rgba(244, 164, 96, 0.1);
+        }
         .gasto-item:last-child { border-bottom: none; }
-        .gasto-item .concepto { flex: 2; font-size: 14px; }
-        .gasto-item .monto { flex: 1; text-align: right; font-size: 16px; color: #f4a460; }
-        .gasto-item form { display: flex; gap: 5px; align-items: center; }
-        .gasto-item input[type="number"] { width: 100px; padding: 6px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 4px; font-size: 13px; }
-        .gasto-item button { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
-        .btn-editar { background-color: #4CAF50; color: white; }
-        .btn-eliminar { background-color: #f44336; color: white; }
-        .total { text-align: right; font-size: 20px; font-weight: bold; margin-top: 15px; color: #f4a460; }
+        .gasto-item .concepto {
+            flex: 2;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .gasto-item .monto {
+            flex: 1;
+            text-align: right;
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f4a460, #d4a017);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .gasto-item form {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .gasto-item input[type="number"] {
+            width: 110px;
+            padding: 8px;
+            background-color: #1a1a1a;
+            color: white;
+            border: 2px solid #444;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .gasto-item input[type="number"]:focus {
+            outline: none;
+            border-color: #f4a460;
+        }
+        .gasto-item button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-editar {
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white;
+        }
+        .btn-eliminar {
+            background: linear-gradient(135deg, #f44336, #8a2d2d);
+            color: white;
+        }
+        .gasto-item button:hover {
+            transform: scale(1.08);
+        }
+        .total {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f4a460;
+            background: linear-gradient(90deg, #f4a460, #d4a017);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="header">
+        <div class="header-logo">
+            <img src="/static/logo.png" alt="MDK Logo">
+            <h2>MDK SHAWARMA</h2>
+        </div>
+        <div class="header-subtitle">Maison du Kebab</div>
+    </div>
+    
     <div class="menu">
         <a href="/">📊 Panel</a>
         <a href="/productos">📦 Productos</a>
@@ -43,11 +165,14 @@
         <a href="/gastos_fijos">📋 Fijos</a>
         <a href="/contador">🧾 Contador</a>
         <a href="/informe">📈 Informe</a>
+        <a href="/proveedores">📞 Proveedores</a>
         <a href="/chat">💬 Chat</a>
         <a href="/clientes">👥 Clientes</a>
     </div>
+    
     <div class="content">
         <h1>📋 Gastos Fijos Mensuales</h1>
+        
         <div class="form-gasto">
             <h2>➕ Agregar Gasto Fijo</h2>
             <form method="POST" action="/gastos_fijos">
@@ -57,6 +182,7 @@
                 <button type="submit">Agregar</button>
             </form>
         </div>
+        
         <div class="gastos-list">
             <h2>📋 Lista de Gastos Fijos</h2>
             {% for g in gastos %}
@@ -76,7 +202,7 @@
                 </form>
             </div>
             {% endfor %}
-            <div class="total">Total: ${{ total }}</div>
+            <div class="total">TOTAL MENSUAL: ${{ total }}</div>
         </div>
     </div>
 </body>

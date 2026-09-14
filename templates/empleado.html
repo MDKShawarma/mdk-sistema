@@ -4,30 +4,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Empleado - MDK Shawarma</title>
+    <link rel="stylesheet" href="/static/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #121212; color: white; min-height: 100vh; }
-        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
-        .header h2 { color: #f4a460; font-size: 22px; }
-        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
-        .menu a { color: white; text-decoration: none; padding: 12px 20px; border-radius: 20px; font-size: 15px; background-color: #2a2a2a; font-weight: bold; }
-        .menu a:hover { background-color: #f4a460; color: #121212; }
-        .content { max-width: 800px; margin: 0 auto; padding: 40px 20px; text-align: center; }
-        h1 { color: #f4a460; margin-bottom: 15px; font-size: 24px; }
-        p { color: #aaa; font-size: 15px; }
+        .empleado-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .bienvenida {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #f4a460;
+            border-radius: 25px;
+            padding: 40px 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 40px rgba(244, 164, 96, 0.3);
+        }
+        
+        .bienvenida .icono {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .bienvenida h1 {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+        
+        .bienvenida p {
+            color: #ccc;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .menu-empleado {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .opcion-empleado {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .opcion-empleado::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(244, 164, 96, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .opcion-empleado:hover::before { left: 100%; }
+        
+        .opcion-empleado:hover {
+            transform: translateY(-8px);
+            border-color: #f4a460;
+            box-shadow: 0 15px 40px rgba(244, 164, 96, 0.4);
+        }
+        
+        .opcion-empleado .emoji {
+            font-size: 55px;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        .opcion-empleado .titulo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #f4a460;
+            margin-bottom: 8px;
+        }
+        
+        .opcion-empleado .descripcion {
+            font-size: 13px;
+            color: #888;
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
-    <div class="menu">
-        <a href="/ventas?modo=empleado">💰 Ventas</a>
-        <a href="/productos?modo=empleado">📦 Productos</a>
-        <a href="/stock?modo=empleado">🔄 Stock</a>
-        <a href="/gastos?modo=empleado">💸 Gastos</a>
+    <div class="header">
+        <div class="header-logo">
+            <img src="/static/logo.png" alt="MDK Logo">
+            <h2>MDK SHAWARMA</h2>
+        </div>
+        <div class="header-subtitle">Maison du Kebab</div>
     </div>
+    
     <div class="content">
-        <h1>👨‍🍳 Sistema para Empleados</h1>
-        <p>Seleccioná una opción del menú para comenzar.</p>
+        <div class="empleado-content">
+            <div class="bienvenida">
+                <div class="icono">👨‍🍳</div>
+                <h1>Panel de Empleado</h1>
+                <p>Bienvenido al sistema MDK Shawarma<br>
+                   Elegí una opción para comenzar a trabajar</p>
+            </div>
+            
+            <div class="menu-empleado">
+                <a href="/ventas" class="opcion-empleado">
+                    <span class="emoji">💰</span>
+                    <div class="titulo">Ventas</div>
+                    <div class="descripcion">Registrar pedidos y ventas</div>
+                </a>
+                
+                <a href="/productos" class="opcion-empleado">
+                    <span class="emoji">📦</span>
+                    <div class="titulo">Productos</div>
+                    <div class="descripcion">Ver el menú y precios</div>
+                </a>
+                
+                <a href="/stock" class="opcion-empleado">
+                    <span class="emoji">🔄</span>
+                    <div class="titulo">Stock</div>
+                    <div class="descripcion">Actualizar ingredientes</div>
+                </a>
+                
+                <a href="/gastos" class="opcion-empleado">
+                    <span class="emoji">💸</span>
+                    <div class="titulo">Gastos</div>
+                    <div class="descripcion">Registrar gastos del día</div>
+                </a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

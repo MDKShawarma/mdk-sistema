@@ -4,33 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clientes - MDK Shawarma</title>
+    <link rel="stylesheet" href="/static/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #121212; color: white; min-height: 100vh; }
-        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
-        .header h2 { color: #f4a460; font-size: 22px; }
-        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
-        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
-        .menu a:hover { background-color: #f4a460; color: #121212; }
-        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
-        .form-cliente { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; max-width: 500px; }
-        .form-cliente h2 { color: #f4a460; font-size: 18px; margin-bottom: 15px; }
-        .form-cliente input { width: 100%; padding: 10px; background-color: #2a2a2a; color: white; border: 1px solid #f4a460; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
-        .form-cliente button { width: 100%; background-color: #f4a460; color: #121212; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; }
-        .clientes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-        .cliente-card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; text-align: center; }
-        .cliente-card h3 { font-size: 18px; margin-bottom: 5px; }
-        .cliente-card .telefono { color: #aaa; font-size: 13px; margin-bottom: 10px; }
-        .cliente-card .compras { font-size: 22px; color: #f4a460; margin-bottom: 10px; }
-        .cliente-card .pedidos { font-size: 13px; color: #aaa; margin-bottom: 15px; }
-        .btn-ver { display: inline-block; background-color: #4CAF50; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; }
-        .btn-eliminar { background-color: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-eliminar:hover { opacity: 0.8; }
+        .form-cliente {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .form-cliente h2 {
+            color: #f4a460;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-cliente input {
+            width: 100%;
+            padding: 14px;
+            background-color: #1a1a1a;
+            color: white;
+            border: 2px solid #444;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+        .form-cliente input:focus {
+            outline: none;
+            border-color: #f4a460;
+            box-shadow: 0 0 15px rgba(244, 164, 96, 0.3);
+        }
+        .form-cliente button {
+            width: 100%;
+            background: linear-gradient(135deg, #f4a460, #d4a017);
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .form-cliente button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(244, 164, 96, 0.4);
+        }
+        
+        .clientes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        
+        .cliente-card {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 22px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cliente-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(244, 164, 96, 0.15), transparent);
+            transition: left 0.5s;
+        }
+        
+        .cliente-card:hover::before { left: 100%; }
+        
+        .cliente-card:hover {
+            transform: translateY(-5px);
+            border-color: #f4a460;
+            box-shadow: 0 10px 30px rgba(244, 164, 96, 0.3);
+        }
+        
+        .cliente-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .cliente-card .telefono {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .cliente-card .compras {
+            font-size: 26px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #4CAF50, #2d7a4a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        
+        .cliente-card .pedidos {
+            font-size: 13px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+        }
+        
+        .btn-ver {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-right: 5px;
+        }
+        
+        .btn-ver:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-eliminar {
+            background: linear-gradient(135deg, #f44336, #8a2d2d);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-eliminar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="header">
+        <div class="header-logo">
+            <img src="/static/logo.png" alt="MDK Logo">
+            <h2>MDK SHAWARMA</h2>
+        </div>
+        <div class="header-subtitle">Maison du Kebab</div>
+    </div>
+    
     <div class="menu">
         <a href="/">📊 Panel</a>
         <a href="/productos">📦 Productos</a>
@@ -40,11 +173,14 @@
         <a href="/gastos_fijos">📋 Fijos</a>
         <a href="/contador">🧾 Contador</a>
         <a href="/informe">📈 Informe</a>
+        <a href="/proveedores">📞 Proveedores</a>
         <a href="/chat">💬 Chat</a>
         <a href="/clientes">👥 Clientes</a>
     </div>
+    
     <div class="content">
         <h1>👥 Clientes</h1>
+        
         <div class="form-cliente">
             <h2>➕ Registrar Cliente</h2>
             <form method="POST" action="/clientes">
@@ -53,6 +189,7 @@
                 <button type="submit">Guardar Cliente</button>
             </form>
         </div>
+        
         <div class="clientes-grid">
             {% for c in clientes %}
             <div class="cliente-card">
@@ -61,7 +198,7 @@
                 <div class="compras">${{ c[3] }}</div>
                 <div class="pedidos">{{ c[4] }} pedidos</div>
                 <a href="/cliente/{{ c[0] }}" class="btn-ver">Ver Historial</a>
-                <form method="POST" action="/eliminar_cliente/{{ c[0] }}" style="display:inline; margin-left:5px;" onsubmit="return confirm('¿Eliminar este cliente?');">
+                <form method="POST" action="/eliminar_cliente/{{ c[0] }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este cliente?');">
                     <button type="submit" class="btn-eliminar">🗑️</button>
                 </form>
             </div>

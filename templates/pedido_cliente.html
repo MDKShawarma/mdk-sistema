@@ -4,58 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MDK Shawarma - Hacer Pedido</title>
+    <link rel="stylesheet" href="/static/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #1a1a1a; color: white; min-height: 100vh; padding-bottom: 100px; }
+        body { padding-bottom: 130px; }
         
-        .header {
-            background-color: #121212;
-            padding: 20px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border-bottom: 2px solid #f4a460;
-        }
-        .header h1 { color: #f4a460; font-size: 26px; margin-bottom: 5px; }
-        .header p { color: #aaa; font-size: 14px; }
-        
-        .content { max-width: 600px; margin: 0 auto; padding: 15px; }
+        .content { max-width: 700px; }
         
         .categoria-titulo {
             color: #f4a460;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
-            margin: 25px 0 15px 0;
-            padding: 10px;
-            background-color: #121212;
-            border-radius: 10px;
+            margin: 30px 0 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border-radius: 15px;
             text-align: center;
             border: 2px solid #f4a460;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 20px rgba(244, 164, 96, 0.2);
         }
         
         .producto {
-            background-color: #121212;
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
             border: 2px solid #333;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            transition: all 0.2s;
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
+        
         .producto.activo {
             border-color: #4CAF50;
-            background-color: #1a2a1a;
+            background: linear-gradient(135deg, #1a2a1a, #2a3a2a);
+            box-shadow: 0 5px 25px rgba(76, 175, 80, 0.3);
         }
         
         .producto-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 15px;
         }
         
         .producto-info { flex: 1; }
-        .producto-nombre { font-size: 17px; font-weight: bold; margin-bottom: 5px; }
-        .producto-precio { color: #f4a460; font-size: 16px; font-weight: bold; }
+        .producto-nombre { 
+            font-size: 17px; 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+        }
+        .producto-precio { 
+            color: #f4a460; 
+            font-size: 17px; 
+            font-weight: bold; 
+        }
         
         .cantidad-control {
             display: flex;
@@ -64,67 +67,98 @@
         }
         
         .btn-cantidad {
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             border: none;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         
-        .btn-restar { background-color: #f44336; color: white; }
-        .btn-restar:disabled { background-color: #333; color: #666; cursor: not-allowed; }
-        .btn-sumar { background-color: #4CAF50; color: white; }
-        .btn-cantidad:active { transform: scale(0.95); }
+        .btn-restar { 
+            background: linear-gradient(135deg, #f44336, #8a2d2d);
+            color: white;
+        }
+        
+        .btn-restar:disabled { 
+            background: #333; 
+            color: #666; 
+            cursor: not-allowed; 
+            box-shadow: none;
+        }
+        
+        .btn-sumar { 
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white;
+        }
+        
+        .btn-cantidad:active:not(:disabled) { 
+            transform: scale(0.9); 
+        }
         
         .cantidad {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
-            min-width: 30px;
+            min-width: 35px;
             text-align: center;
+            color: #f4a460;
         }
         
         .personalizacion {
             display: none;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed #444;
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 2px dashed #444;
+            animation: fadeIn 0.3s ease;
         }
+        
         .personalizacion.visible { display: block; }
         
         .personalizacion-titulo {
             color: #f4a460;
             font-size: 14px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .opciones-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 10px;
         }
         
         .opcion-check {
-            background-color: #1a1a1a;
+            background: #1a1a1a;
             border: 2px solid #333;
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 10px;
+            padding: 12px;
             text-align: center;
             cursor: pointer;
             font-size: 13px;
             color: #ccc;
             user-select: none;
+            transition: all 0.2s;
+            font-weight: 500;
         }
+        
+        .opcion-check:hover {
+            border-color: #f4a460;
+        }
+        
         .opcion-check.seleccionada {
             border-color: #f44336;
-            background-color: #2a1a1a;
+            background: linear-gradient(135deg, #2a1a1a, #3a2a2a);
             color: #fff;
             font-weight: bold;
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.3);
         }
         
         .carrito-fijo {
@@ -132,143 +166,156 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: #121212;
+            background: linear-gradient(135deg, #121212, #1e1e1e);
             border-top: 3px solid #f4a460;
-            padding: 15px;
-            z-index: 20;
+            padding: 18px;
+            z-index: 50;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.5);
         }
         
         .carrito-total {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-size: 20px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
-        .carrito-total .label { color: #aaa; }
-        .carrito-total .monto { color: #f4a460; font-weight: bold; font-size: 24px; }
+        .carrito-total .label { 
+            color: #aaa; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 15px;
+        }
+        
+        .carrito-total .monto { 
+            color: #f4a460; 
+            font-weight: bold; 
+            font-size: 28px; 
+        }
         
         .btn-confirmar {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
             color: white;
             border: none;
             padding: 18px;
-            border-radius: 12px;
-            font-size: 20px;
+            border-radius: 15px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
+            max-width: 700px;
+            display: block;
+            margin: 0 auto;
+            transition: all 0.3s;
+            letter-spacing: 1px;
         }
-        .btn-confirmar:disabled { background-color: #333; color: #666; cursor: not-allowed; }
-        .btn-confirmar:active { transform: scale(0.98); }
+        
+        .btn-confirmar:disabled { 
+            background: #333; 
+            color: #666; 
+            cursor: not-allowed; 
+        }
+        
+        .btn-confirmar:not(:disabled):hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+        }
         
         .formulario {
-            background-color: #121212;
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
             border: 2px solid #f4a460;
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 20px;
+            padding: 25px;
             margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(244, 164, 96, 0.2);
         }
+        
         .formulario h2 {
             color: #f4a460;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-align: center;
-            font-size: 20px;
+            font-size: 22px;
         }
+        
         .formulario label {
             display: block;
             margin-bottom: 8px;
             color: #ccc;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
+        
         .formulario input, .formulario select {
             width: 100%;
             padding: 15px;
             background-color: #1a1a1a;
             color: white;
-            border: 2px solid #333;
-            border-radius: 10px;
-            font-size: 17px;
-            margin-bottom: 15px;
+            border: 2px solid #444;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 18px;
+            transition: all 0.3s;
         }
+        
         .formulario input:focus, .formulario select:focus {
             outline: none;
             border-color: #f4a460;
+            box-shadow: 0 0 15px rgba(244, 164, 96, 0.3);
         }
         
         .opciones-servicio {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 18px;
         }
+        
         .opcion-servicio {
             flex: 1;
-            padding: 15px;
-            background-color: #1a1a1a;
+            padding: 18px;
+            background: #1a1a1a;
             border: 2px solid #333;
-            border-radius: 10px;
+            border-radius: 12px;
             text-align: center;
             cursor: pointer;
             font-size: 15px;
             font-weight: bold;
-        }
-        .opcion-servicio.seleccionada {
-            border-color: #4CAF50;
-            background-color: #1a2a1a;
+            transition: all 0.3s;
+            user-select: none;
         }
         
-        .exito {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0,0,0,0.95);
-            z-index: 100;
-            padding: 20px;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+        .opcion-servicio:hover {
+            border-color: #f4a460;
         }
-        .exito.visible { display: flex; }
-        .exito-contenido {
-            background-color: #121212;
-            border: 3px solid #4CAF50;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
+        
+        .opcion-servicio.seleccionada {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #1a2a1a, #2a3a2a);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
         }
-        .exito h2 { color: #4CAF50; font-size: 28px; margin-bottom: 15px; }
-        .exito p { color: #ccc; font-size: 16px; margin-bottom: 10px; }
-        .exito .numero {
-            color: #f4a460;
-            font-size: 32px;
-            font-weight: bold;
-            margin: 15px 0;
-        }
-        .exito button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
+        
+        .btn-secundario {
+            background: linear-gradient(135deg, #555, #333);
+            margin-top: 12px;
         }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>🍽️ MDK SHAWARMA</h1>
-    <p>Hacé tu pedido desde el celular</p>
+    <div class="header-logo">
+        <img src="/static/logo.png" alt="MDK Logo">
+        <h2>MDK SHAWARMA</h2>
+    </div>
+    <div class="header-subtitle">Hacé tu pedido</div>
 </div>
 
-<div class="content" id="contenido">
-    <!-- Productos se cargan con JavaScript -->
-</div>
+<div class="content" id="contenido"></div>
 
 <div class="carrito-fijo" id="carrito-fijo">
     <div class="carrito-total">
@@ -282,10 +329,10 @@
 
 <div class="formulario" id="formulario" style="display: none;">
     <h2>👤 Tus datos</h2>
-    <label>Nombre completo:</label>
+    <label>Nombre completo</label>
     <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
     
-    <label>Teléfono:</label>
+    <label>Teléfono</label>
     <input type="tel" id="telefono" placeholder="Ej: 1123456789">
     
     <label>¿Dónde vas a comer?</label>
@@ -297,26 +344,15 @@
     <label>¿Cómo vas a pagar?</label>
     <select id="metodo_pago">
         <option value="">Seleccionar...</option>
-        <option value="efectivo">Efectivo</option>
-        <option value="mercadopago">MercadoPago</option>
+        <option value="efectivo">💵 Efectivo</option>
+        <option value="mercadopago">📱 MercadoPago</option>
     </select>
     
-    <label>Sugerencias (opcional):</label>
+    <label>Sugerencias (opcional)</label>
     <input type="text" id="notas" placeholder="Ej: mejorar el servicio...">
     
     <button class="btn-confirmar" onclick="confirmarPedido()">✅ CONFIRMAR PEDIDO</button>
-    <button class="btn-confirmar" style="background-color:#555; margin-top:10px;" onclick="volverAlMenu()">← Volver al menú</button>
-</div>
-
-<div class="exito" id="exito">
-    <div class="exito-contenido">
-        <h2>✅ ¡Pedido Confirmado!</h2>
-        <p>Gracias <span id="nombre-exito"></span></p>
-        <p>Tu pedido fue enviado a la cocina</p>
-        <div class="numero">N° <span id="numero-pedido"></span></div>
-        <p>🔔 Aguardá a ser llamado</p>
-        <button onclick="nuevoPedido()">Hacer otro pedido</button>
-    </div>
+    <button class="btn-confirmar btn-secundario" onclick="volverAlMenu()">← Volver al menú</button>
 </div>
 
 <script>
@@ -580,10 +616,6 @@
 
         document.body.appendChild(form);
         form.submit();
-    }
-
-    function nuevoPedido() {
-        location.reload();
     }
 
     renderizarProductos();

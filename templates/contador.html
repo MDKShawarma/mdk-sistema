@@ -4,33 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contador - MDK Shawarma</title>
+    <link rel="stylesheet" href="/static/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #121212; color: white; min-height: 100vh; }
-        .header { background-color: #1e1e1e; padding: 15px 20px; text-align: center; }
-        .header h2 { color: #f4a460; font-size: 22px; }
-        .menu { display: flex; justify-content: center; background-color: #1e1e1e; padding: 10px; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
-        .menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; background-color: #2a2a2a; }
-        .menu a:hover { background-color: #f4a460; color: #121212; }
-        .content { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h1 { color: #f4a460; margin-bottom: 25px; font-size: 28px; }
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 15px; padding: 25px; text-align: center; }
-        .card-icon { font-size: 40px; display: block; margin-bottom: 10px; }
-        .card h3 { color: #f4a460; font-size: 14px; margin-bottom: 10px; text-transform: uppercase; }
-        .card p { font-size: 28px; font-weight: bold; }
-        .card.positivo p { color: #4CAF50; }
-        .card.negativo p { color: #f44336; }
-        .semana-list { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; }
-        .semana-list h2 { color: #f4a460; font-size: 20px; margin-bottom: 15px; }
-        .semana-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
+        .card-ingresos { background: linear-gradient(135deg, #1a4d2e, #2d7a4a); }
+        .card-hoy { background: linear-gradient(135deg, #1a3a5c, #2d5a8a); }
+        .card-gfijos { background: linear-gradient(135deg, #5c1a1a, #8a2d2d); }
+        .card-gvariables { background: linear-gradient(135deg, #5c4a1a, #8a7a2d); }
+        .card-totalgastos { background: linear-gradient(135deg, #4a1a5c, #7a2d8a); }
+        .card-balance { background: linear-gradient(135deg, #1a5c5c, #2d8a8a); }
+        .card-balance.positivo { background: linear-gradient(135deg, #1a4d2e, #2d7a4a); }
+        .card-balance.negativo { background: linear-gradient(135deg, #5c1a1a, #8a2d2d); }
+        .card-iva { background: linear-gradient(135deg, #5c3a1a, #8a5a2d); }
+        .card-iibb { background: linear-gradient(135deg, #3a1a5c, #5a2d8a); }
+        
+        .semana-list {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        .semana-list h2 {
+            color: #f4a460;
+            font-size: 22px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .semana-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 10px;
+            border-bottom: 1px solid #333;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .semana-item:hover {
+            background: rgba(244, 164, 96, 0.1);
+        }
         .semana-item:last-child { border-bottom: none; }
-        .semana-dia { font-size: 14px; }
-        .semana-total { font-size: 16px; color: #f4a460; font-weight: bold; }
+        .semana-dia {
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .semana-total {
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f4a460, #d4a017);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h2>🍽️ MDK SHAWARMA</h2></div>
+    <div class="header">
+        <div class="header-logo">
+            <img src="/static/logo.png" alt="MDK Logo">
+            <h2>MDK SHAWARMA</h2>
+        </div>
+        <div class="header-subtitle">Maison du Kebab</div>
+    </div>
+    
     <div class="menu">
         <a href="/">📊 Panel</a>
         <a href="/productos">📦 Productos</a>
@@ -40,29 +75,75 @@
         <a href="/gastos_fijos">📋 Fijos</a>
         <a href="/contador">🧾 Contador</a>
         <a href="/informe">📈 Informe</a>
+        <a href="/proveedores">📞 Proveedores</a>
         <a href="/chat">💬 Chat</a>
         <a href="/clientes">👥 Clientes</a>
     </div>
+    
     <div class="content">
         <h1>🧾 Contador</h1>
+        
         <div class="cards-grid">
-            <div class="card"><span class="card-icon">💰</span><h3>Ingresos del Mes</h3><p>${{ ingresos_mes }}</p></div>
-            <div class="card"><span class="card-icon">💵</span><h3>Ingresos de Hoy</h3><p>${{ ingresos_hoy }}</p></div>
-            <div class="card"><span class="card-icon">📋</span><h3>Gastos Fijos</h3><p>${{ gastos_fijos }}</p></div>
-            <div class="card"><span class="card-icon">💸</span><h3>Gastos Variables</h3><p>${{ gastos_variables }}</p></div>
-            <div class="card"><span class="card-icon">📊</span><h3>Total Gastos</h3><p>${{ total_gastos }}</p></div>
-            <div class="card {{ 'positivo' if balance > 0 else 'negativo' }}"><span class="card-icon">⚖️</span><h3>Balance</h3><p>${{ balance }}</p></div>
-            <div class="card"><span class="card-icon">🧾</span><h3>IVA Estimado (21%)</h3><p>${{ iva_estimado }}</p></div>
-            <div class="card"><span class="card-icon">🏛️</span><h3>Ingresos Brutos (3.5%)</h3><p>${{ iibb_estimado }}</p></div>
+            <div class="card card-ingresos">
+                <span class="card-icon">💰</span>
+                <h3>Ingresos del Mes</h3>
+                <p>${{ ingresos_mes }}</p>
+            </div>
+            
+            <div class="card card-hoy">
+                <span class="card-icon">💵</span>
+                <h3>Ingresos de Hoy</h3>
+                <p>${{ ingresos_hoy }}</p>
+            </div>
+            
+            <div class="card card-gfijos">
+                <span class="card-icon">📋</span>
+                <h3>Gastos Fijos</h3>
+                <p>${{ gastos_fijos }}</p>
+            </div>
+            
+            <div class="card card-gvariables">
+                <span class="card-icon">💸</span>
+                <h3>Gastos Variables</h3>
+                <p>${{ gastos_variables }}</p>
+            </div>
+            
+            <div class="card card-totalgastos">
+                <span class="card-icon">📊</span>
+                <h3>Total Gastos</h3>
+                <p>${{ total_gastos }}</p>
+            </div>
+            
+            <div class="card card-balance {{ 'positivo' if balance > 0 else 'negativo' }}">
+                <span class="card-icon">⚖️</span>
+                <h3>Balance</h3>
+                <p>${{ balance }}</p>
+            </div>
+            
+            <div class="card card-iva">
+                <span class="card-icon">🧾</span>
+                <h3>IVA Estimado (21%)</h3>
+                <p>${{ iva_estimado }}</p>
+            </div>
+            
+            <div class="card card-iibb">
+                <span class="card-icon">🏛️</span>
+                <h3>Ingresos Brutos (3.5%)</h3>
+                <p>${{ iibb_estimado }}</p>
+            </div>
         </div>
+        
         <div class="semana-list">
             <h2>📅 Ventas de los Últimos 7 Días</h2>
             {% for v in ventas_semana %}
             <div class="semana-item">
-                <span class="semana-dia">{{ v[0] }}</span>
+                <span class="semana-dia">📆 {{ v[0] }}</span>
                 <span class="semana-total">${{ v[1] }}</span>
             </div>
             {% endfor %}
+            {% if not ventas_semana %}
+            <p style="text-align:center; color:#666; padding:20px;">No hay ventas registradas</p>
+            {% endif %}
         </div>
     </div>
 </body>
