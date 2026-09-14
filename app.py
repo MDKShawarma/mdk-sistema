@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 import sqlite3
 import json
 import subprocess
@@ -677,6 +677,13 @@ def nuevo_pedido():
     </body>
     </html>
     """
+
+# ==========================================
+# PWA - Service Worker
+# ==========================================
+@app.route('/service-worker.js')
+def service_worker():
+    return send_from_directory('static', 'service-worker.js')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
