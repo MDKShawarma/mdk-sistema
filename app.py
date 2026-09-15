@@ -123,6 +123,27 @@ from init_db import inicializar_base_datos
 inicializar_base_datos()
 
 # ============================
+# CIERRE DE CAJA OBLIGATORIO
+# ============================
+@app.before_request
+def verificar_cierre_obligatorio():
+    """Después de las 22:30, si el empleado no cerró la caja, lo redirige a cerrar"""
+    rutas_empleado = ['/empleado', '/ventas', '/productos', '/stock', '/gastos']
+    if request.path in rutas_empleado:
+        if session.get('rol') == 'empleado':
+            ahora = datetime.now()
+            minutos_actuales = ahora.hour * 60 + ahora.minute
+            minutos_limite = 22 * 60 + 30  # 22:30
+            if minutos_actuales >= minutos_limite:
+                conn = get_db()
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM cierres_caja WHERE fecha = date('now')")
+                ya_cerro = cursor.fetchone()[0] > 0
+                conn.close()
+                if not ya_cerro:
+                    return redirect(url_for('cierre_caja'))
+
+# ============================
 # RUTAS
 # ============================
 
@@ -137,6 +158,77 @@ def login():
         else:
             return render_template('login.html', error="Contraseña incorrecta")
     return render_template('login.html', error=None)
+
+@app.route('/cierre_caja', methods=['GET', 'POST'])
+@login_requerido_empleado
+def cierre_caja():
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    es_dueno = (session.get('rol') == 'dueno')
+    
+    # Ver si ya cerró hoy
+    cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
+    cierre_existente = cursor.fetchone()
+    
+    # Calcular esperado según ventas de hoy
+    cursor.execute("""
+        SELECT COALESCE(SUM(total), 0) FROM ventas 
+        WHERE date(fecha) = date('now') AND metodo_pago = 'efectivo'
+    """)
+    efectivo_esperado = cursor.fetchone()[0]
+    
+    cursor.execute("""
+        SELECT COALESCE(SUM(total), 0) FROM ventas 
+        WHERE date(fecha) = date('now') AND metodo_pago = 'mercadopago'
+    """)
+    mercadopago_esperado = cursor.fetchone()[0]
+    
+    # Si el empleado envía el cierre
+    if request.method == 'POST' and not cierre_existente:
+        try:
+            efectivo_contado = float(request.form.get('efectivo_contado', 0) or 0)
+            mercadopago_contado = float(request.form.get('mercadopago_contado', 0) or 0)
+            observaciones = request.form.get('observaciones', '')
+            
+            total_esperado = efectivo_esperado + mercadopago_esperado
+            total_contado = efectivo_contado + mercadopago_contado
+            
+            cursor.execute('''
+                INSERT INTO cierres_caja 
+                (fecha, efectivo_esperado, efectivo_contado, mercadopago_esperado, mercadopago_contado,
+                 diferencia_efectivo, diferencia_mercadopago, total_esperado, total_contado, 
+                 diferencia_total, observaciones)
+                VALUES (date('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                efectivo_esperado, efectivo_contado,
+                mercadopago_esperado, mercadopago_contado,
+                efectivo_contado - efectivo_esperado,
+                mercadopago_contado - mercadopago_esperado,
+                total_esperado, total_contado,
+                total_contado - total_esperado,
+                observaciones
+            ))
+            conn.commit()
+            
+            cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
+            cierre_existente = cursor.fetchone()
+        except Exception as e:
+            pass
+    
+    # Historial (solo para dueño)
+    historial = []
+    if es_dueno:
+        cursor.execute("SELECT * FROM cierres_caja ORDER BY fecha DESC LIMIT 30")
+        historial = cursor.fetchall()
+    
+    conn.close()
+    return render_template('cierre_caja.html',
+                         cierre_existente=cierre_existente,
+                         efectivo_esperado=efectivo_esperado,
+                         mercadopago_esperado=mercadopago_esperado,
+                         historial=historial,
+                         es_dueno=es_dueno)
 
 @app.route('/logout')
 def logout():

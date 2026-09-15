@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cierre de Caja - MDK</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .cierre-content { max-width: 700px; margin: 0 auto; padding: 30px 20px; }
+        
+        .alerta-cierre {
+            background: linear-gradient(135deg, #ff9800, #e68900);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 25px rgba(255, 152, 0, 0.4);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .ok-cierre {
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #f4a460;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .card h2 { color: #f4a460; margin-bottom: 20px; text-align: center; }
+        
+        .fila {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            font-size: 16px;
+        }
+        
+        .fila:last-child { border-bottom: none; }
+        .fila .label { color: #aaa; }
+        .fila .valor { color: #f4a460; font-weight: bold; font-size: 18px; }
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label {
+            display: block; color: #ccc; font-size: 14px;
+            font-weight: bold; margin-bottom: 8px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%; padding: 15px; background-color: #1a1a1a;
+            color: white; border: 2px solid #444; border-radius: 12px;
+            font-size: 18px; transition: all 0.3s;
+        }
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none; border-color: #f4a460;
+            box-shadow: 0 0 15px rgba(244, 164, 96, 0.3);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white; border: none; padding: 20px; border-radius: 15px;
+            font-size: 18px; font-weight: bold; cursor: pointer;
+            width: 100%; transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4); }
+        
+        .btn-cerrar-sesion {
+            background: linear-gradient(135deg, #555, #333);
+            margin-top: 15px; display: block; text-align: center;
+            text-decoration: none; padding: 15px;
+            color: white; border-radius: 15px; font-weight: bold;
+        }
+        
+        .diferencia-ok { color: #4CAF50 !important; }
+        .diferencia-mal { color: #f44336 !important; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #f4a460; color: #1a1a1a; padding: 10px; text-align: left; font-size: 13px; }
+        td { padding: 10px; border-bottom: 1px solid #333; font-size: 14px; }
+        
+        .historial-titulo {
+            color: #f4a460; font-size: 20px; font-weight: bold;
+            margin-top: 30px; margin-bottom: 15px; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-logo">
+        <img src="/static/logo.png" alt="MDK Logo">
+        <h2>MDK SHAWARMA</h2>
+    </div>
+    <div class="header-subtitle">Cierre de Caja</div>
+</div>
+
+<div class="cierre-content">
+
+{% if cierre_existente %}
+    <div class="ok-cierre">
+        ✅ Caja cerrada hoy a las {{ cierre_existente['fecha_cierre'][11:16] if cierre_existente['fecha_cierre'] else '' }}
+    </div>
+    
+    <div class="card">
+        <h2>📊 Resumen del Cierre</h2>
+        <div class="fila"><span class="label">💵 Efectivo esperado:</span><span class="valor">${{ "%.2f"|format(cierre_existente['efectivo_esperado']) }}</span></div>
+        <div class="fila"><span class="label">💵 Efectivo contado:</span><span class="valor">${{ "%.2f"|format(cierre_existente['efectivo_contado']) }}</span></div>
+        <div class="fila">
+            <span class="label">Diferencia efectivo:</span>
+            <span class="valor {% if cierre_existente['diferencia_efectivo'] == 0 %}diferencia-ok{% else %}diferencia-mal{% endif %}">
+                ${{ "%.2f"|format(cierre_existente['diferencia_efectivo']) }}
+            </span>
+        </div>
+        <div class="fila" style="margin-top: 15px;"><span class="label">📱 MercadoPago esperado:</span><span class="valor">${{ "%.2f"|format(cierre_existente['mercadopago_esperado']) }}</span></div>
+        <div class="fila"><span class="label">📱 MercadoPago contado:</span><span class="valor">${{ "%.2f"|format(cierre_existente['mercadopago_contado']) }}</span></div>
+        <div class="fila">
+            <span class="label">Diferencia MP:</span>
+            <span class="valor {% if cierre_existente['diferencia_mercadopago'] == 0 %}diferencia-ok{% else %}diferencia-mal{% endif %}">
+                ${{ "%.2f"|format(cierre_existente['diferencia_mercadopago']) }}
+            </span>
+        </div>
+        <div class="fila" style="margin-top: 15px; border-top: 2px solid #f4a460; padding-top: 15px;">
+            <span class="label" style="font-size: 18px; color: #fff;">TOTAL CONTADO:</span>
+            <span class="valor" style="font-size: 22px;">${{ "%.2f"|format(cierre_existente['total_contado']) }}</span>
+        </div>
+        <div class="fila">
+            <span class="label">Diferencia total:</span>
+            <span class="valor {% if cierre_existente['diferencia_total'] == 0 %}diferencia-ok{% else %}diferencia-mal{% endif %}" style="font-size: 22px;">
+                ${{ "%.2f"|format(cierre_existente['diferencia_total']) }}
+            </span>
+        </div>
+    </div>
+    
+    {% if cierre_existente['observaciones'] %}
+    <div class="card">
+        <h2>📝 Observaciones</h2>
+        <p style="color: #ccc;">{{ cierre_existente['observaciones'] }}</p>
+    </div>
+    {% endif %}
+
+{% else %}
+    <div class="alerta-cierre">
+        🔒 CERRAR CAJA OBLIGATORIO
+    </div>
+    
+    <div class="card">
+        <h2>💵 Efectivo</h2>
+        <div class="fila"><span class="label">Esperado según ventas:</span><span class="valor">${{ "%.2f"|format(efectivo_esperado) }}</span></div>
+    </div>
+    
+    <div class="card">
+        <h2>📱 MercadoPago</h2>
+        <div class="fila"><span class="label">Esperado según ventas:</span><span class="valor">${{ "%.2f"|format(mercadopago_esperado) }}</span></div>
+    </div>
+    
+    <form method="POST" action="/cierre_caja">
+        <div class="card">
+            <h2>💰 Contá la plata</h2>
+            
+            <div class="input-group">
+                <label>💵 ¿Cuánto efectivo hay en el cajón?</label>
+                <input type="number" name="efectivo_contado" step="0.01" min="0" placeholder="0.00" required autofocus>
+            </div>
+            
+            <div class="input-group">
+                <label>📱 ¿Cuánto ves en MercadoPago hoy?</label>
+                <input type="number" name="mercadopago_contado" step="0.01" min="0" placeholder="0.00" required>
+            </div>
+            
+            <div class="input-group">
+                <label>📝 Observaciones (opcional)</label>
+                <textarea name="observaciones" rows="3" placeholder="Ej: faltó $500, no sé por qué..."></textarea>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn">✅ CONFIRMAR CIERRE DE CAJA</button>
+    </form>
+{% endif %}
+
+<a href="/empleado" class="btn-cerrar-sesion">← Volver al panel</a>
+
+{% if es_dueno and historial %}
+<div class="historial-titulo">📋 Historial de Cierres (últimos 30)</div>
+<div class="card" style="overflow-x: auto;">
+    <table>
+        <tr>
+            <th>Fecha</th>
+            <th>Efectivo</th>
+            <th>MP</th>
+            <th>Total</th>
+            <th>Diferencia</th>
+        </tr>
+        {% for h in historial %}
+        <tr>
+            <td>{{ h['fecha'] }}</td>
+            <td>${{ "%.0f"|format(h['efectivo_contado']) }}</td>
+            <td>${{ "%.0f"|format(h['mercadopago_contado']) }}</td>
+            <td>${{ "%.0f"|format(h['total_contado']) }}</td>
+            <td style="color: {% if h['diferencia_total'] == 0 %}#4CAF50{% else %}#f44336{% endif %}; font-weight: bold;">
+                ${{ "%.0f"|format(h['diferencia_total']) }}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+</div>
+
+</body>
+</html>

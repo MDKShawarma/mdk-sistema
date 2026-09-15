@@ -1,7 +1,8 @@
 import sqlite3
 import os
 
-def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta, borrarla
+def inicializar_base_datos():
+    # Si existe BD vieja con estructura incorrecta, borrarla
     if os.path.exists('mdk.db'):
         try:
             conn_test = sqlite3.connect('mdk.db')
@@ -14,11 +15,11 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
                 print("🗑️ Base de datos vieja eliminada")
         except:
             pass
+
     """Crea la base de datos con datos iniciales si no existe"""
-    
     conn = sqlite3.connect('mdk.db')
     cursor = conn.cursor()
-    
+
     # ============================
     # CREAR TABLAS
     # ============================
@@ -32,7 +33,7 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             stock_minimo INTEGER DEFAULT 10
         )
     ''')
-    
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ventas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +48,7 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-    
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS gastos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +58,7 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-    
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS gastos_fijos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,7 +66,7 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             monto_mensual REAL
         )
     ''')
-    
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS clientes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +76,7 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             cantidad_pedidos INTEGER DEFAULT 0
         )
     ''')
-    
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ingredientes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,7 +87,7 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             stock_minimo REAL DEFAULT 0
         )
     ''')
-    
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS proveedores (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,7 +96,25 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             productos TEXT
         )
     ''')
-    
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS cierres_caja (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha DATE UNIQUE,
+            efectivo_esperado REAL DEFAULT 0,
+            efectivo_contado REAL DEFAULT 0,
+            mercadopago_esperado REAL DEFAULT 0,
+            mercadopago_contado REAL DEFAULT 0,
+            diferencia_efectivo REAL DEFAULT 0,
+            diferencia_mercadopago REAL DEFAULT 0,
+            total_esperado REAL DEFAULT 0,
+            total_contado REAL DEFAULT 0,
+            diferencia_total REAL DEFAULT 0,
+            observaciones TEXT,
+            fecha_cierre TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     # ============================
     # CARGAR PRODUCTOS SI ESTÁ VACÍO
     # ============================
@@ -135,15 +154,15 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             ("VINO - Partridge", "Bebidas con alcohol", 6000, 1, 0),
             ("VINO - Killka", "Bebidas con alcohol", 8000, 2, 0),
         ]
-        
+
         for prod in productos:
             cursor.execute('''
                 INSERT INTO productos (nombre, categoria, precio, stock, stock_minimo)
                 VALUES (?, ?, ?, ?, ?)
             ''', prod)
-        
+
         print(f"✅ {len(productos)} productos cargados")
-    
+
     # ============================
     # CARGAR GASTOS FIJOS
     # ============================
@@ -161,12 +180,12 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             ("Lautaro monotributo", 52000),
             ("Empleados (2)", 1920000)
         ]
-        
+
         for g in gastos:
             cursor.execute("INSERT INTO gastos_fijos (concepto, monto_mensual) VALUES (?, ?)", g)
-        
+
         print(f"✅ {len(gastos)} gastos fijos cargados")
-    
+
     # ============================
     # CARGAR PROVEEDORES
     # ============================
@@ -176,12 +195,12 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             ("Ezequiel", "1166204775", "carne,verduras,bebidas,papas,garbanzos,queso,especias,vinagre,harina,sal"),
             ("Sergio", "1170634208", "pan,kebbes,postres,pasta_mani,garam_masala,aceite_freidora"),
         ]
-        
+
         for p in proveedores:
             cursor.execute("INSERT INTO proveedores (nombre, telefono, productos) VALUES (?, ?, ?)", p)
-        
+
         print(f"✅ {len(proveedores)} proveedores cargados")
-    
+
     # ============================
     # CARGAR INGREDIENTES
     # ============================
@@ -212,15 +231,15 @@ def inicializar_base_datos():    # Si existe BD vieja con estructura incorrecta,
             ("Kebbes", "congelados", 50, "unidades", 10),
             ("Postres", "postres", 5, "kg", 1),
         ]
-        
+
         for ing in ingredientes:
             cursor.execute('''
                 INSERT INTO ingredientes (nombre, categoria, stock_actual, unidad, stock_minimo)
                 VALUES (?, ?, ?, ?, ?)
             ''', ing)
-        
+
         print(f"✅ {len(ingredientes)} ingredientes cargados")
-    
+
     conn.commit()
     conn.close()
     print("🎉 Base de datos inicializada correctamente")
