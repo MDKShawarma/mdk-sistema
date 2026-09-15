@@ -17,9 +17,19 @@ def get_db():
     return conn
 
 def login_requerido(f):
+    """Solo el dueño puede acceder"""
     @functools.wraps(f)
     def decorador(*args, **kwargs):
-        if not session.get('autenticado'):
+        if session.get('rol') != 'dueno':
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorador
+
+def login_requerido_empleado(f):
+    """Dueño y empleado pueden acceder"""
+    @functools.wraps(f)
+    def decorador(*args, **kwargs):
+        if session.get('rol') not in ['dueno', 'empleado']:
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorador
@@ -122,6 +132,7 @@ def login():
         contrasena = request.form.get('contrasena', '')
         if contrasena == CONTRASENA:
             session['autenticado'] = True
+            session['rol'] = 'dueno'
             return redirect(url_for('inicio'))
         else:
             return render_template('login.html', error="Contraseña incorrecta")
@@ -129,11 +140,14 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session['autenticado'] = False
+    session.clear()
     return redirect(url_for('login'))
 
 @app.route('/empleado')
 def empleado():
+    # Si no es dueño, se asigna rol de empleado
+    if session.get('rol') != 'dueno':
+        session['rol'] = 'empleado'
     return render_template('empleado.html')
 
 @app.route('/')
@@ -159,7 +173,7 @@ def inicio():
     return render_template('inicio.html', ventas_hoy=ventas_hoy, pedidos_hoy=pedidos_hoy, gasto_diario=gasto_diario, stock_bajo=stock_bajo, total_productos=total_productos, total_clientes=total_clientes, ingredientes_bajos=ingredientes_bajos)
 
 @app.route('/productos', methods=['GET', 'POST'])
-@login_requerido
+@login_requerido_empleado
 def productos():
     conn = get_db()
     cursor = conn.cursor()
@@ -195,7 +209,7 @@ def agregar_producto():
     return redirect(url_for('productos'))
 
 @app.route('/stock', methods=['GET', 'POST'])
-@login_requerido
+@login_requerido_empleado
 def stock():
     conn = get_db()
     cursor = conn.cursor()
@@ -223,7 +237,7 @@ def stock():
     return render_template('stock.html', ingredientes=ingredientes, empleado=empleado)
 
 @app.route('/ventas', methods=['GET', 'POST'])
-@login_requerido
+@login_requerido_empleado
 def ventas():
     conn = get_db()
     cursor = conn.cursor()
@@ -247,7 +261,6 @@ def ventas():
                     return "Error: stock insuficiente para " + item['nombre'], 400
                 total_general += producto[1] * cantidad
 
-            # Obtener el próximo número de pedido
             cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
             numero_pedido = cursor.fetchone()[0]
 
@@ -300,7 +313,7 @@ def ventas():
     return render_template('ventas.html', ventas=ventas, productos=productos, clientes=clientes, comanda=comanda, empleado=empleado)
 
 @app.route('/gastos', methods=['GET', 'POST'])
-@login_requerido
+@login_requerido_empleado
 def gastos():
     conn = get_db()
     cursor = conn.cursor()
@@ -583,7 +596,6 @@ def nuevo_pedido():
         )
         cliente_id = cursor.lastrowid
     
-    # Obtener el próximo número de pedido
     cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
     numero_pedido = cursor.fetchone()[0]
     
@@ -621,14 +633,12 @@ def nuevo_pedido():
     
     conn.commit()
     
-    # Calcular pedidos pendientes (últimos 30 min)
     cursor.execute("""
         SELECT COUNT(*) FROM ventas 
         WHERE fecha >= datetime('now', '-30 minutes')
     """)
     pedidos_pendientes = cursor.fetchone()[0]
     
-    # Solo mostrar demora si hay 10 o más pedidos pendientes
     if pedidos_pendientes >= 15:
         demora_texto = "60 minutos"
         mostrar_demora = True
