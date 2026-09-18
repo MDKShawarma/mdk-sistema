@@ -12,8 +12,22 @@ app.secret_key = 'mdk_secret_key_2026'
 CONTRASENA = 'MDK2026'
 
 def get_db():
-    conn = sqlite3.connect('mdk.db')
+    conn = sqlite3.connect('mdk.db', timeout=30)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.execute('PRAGMA busy_timeout=30000')
+    except:
+        pass
+    return conn
+    conn = sqlite3.connect('mdk.db', timeout=20)
+    conn.row_factory = sqlite3.Row
+    # Activar modo WAL para mejor concurrencia
+    try:
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.execute('PRAGMA busy_timeout=20000')
+    except:
+        pass
     return conn
 
 def login_requerido(f):
