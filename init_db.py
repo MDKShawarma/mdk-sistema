@@ -78,6 +78,15 @@ def inicializar_base_datos():
         )
     ''')
 
+    # ============================
+    # AGREGAR COLUMNA PUNTOS SI NO EXISTE (para BD viejas)
+    # ============================
+    try:
+        cursor.execute("ALTER TABLE clientes ADD COLUMN puntos INTEGER DEFAULT 0")
+        print("✅ Columna 'puntos' agregada a clientes")
+    except sqlite3.OperationalError:
+        pass
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS movimientos_puntos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
