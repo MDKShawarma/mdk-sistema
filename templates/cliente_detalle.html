@@ -3,205 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalle Cliente - MDK Shawarma</title>
+    <title>Detalle Cliente - MDK</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        .info-cliente {
+        .content { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+        
+        .card {
             background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
             border: 2px solid #f4a460;
             border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .card h2 { color: #f4a460; margin-bottom: 20px; }
+        
+        .info-cliente {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            box-shadow: 0 10px 30px rgba(244, 164, 96, 0.2);
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
         }
         
         .info-item {
-            text-align: center;
-            padding: 15px;
             background: #1a1a1a;
-            border-radius: 15px;
+            padding: 15px;
+            border-radius: 12px;
             border: 1px solid #333;
-            transition: all 0.3s;
-        }
-        
-        .info-item:hover {
-            border-color: #f4a460;
-            transform: translateY(-3px);
         }
         
         .info-item .label {
             color: #888;
             font-size: 12px;
-            margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-bottom: 5px;
         }
         
         .info-item .valor {
-            font-size: 22px;
-            font-weight: bold;
-            background: linear-gradient(90deg, #f4a460, #d4a017);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .compras-list {
-            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
-            border: 2px solid #333;
-            border-radius: 20px;
-            padding: 25px;
-        }
-        
-        .compras-list h2 {
             color: #f4a460;
-            font-size: 22px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .compra-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 10px;
-            border-bottom: 1px solid #333;
-            border-radius: 10px;
-            transition: all 0.2s;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .compra-item:hover {
-            background: rgba(244, 164, 96, 0.1);
-        }
-        
-        .compra-item:last-child { border-bottom: none; }
-        
-        .compra-item .fecha {
-            flex: 1;
-            font-size: 12px;
-            color: #888;
-        }
-        
-        .compra-item .producto {
-            flex: 2;
-            font-size: 15px;
-            font-weight: 500;
-        }
-        
-        .compra-item .cantidad {
-            flex: 0.5;
-            text-align: center;
-            font-size: 13px;
-            color: #aaa;
-        }
-        
-        .compra-item .metodo {
-            flex: 1;
-            text-align: center;
-            font-size: 13px;
-            color: #888;
-            text-transform: uppercase;
-        }
-        
-        .compra-item .total {
-            flex: 1;
-            text-align: right;
-            font-size: 17px;
+            font-size: 20px;
             font-weight: bold;
-            background: linear-gradient(90deg, #f4a460, #d4a017);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        }
+        
+        .puntos-destacado {
+            background: linear-gradient(135deg, #f4a460, #d4883c);
+            color: #1a1a1a;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .puntos-destacado .numero {
+            font-size: 60px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .puntos-destacado .label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #f4a460;
+            color: #1a1a1a;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #333;
+            font-size: 14px;
         }
         
         .btn-volver {
-            display: block;
-            max-width: 250px;
-            margin: 25px auto;
+            display: inline-block;
             background: linear-gradient(135deg, #555, #333);
             color: white;
-            padding: 15px 25px;
+            padding: 12px 25px;
             border-radius: 12px;
             text-decoration: none;
-            text-align: center;
             font-weight: bold;
-            font-size: 16px;
-            transition: all 0.3s;
+            margin-top: 20px;
         }
         
-        .btn-volver:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(85, 85, 85, 0.4);
-        }
+        .tipo-suma { color: #4CAF50; font-weight: bold; }
+        .tipo-canje { color: #f44336; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-logo">
-            <img src="/static/logo.png" alt="MDK Logo">
-            <h2>MDK SHAWARMA</h2>
-        </div>
-        <div class="header-subtitle">Maison du Kebab</div>
+
+<div class="header">
+    <div class="header-logo">
+        <img src="/static/logo.png" alt="MDK Logo">
+        <h2>MDK SHAWARMA</h2>
     </div>
-    
-    <div class="menu">
-        <a href="/">📊 Panel</a>
-        <a href="/productos">📦 Productos</a>
-        <a href="/stock">🔄 Stock</a>
-        <a href="/ventas">💰 Ventas</a>
-        <a href="/gastos">💸 Gastos</a>
-        <a href="/gastos_fijos">📋 Fijos</a>
-        <a href="/contador">🧾 Contador</a>
-        <a href="/informe">📈 Informe</a>
-        <a href="/proveedores">📞 Proveedores</a>
-        <a href="/chat">💬 Chat</a>
-        <a href="/clientes">👥 Clientes</a>
-    </div>
-    
-    <div class="content">
-        <h1>📋 Historial del Cliente</h1>
-        
+    <div class="header-subtitle">Detalle del Cliente</div>
+</div>
+
+<div class="content">
+    <div class="card">
+        <h2>👤 {{ cliente['nombre'] }}</h2>
         <div class="info-cliente">
             <div class="info-item">
-                <div class="label">👤 Nombre</div>
-                <div class="valor">{{ cliente[1] }}</div>
+                <div class="label">Teléfono</div>
+                <div class="valor">{{ cliente['telefono'] or 'Sin teléfono' }}</div>
             </div>
             <div class="info-item">
-                <div class="label">📞 Teléfono</div>
-                <div class="valor">{{ cliente[2] }}</div>
+                <div class="label">Total Comprado</div>
+                <div class="valor">${{ "%.0f"|format(cliente['total_compras']) }}</div>
             </div>
             <div class="info-item">
-                <div class="label">💰 Total Compras</div>
-                <div class="valor">${{ cliente[3] }}</div>
+                <div class="label">Cantidad de Pedidos</div>
+                <div class="valor">{{ cliente['cantidad_pedidos'] }}</div>
             </div>
             <div class="info-item">
-                <div class="label">📦 Pedidos</div>
-                <div class="valor">{{ cliente[4] }}</div>
+                <div class="label">Ticket Promedio</div>
+                <div class="valor">${{ "%.0f"|format(cliente['total_compras'] / cliente['cantidad_pedidos']) if cliente['cantidad_pedidos'] > 0 else 0 }}</div>
             </div>
         </div>
-        
-        <div class="compras-list">
-            <h2>🧾 Compras Realizadas</h2>
-            {% for compra in compras %}
-            <div class="compra-item">
-                <span class="fecha">📅 {{ compra[6] }}</span>
-                <span class="producto">{{ compra[1] }}</span>
-                <span class="cantidad">x{{ compra[2] }}</span>
-                <span class="metodo">{{ compra[4] }}</span>
-                <span class="total">${{ compra[3] }}</span>
-            </div>
-            {% endfor %}
-            {% if not compras %}
-            <p style="text-align:center; color:#666; padding:20px;">Este cliente no tiene compras registradas</p>
+    </div>
+
+    <div class="puntos-destacado">
+        <div class="numero">{{ cliente['puntos'] or 0 }}</div>
+        <div class="label">⭐ Puntos de Fidelidad</div>
+        <div style="margin-top: 10px; font-size: 13px;">
+            {% if (cliente['puntos'] or 0) >= 100 %}
+                ¡Puede canjear {{ (cliente['puntos'] // 100) }} descuento(s) de $1.000!
+            {% else %}
+                Le faltan {{ 100 - (cliente['puntos'] or 0) }} puntos para el primer descuento
             {% endif %}
         </div>
-        
-        <a href="/clientes" class="btn-volver">← Volver a Clientes</a>
     </div>
+
+    <div class="card">
+        <h2>📋 Historial de Compras</h2>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Método</th>
+                <th>Fecha</th>
+            </tr>
+            {% for c in compras %}
+            <tr>
+                <td>{{ c['id'] }}</td>
+                <td>{{ c['nombre'] }}</td>
+                <td>{{ c['cantidad'] }}</td>
+                <td>${{ "%.0f"|format(c['total']) }}</td>
+                <td>{{ c['metodo_pago'] }}</td>
+                <td>{{ c['fecha'][:16] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>⭐ Historial de Puntos</h2>
+        <table>
+            <tr>
+                <th>Puntos</th>
+                <th>Tipo</th>
+                <th>Motivo</th>
+                <th>Fecha</th>
+            </tr>
+            {% for m in movimientos %}
+            <tr>
+                <td class="{% if m['tipo'] == 'suma' %}tipo-suma{% else %}tipo-canje{% endif %}">
+                    {% if m['tipo'] == 'suma' %}+{% else %}-{% endif %}{{ m['puntos'] }}
+                </td>
+                <td>{{ m['tipo'] }}</td>
+                <td>{{ m['motivo'] }}</td>
+                <td>{{ m['fecha'][:16] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <a href="/clientes" class="btn-volver">← Volver a clientes</a>
+</div>
+
 </body>
 </html>
