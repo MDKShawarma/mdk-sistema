@@ -73,7 +73,20 @@ def inicializar_base_datos():
             nombre TEXT NOT NULL,
             telefono TEXT,
             total_compras REAL DEFAULT 0,
-            cantidad_pedidos INTEGER DEFAULT 0
+            cantidad_pedidos INTEGER DEFAULT 0,
+            puntos INTEGER DEFAULT 0
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS movimientos_puntos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cliente_id INTEGER,
+            puntos INTEGER,
+            tipo TEXT,
+            motivo TEXT,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (cliente_id) REFERENCES clientes (id)
         )
     ''')
 
@@ -121,7 +134,6 @@ def inicializar_base_datos():
     cursor.execute("SELECT COUNT(*) FROM productos")
     if cursor.fetchone()[0] == 0:
         productos = [
-            # PLATOS PRINCIPALES
             ("shawarma", "Comidas", 14000, 50, 10),
             ("FALAFEL", "Comidas", 11000, 50, 10),
             ("FATAY", "Comidas", 4000, 60, 15),
@@ -134,11 +146,9 @@ def inicializar_base_datos():
             ("Nuggets/Papas", "Comidas", 14000, 25, 5),
             ("Pan individual", "Comidas", 600, 100, 20),
             ("Bolsa panes", "Comidas", 6000, 40, 10),
-            # POSTRES
             ("COPA HELADO", "Postres", 5000, 20, 5),
             ("DEDITOS", "Postres", 2000, 30, 5),
             ("Baklava + Baileys", "Postres", 10500, 15, 3),
-            # BEBIDAS
             ("GASEOSA - Coca Cola", "Bebidas", 4000, 16, 5),
             ("GASEOSA - Coca Zero", "Bebidas", 4000, 13, 5),
             ("GASEOSA - Sprite", "Bebidas", 4000, 4, 3),

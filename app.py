@@ -167,11 +167,9 @@ def cierre_caja():
     
     es_dueno = (session.get('rol') == 'dueno')
     
-    # Ver si ya cerró hoy
     cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
     cierre_existente = cursor.fetchone()
     
-    # Calcular esperado según ventas de hoy
     cursor.execute("""
         SELECT COALESCE(SUM(total), 0) FROM ventas 
         WHERE date(fecha) = date('now') AND metodo_pago = 'efectivo'
@@ -184,7 +182,6 @@ def cierre_caja():
     """)
     mercadopago_esperado = cursor.fetchone()[0]
     
-    # Si el empleado envía el cierre
     if request.method == 'POST' and not cierre_existente:
         try:
             efectivo_contado = float(request.form.get('efectivo_contado', 0) or 0)
@@ -216,7 +213,6 @@ def cierre_caja():
         except Exception as e:
             pass
     
-    # Historial (solo para dueño)
     historial = []
     if es_dueno:
         cursor.execute("SELECT * FROM cierres_caja ORDER BY fecha DESC LIMIT 30")
@@ -237,7 +233,6 @@ def logout():
 
 @app.route('/empleado')
 def empleado():
-    # Si no es dueño, se asigna rol de empleado
     if session.get('rol') != 'dueno':
         session['rol'] = 'empleado'
     return render_template('empleado.html')
@@ -370,7 +365,14 @@ def ventas():
                 cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
 
             if cliente_id:
-                cursor.execute('UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1 WHERE id = ?', (total_general, int(cliente_id)))
+                # Calcular puntos (1 punto cada $1.000)
+                puntos_sumados = int(total_general / 1000)
+                cursor.execute('UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?', (total_general, puntos_sumados, int(cliente_id)))
+                if puntos_sumados > 0:
+                    cursor.execute('''
+                        INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo)
+                        VALUES (?, ?, 'suma', 'Compra en local')
+                    ''', (int(cliente_id), puntos_sumados))
 
             conn.commit()
 
@@ -557,7 +559,7 @@ def clientes():
         if nombre and telefono:
             cursor.execute("INSERT INTO clientes (nombre, telefono) VALUES (?, ?)", (nombre, telefono))
             conn.commit()
-    cursor.execute("SELECT id, nombre, telefono, total_compras, cantidad_pedidos FROM clientes ORDER BY total_compras DESC")
+    cursor.execute("SELECT id, nombre, telefono, total_compras, cantidad_pedidos, puntos FROM clientes ORDER BY total_compras DESC")
     clientes = cursor.fetchall()
     conn.close()
     return render_template('clientes.html', clientes=clientes)
@@ -577,7 +579,7 @@ def eliminar_cliente(cliente_id):
 def cliente_detalle(cliente_id):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, nombre, telefono, total_compras, cantidad_pedidos FROM clientes WHERE id = ?", (cliente_id,))
+    cursor.execute("SELECT id, nombre, telefono, total_compras, cantidad_pedidos, puntos FROM clientes WHERE id = ?", (cliente_id,))
     cliente = cursor.fetchone()
     if not cliente:
         conn.close()
@@ -590,8 +592,17 @@ def cliente_detalle(cliente_id):
         ORDER BY v.fecha DESC
     ''', (cliente_id,))
     compras = cursor.fetchall()
+    
+    cursor.execute('''
+        SELECT puntos, tipo, motivo, fecha FROM movimientos_puntos
+        WHERE cliente_id = ?
+        ORDER BY fecha DESC
+        LIMIT 20
+    ''', (cliente_id,))
+    movimientos = cursor.fetchall()
+    
     conn.close()
-    return render_template('cliente_detalle.html', cliente=cliente, compras=compras)
+    return render_template('cliente_detalle.html', cliente=cliente, compras=compras, movimientos=movimientos)
 
 @app.route('/proveedores')
 @login_requerido
@@ -718,10 +729,17 @@ def nuevo_pedido():
         
         cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
     
+    # Calcular puntos (1 punto cada $1.000)
+    puntos_sumados = int(total_general / 1000)
     cursor.execute('''
-        UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1 
+        UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ?
         WHERE id = ?
-    ''', (total_general, cliente_id))
+    ''', (total_general, puntos_sumados, cliente_id))
+    if puntos_sumados > 0:
+        cursor.execute('''
+            INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo)
+            VALUES (?, ?, 'suma', 'Pedido por QR')
+        ''', (cliente_id, puntos_sumados))
     
     conn.commit()
     
