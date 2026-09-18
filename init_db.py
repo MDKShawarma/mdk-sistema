@@ -7,12 +7,25 @@ def inicializar_base_datos():
         try:
             conn_test = sqlite3.connect('mdk.db')
             cursor_test = conn_test.cursor()
+            
+            # Verificar tabla ventas
             cursor_test.execute("PRAGMA table_info(ventas)")
-            columnas = [col[1] for col in cursor_test.fetchall()]
+            columnas_ventas = [col[1] for col in cursor_test.fetchall()]
+            
+            # Verificar tabla clientes
+            cursor_test.execute("PRAGMA table_info(clientes)")
+            columnas_clientes = [col[1] for col in cursor_test.fetchall()]
+            
             conn_test.close()
-            if 'numero_pedido' not in columnas:
+            
+            # Columnas que DEBE tener cada tabla
+            ventas_ok = all(c in columnas_ventas for c in ['numero_pedido', 'tipo_origen', 'cliente_id'])
+            clientes_ok = 'puntos' in columnas_clientes
+            
+            # Si falta alguna columna, borrar la BD
+            if not ventas_ok or not clientes_ok:
                 os.remove('mdk.db')
-                print("🗑️ Base de datos vieja eliminada")
+                print("🗑️ Base de datos vieja eliminada (faltan columnas)")
         except:
             pass
 
@@ -78,9 +91,7 @@ def inicializar_base_datos():
         )
     ''')
 
-    # ============================
-    # AGREGAR COLUMNA PUNTOS SI NO EXISTE (para BD viejas)
-    # ============================
+    # Agregar columna puntos si no existe (por si la tabla ya existía)
     try:
         cursor.execute("ALTER TABLE clientes ADD COLUMN puntos INTEGER DEFAULT 0")
         print("✅ Columna 'puntos' agregada a clientes")
