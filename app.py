@@ -20,15 +20,6 @@ def get_db():
     except:
         pass
     return conn
-    conn = sqlite3.connect('mdk.db', timeout=20)
-    conn.row_factory = sqlite3.Row
-    # Activar modo WAL para mejor concurrencia
-    try:
-        conn.execute('PRAGMA journal_mode=WAL')
-        conn.execute('PRAGMA busy_timeout=20000')
-    except:
-        pass
-    return conn
 
 def login_requerido(f):
     """Solo el dueño puede acceder"""
@@ -252,8 +243,12 @@ def empleado():
     return render_template('empleado.html')
 
 @app.route('/')
-@login_requerido
 def inicio():
+    # Si no está logueado, redirigir al menú de pedidos del cliente
+    if not session.get('autenticado'):
+        return redirect(url_for('pedido_cliente'))
+    
+    # Si está logueado, mostrar el panel de control
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now')")
@@ -820,4 +815,4 @@ def service_worker():
     return send_from_directory('static', 'service-worker.js')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
