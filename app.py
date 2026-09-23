@@ -5,6 +5,16 @@ import subprocess
 import re
 from datetime import datetime
 import functools
+import os
+from dotenv import load_dotenv
+import mercadopago
+
+# Cargar variables de entorno
+load_dotenv()
+
+# Configurar MercadoPago
+MP_ACCESS_TOKEN = os.getenv('MERCADOPAGO_ACCESS_TOKEN')
+mp_sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
 
 app = Flask(__name__)
 app.secret_key = 'mdk_secret_key_2026'
@@ -138,7 +148,7 @@ def verificar_cierre_obligatorio():
         if session.get('rol') == 'empleado':
             ahora = datetime.now()
             minutos_actuales = ahora.hour * 60 + ahora.minute
-            minutos_limite = 22 * 60 + 30  # 22:30
+            minutos_limite = 22 * 60 + 30
             if minutos_actuales >= minutos_limite:
                 conn = get_db()
                 cursor = conn.cursor()
@@ -244,11 +254,9 @@ def empleado():
 
 @app.route('/')
 def inicio():
-    # Si no está logueado, redirigir al menú de pedidos del cliente
     if not session.get('autenticado'):
         return redirect(url_for('pedido_cliente'))
     
-    # Si está logueado, mostrar el panel de control
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now')")
@@ -374,7 +382,6 @@ def ventas():
                 cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
 
             if cliente_id:
-                # Calcular puntos (1 punto cada $1.000)
                 puntos_sumados = int(total_general / 1000)
                 cursor.execute('UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?', (total_general, puntos_sumados, int(cliente_id)))
                 if puntos_sumados > 0:
@@ -676,6 +683,133 @@ def pedido_cliente():
     conn.close()
     return render_template('pedido_cliente.html', productos_json=productos_json)
 
+@app.route('/pagar_pedido', methods=['POST'])
+def pagar_pedido():
+    """Crea una preferencia de pago en MercadoPago y redirige"""
+    nombre = request.form.get('nombre')
+    telefono = request.form.get('telefono')
+    carrito_json = request.form.get('carrito')
+    
+    if not carrito_json:
+        return "Faltan datos", 400
+    
+    carrito = json.loads(carrito_json)
+    
+    items = []
+    for item in carrito:
+        items.append({
+            "title": item['nombre'],
+            "quantity": int(item['cantidad']),
+            "unit_price": float(item['precio']),
+            "currency_id": "ARS"
+        })
+    
+    preference_data = {
+        "items": items,
+        "back_urls": {
+            "success": "https://sistema.mdk-shawarma.com/pago_exitoso",
+            "failure": "https://sistema.mdk-shawarma.com/pago_fallido",
+            "pending": "https://sistema.mdk-shawarma.com/pago_pendiente"
+        },
+        "auto_return": "approved",
+        "external_reference": telefono,
+        "statement_descriptor": "MDK SHAWARMA"
+    }
+    
+    try:
+        preference_response = mp_sdk.preference().create(preference_data)
+        preference = preference_response["response"]
+        
+        session['carrito_pendiente'] = carrito
+        session['nombre_pendiente'] = nombre
+        session['telefono_pendiente'] = telefono
+        
+        return redirect(preference['init_point'])
+    except Exception as e:
+        return f"Error al crear el pago: {str(e)}", 500
+
+
+@app.route('/pago_exitoso')
+def pago_exitoso():
+    return """
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pago Exitoso</title>
+        <style>
+            body { background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }
+            h1 { color: #4CAF50; font-size: 32px; }
+            .info { background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }
+            a { color: #f4a460; text-decoration: none; }
+        </style>
+    </head>
+    <body>
+        <h1>✅ ¡Pago Exitoso!</h1>
+        <div class="info">
+            <p>Tu pago fue procesado correctamente.</p>
+            <p>Tu pedido ya está en la cocina.</p>
+            <a href="/pedido">← Volver al menú</a>
+        </div>
+    </body>
+    </html>
+    """
+
+
+@app.route('/pago_fallido')
+def pago_fallido():
+    return """
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pago Fallido</title>
+        <style>
+            body { background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }
+            h1 { color: #f44336; font-size: 32px; }
+            .info { background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }
+            a { color: #f4a460; text-decoration: none; }
+        </style>
+    </head>
+    <body>
+        <h1>❌ Pago Fallido</h1>
+        <div class="info">
+            <p>Hubo un problema con tu pago.</p>
+            <p>Podés intentar de nuevo o pagar en efectivo.</p>
+            <a href="/pedido">← Volver al menú</a>
+        </div>
+    </body>
+    </html>
+    """
+
+
+@app.route('/pago_pendiente')
+def pago_pendiente():
+    return """
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pago Pendiente</title>
+        <style>
+            body { background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }
+            h1 { color: #ff9800; font-size: 32px; }
+            .info { background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }
+            a { color: #f4a460; text-decoration: none; }
+        </style>
+    </head>
+    <body>
+        <h1>⏳ Pago Pendiente</h1>
+        <div class="info">
+            <p>Tu pago está siendo procesado.</p>
+            <p>Te avisaremos cuando se confirme.</p>
+            <a href="/pedido">← Volver al menú</a>
+        </div>
+    </body>
+    </html>
+    """
+
+
 @app.route('/nuevo_pedido', methods=['POST'])
 def nuevo_pedido():
     nombre = request.form.get('nombre')
@@ -738,7 +872,6 @@ def nuevo_pedido():
         
         cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
     
-    # Calcular puntos (1 punto cada $1.000)
     puntos_sumados = int(total_general / 1000)
     cursor.execute('''
         UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ?
@@ -788,7 +921,7 @@ def nuevo_pedido():
             h1 {{ color: #4CAF50; font-size: 32px; margin-bottom: 20px; }}
             .info {{ background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }}
             .numero {{ font-size: 40px; color: #f4a460; font-weight: bold; margin: 20px 0; }}
-            .demora {{ background-color: #ff9800 20; border: 2px solid #ff9800; color: #ff9800; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 18px; font-weight: bold; }}
+            .demora {{ background-color: #ff9800; border: 2px solid #ff9800; color: #fff; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 18px; font-weight: bold; }}
             a {{ color: #f4a460; text-decoration: none; font-size: 16px; }}
             a:hover {{ text-decoration: underline; }}
         </style>
