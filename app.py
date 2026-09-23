@@ -620,6 +620,49 @@ def nuevo_pedido():
     conn.commit()
     conn.close()
     return render_template('pedido_confirmado.html', nombre=nombre, numero_pedido=numero_pedido)
+# ==========================================
+# API - Pedidos nuevos pagados (para la pantalla de ventas)
+# ==========================================
+@app.route('/api/pedidos_nuevos')
+@login_requerido_empleado
+def api_pedidos_nuevos():
+    """Devuelve los pedidos pagados en los últimos 2 minutos"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Buscar pedidos pagados con MercadoPago en los últimos 2 minutos
+    cursor.execute("""
+        SELECT 
+            v.numero_pedido,
+            p.nombre as producto,
+            v.cantidad,
+            v.total,
+            v.fecha
+        FROM ventas v
+        JOIN productos p ON v.producto_id = p.id
+        WHERE v.metodo_pago = 'mercadopago'
+          AND v.notas LIKE '%ONLINE%'
+          AND v.fecha >= datetime('now', '-2 minutes', 'localtime')
+        ORDER BY v.id DESC
+    """)
+    pedidos = cursor.fetchall()
+    conn.close()
+    
+    # Agrupar por número de pedido
+    pedidos_agrupados = {}
+    for p in pedidos:
+        num = p['numero_pedido']
+        if num not in pedidos_agrupados:
+            pedidos_agrupados[num] = {
+                'numero_pedido': num,
+                'productos': [],
+                'total': 0,
+                'fecha': p['fecha']
+            }
+        pedidos_agrupados[num]['productos'].append(f"{p['producto']} x{p['cantidad']}")
+        pedidos_agrupados[num]['total'] += p['total']
+    
+    return json.dumps(list(pedidos_agrupados.values()))
 
 @app.route('/service-worker.js')
 def service_worker():

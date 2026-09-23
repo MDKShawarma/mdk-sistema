@@ -6,538 +6,228 @@
     <title>Ventas - MDK Shawarma</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        .main-container {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-            flex-wrap: wrap;
-        }
-        .productos-section { flex: 2; min-width: 320px; }
-        .resumen-section { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 20px; }
-
-        /* PRODUCTOS */
-        .productos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 12px;
-        }
-        .producto-card {
-            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
-            border: 2px solid #333;
-            border-radius: 15px;
-            padding: 15px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-        .producto-card:hover {
-            border-color: #f4a460;
-            transform: translateY(-3px) scale(1.03);
-            box-shadow: 0 8px 25px rgba(244, 164, 96, 0.4);
-        }
-        .producto-card:active { transform: scale(0.97); }
-        .producto-emoji { font-size: 40px; display: block; margin-bottom: 8px; }
-        .producto-nombre { font-size: 12px; font-weight: bold; display: block; min-height: 32px; }
-        .producto-precio { font-size: 14px; color: #f4a460; margin-top: 5px; font-weight: bold; }
-
-        /* PANELES */
-        .panel {
-            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
-            border: 2px solid #333;
-            border-radius: 18px;
-            padding: 18px;
-        }
-        .panel h2 { color: #f4a460; font-size: 16px; margin-bottom: 12px; }
-
-        .carrito-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #333;
-            font-size: 13px;
-            gap: 6px;
-        }
-        .carrito-item:last-child { border-bottom: none; }
-        .carrito-nombre { flex: 2; font-size: 13px; }
-        .carrito-cantidad {
-            width: 45px;
-            text-align: center;
-            background-color: #1a1a1a;
+        .alerta-pedido {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
             color: white;
-            border: 2px solid #444;
-            border-radius: 6px;
-            padding: 4px;
-            font-size: 13px;
+            padding: 25px 40px;
+            border-radius: 20px;
+            border: 3px solid #fff;
+            box-shadow: 0 10px 40px rgba(76, 175, 80, 0.6);
+            z-index: 9999;
+            text-align: center;
+            animation: aparecer 0.5s ease, pulsar 1s infinite;
+            max-width: 90%;
         }
-        .carrito-precio { flex: 1; text-align: right; font-size: 13px; color: #f4a460; font-weight: bold; }
-        .carrito-total {
-            text-align: right;
+        
+        .alerta-pedido .titulo {
             font-size: 20px;
             font-weight: bold;
-            margin-top: 12px;
-            background: linear-gradient(90deg, #f4a460, #d4a017);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        .btn-eliminar {
-            background: linear-gradient(135deg, #f44336, #8a2d2d);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .cliente-select {
-            width: 100%;
-            padding: 12px;
-            background-color: #1a1a1a;
-            color: white;
-            border: 2px solid #444;
-            border-radius: 10px;
-            font-size: 14px;
-        }
-        .cliente-select:focus { outline: none; border-color: #f4a460; }
-
-        .pagos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .pago-card {
-            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-            border: 2px solid #444;
-            border-radius: 12px;
-            padding: 15px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-        .pago-card.seleccionado {
-            border-color: #4CAF50;
-            background: linear-gradient(135deg, #1a2a1a, #2a3a2a);
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
-        }
-        .pago-emoji { font-size: 28px; display: block; margin-bottom: 5px; }
-        .pago-nombre { font-size: 12px; font-weight: bold; }
-
-        .btn-principal {
-            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
-            color: white;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
+        
+        .alerta-pedido .numero {
+            font-size: 50px;
             font-weight: bold;
-            font-size: 17px;
-            width: 100%;
-            transition: all 0.3s;
+            margin: 10px 0;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
         }
-        .btn-principal:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4); }
-
-        .btn-secundario {
-            background: linear-gradient(135deg, #555, #333);
-            color: white;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        /* MODAL */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.85);
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-        }
-        .modal-contenido {
-            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
-            border: 2px solid #f4a460;
-            border-radius: 20px;
-            padding: 25px;
-            width: 90%;
-            max-width: 420px;
-            box-shadow: 0 20px 60px rgba(244, 164, 96, 0.4);
-        }
-        .modal-contenido h3 { color: #f4a460; margin-bottom: 20px; font-size: 20px; text-align: center; }
-        .modal-opcion {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 10px;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            transition: all 0.2s;
-        }
-        .modal-opcion:hover { border-color: #f4a460; }
-        .modal-opcion input { margin-right: 12px; width: 20px; height: 20px; accent-color: #f4a460; }
-        .modal-botones { display: flex; gap: 10px; margin-top: 20px; }
-        .modal-botones button { flex: 1; }
-
-        /* COMANDA */
-        .comanda {
-            max-width: 400px;
-            margin: 20px auto;
-            background-color: #fff;
-            color: #000;
-            font-family: 'Courier New', monospace;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-            text-align: center;
-        }
-        .comanda h2 { text-align: center; font-size: 17px; margin-bottom: 5px; color: #000; font-weight: bold; }
-        .comanda p { text-align: center; font-size: 13px; margin: 3px 0; }
-        .comanda hr { border: none; border-top: 2px dashed #000; margin: 10px 0; }
-        .comanda-total { text-align: center; font-size: 16px; font-weight: bold; margin-top: 8px; }
-
-        .btn-volver {
-            display: block;
-            max-width: 220px;
-            margin: 15px auto;
-            background: linear-gradient(135deg, #555, #333);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            text-align: center;
-            font-weight: bold;
-        }
-        .btn-imprimir {
-            display: block;
-            max-width: 220px;
-            margin: 15px auto;
-            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            text-align: center;
+        
+        .alerta-pedido .detalle {
             font-size: 16px;
+            margin-top: 10px;
+            opacity: 0.95;
         }
-
-        @media print {
-            body * { visibility: hidden; }
-            .comanda, .comanda * { visibility: visible; }
-            .comanda { position: absolute; left: 0; top: 0; width: 100%; margin: 0; box-shadow: none; border-radius: 0; }
-            .btn-volver, .btn-imprimir, button { display: none !important; }
+        
+        .alerta-pedido .cerrar {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        @keyframes pulsar {
+            0%, 100% { box-shadow: 0 10px 40px rgba(76, 175, 80, 0.6); }
+            50% { box-shadow: 0 10px 60px rgba(76, 175, 80, 0.9); }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-logo">
-            <img src="/static/logo.png" alt="MDK Logo">
-            <h2>MDK SHAWARMA</h2>
-        </div>
-        <div class="header-subtitle">Maison du Kebab</div>
-    </div>
-    
-    <div class="menu">
-        {% if empleado %}
-        <a href="/empleado">👨‍🍳 Menú Empleado</a>
-        <a href="/ventas">💰 Ventas</a>
-        <a href="/productos">📦 Productos</a>
-        <a href="/stock">🔄 Stock</a>
-        <a href="/gastos">💸 Gastos</a>
-        {% else %}
-        <a href="/">📊 Panel</a>
-        <a href="/productos">📦 Productos</a>
-        <a href="/stock">🔄 Stock</a>
-        <a href="/ventas">💰 Ventas</a>
-        <a href="/gastos">💸 Gastos</a>
-        <a href="/gastos_fijos">📋 Fijos</a>
-        <a href="/contador">🧾 Contador</a>
-        <a href="/informe">📈 Informe</a>
-        <a href="/proveedores">📞 Proveedores</a>
-        <a href="/chat">💬 Chat</a>
-        <a href="/clientes">👥 Clientes</a>
-        {% endif %}
-    </div>
 
-    {% if comanda %}
-    <div class="comanda">
-        <h2>🧾 COMANDA - CLIENTE</h2>
-        <p>MDK SHAWARMA</p>
-        <p>Pedido #{{ comanda.pedido_id }}</p>
-        <p>{{ comanda.fecha }}</p>
-        <hr>
-        {% for item in comanda.productos_comanda %}
-        <p>{{ item.cantidad }}x {{ item.nombre }}</p>
-        {% if item.notas %}
-        <p style="font-size:11px; color:#555;">↳ {{ item.notas }}</p>
-        {% endif %}
-        {% endfor %}
-        <hr>
-        {% for item in comanda.productos_comanda %}
-        <p>${{ item.precio * item.cantidad }}</p>
-        {% endfor %}
-        <hr>
-        <p class="comanda-total">TOTAL: ${{ comanda.total }}</p>
-        <p>Pago: {{ comanda.metodo_pago }}</p>
-        <p>¡Gracias por tu compra!</p>
-        <hr>
-        <h2>👨‍🍳 COMANDA - COCINA</h2>
-        <p>MDK SHAWARMA</p>
-        <p>Pedido #{{ comanda.pedido_id }}</p>
-        <p>{{ comanda.fecha }}</p>
-        <hr>
-        {% for item in comanda.productos_comanda %}
-        <p>{{ item.cantidad }}x {{ item.nombre }}</p>
-        {% if item.notas %}
-        <p style="font-size:11px; color:#555;">↳ {{ item.notas }}</p>
-        {% endif %}
-        {% endfor %}
-        <hr>
-        <p>Imprimir y preparar</p>
+<div class="header">
+    <div class="header-logo">
+        <img src="/static/logo.png" alt="MDK Logo">
+        <h2>MDK SHAWARMA</h2>
     </div>
-    <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Comanda</button>
-    <a href="/ventas" class="btn-volver">← Volver a Ventas</a>
+    <div class="header-subtitle">Ventas</div>
+</div>
+
+<div class="content">
+    <h1 style="color: #f4a460;">💰 Ventas del Día</h1>
+    
+    {% if ventas %}
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr style="background: #f4a460; color: #1a1a1a;">
+            <th style="padding: 12px; text-align: left;">#</th>
+            <th style="padding: 12px; text-align: left;">Producto</th>
+            <th style="padding: 12px; text-align: left;">Cantidad</th>
+            <th style="padding: 12px; text-align: left;">Total</th>
+            <th style="padding: 12px; text-align: left;">Método</th>
+            <th style="padding: 12px; text-align: left;">Fecha</th>
+        </tr>
+        {% for v in ventas %}
+        <tr style="border-bottom: 1px solid #333;">
+            <td style="padding: 10px;">{{ v['id'] }}</td>
+            <td style="padding: 10px;">{{ v['nombre'] }}</td>
+            <td style="padding: 10px;">{{ v['cantidad'] }}</td>
+            <td style="padding: 10px; color: #f4a460; font-weight: bold;">${{ "%.0f"|format(v['total']) }}</td>
+            <td style="padding: 10px;">
+                {% if v['metodo_pago'] == 'mercadopago' and 'ONLINE' in (v['notas'] or '') %}
+                    <span style="background: #4CAF50; color: white; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold;">✅ PAGADO ONLINE</span>
+                {% else %}
+                    {{ v['metodo_pago'] }}
+                {% endif %}
+            </td>
+            <td style="padding: 10px;">{{ v['fecha'][:16] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
     {% else %}
-    
-    <div class="main-container">
-        <div class="productos-section">
-            <h1>💰 Registrar Venta</h1>
-            <div class="productos-grid" id="productos-grid">
-                {% for p in productos %}
-                <div class="producto-card" data-id="{{ p[0] }}" data-nombre="{{ p[1] }}" data-precio="{{ p[2] }}" data-emoji="{{ p[3] }}">
-                    <span class="producto-emoji">{{ p[3] }}</span>
-                    <span class="producto-nombre">{{ p[1] }}</span>
-                    <span class="producto-precio">${{ p[2] }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        
-        <div class="resumen-section">
-            <div class="panel">
-                <h2>🛒 Carrito</h2>
-                <div id="carrito-items"></div>
-                <div class="carrito-total" id="carrito-total">Total: $0</div>
-            </div>
-            
-            <div class="panel">
-                <h2>👤 Cliente</h2>
-                <select class="cliente-select" id="cliente-select">
-                    <option value="">Sin cliente</option>
-                    {% for c in clientes %}
-                    <option value="{{ c[0] }}">{{ c[1] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="panel">
-                <h2>💳 Método de pago</h2>
-                <div class="pagos-grid" id="pagos-grid">
-                    <div class="pago-card" data-metodo="efectivo">
-                        <span class="pago-emoji">💵</span>
-                        <span class="pago-nombre">Efectivo</span>
-                    </div>
-                    <div class="pago-card" data-metodo="mercadopago">
-                        <span class="pago-emoji">📱</span>
-                        <span class="pago-nombre">MercadoPago</span>
-                    </div>
-                    <div class="pago-card" data-metodo="tarjeta">
-                        <span class="pago-emoji">💳</span>
-                        <span class="pago-nombre">Tarjeta</span>
-                    </div>
-                    <div class="pago-card" data-metodo="pedidosya">
-                        <span class="pago-emoji">🛵</span>
-                        <span class="pago-nombre">PedidosYa</span>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="btn-principal" onclick="registrarVenta()">💰 Registrar Venta</button>
-            <button class="btn-secundario" onclick="vaciarCarrito()">Cancelar</button>
-        </div>
-    </div>
+    <p style="text-align: center; color: #888; margin-top: 40px;">No hay ventas hoy</p>
     {% endif %}
-
-    <div class="modal" id="modal-personalizar">
-        <div class="modal-contenido">
-            <h3 id="modal-titulo">🧂 Personalizar</h3>
-            <div id="modal-opciones"></div>
-            <div class="modal-botones">
-                <button class="btn-principal" onclick="agregarConPersonalizacion()">Agregar</button>
-                <button class="btn-secundario" style="margin-top:0;" onclick="cerrarModal()">Cancelar</button>
-            </div>
-        </div>
+    
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="/empleado" style="background: linear-gradient(135deg, #555, #333); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold;">
+            ← Volver al Panel
+        </a>
     </div>
+</div>
 
-    <form id="form-venta-real" method="POST" action="/ventas" style="display:none;">
-        <input type="hidden" name="carrito" id="carrito-json">
-        <input type="hidden" name="cliente_id" id="cliente-id-real">
-        <input type="hidden" name="metodo_pago" id="metodo-pago-real">
-    </form>
-
-    <script>
-        let carrito = [];
-        let metodoSeleccionado = '';
-        let productoPendiente = null;
-        const productosGrid = document.querySelectorAll('.producto-card');
-        const carritoItems = document.getElementById('carrito-items');
-        const carritoTotal = document.getElementById('carrito-total');
-        const clienteSelect = document.getElementById('cliente-select');
-        const pagosGrid = document.querySelectorAll('.pago-card');
-        const metodoPagoInputReal = document.getElementById('metodo-pago-real');
-        const clienteIdInputReal = document.getElementById('cliente-id-real');
-        const carritoJsonInput = document.getElementById('carrito-json');
-        const formReal = document.getElementById('form-venta-real');
-        const modalPersonalizar = document.getElementById('modal-personalizar');
-        const modalTitulo = document.getElementById('modal-titulo');
-        const modalOpciones = document.getElementById('modal-opciones');
-
-        function abrirModal(producto) {
-            productoPendiente = producto;
-            const nombre = producto.dataset.nombre.toLowerCase();
-            modalOpciones.innerHTML = '';
+<script>
+    // ==========================================
+    // Sonido de alerta (Web Audio API - no necesita archivos externos)
+    // ==========================================
+    function reproducirSonido() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             
-            if (nombre.includes('shawarma') || nombre.includes('falafel')) {
-                modalTitulo.textContent = '🧂 Personalizar';
-                const opciones = [
-                    { value: 'sin repollo', label: 'Sin repollo' },
-                    { value: 'sin tomate', label: 'Sin tomate' },
-                    { value: 'sin cebolla', label: 'Sin cebolla' },
-                    { value: 'sin salsa', label: 'Sin salsa' }
-                ];
-                opciones.forEach(op => {
-                    const label = document.createElement('label');
-                    label.className = 'modal-opcion';
-                    label.innerHTML = `<input type="checkbox" class="opcion-ingrediente" value="${op.value}"> ${op.label}`;
-                    modalOpciones.appendChild(label);
-                });
-            } else if (nombre.includes('coca')) {
-                modalTitulo.textContent = '🥤 Especificar Coca';
-                const opciones = [{ value: 'normal', label: 'Normal' }, { value: 'zero', label: 'Zero' }];
-                opciones.forEach(op => {
-                    const label = document.createElement('label');
-                    label.className = 'modal-opcion';
-                    label.innerHTML = `<input type="radio" name="variante" class="opcion-variante" value="${op.value}"> ${op.label}`;
-                    modalOpciones.appendChild(label);
-                });
-            } else if (nombre.includes('agua')) {
-                modalTitulo.textContent = '💧 Especificar Agua';
-                const opciones = [{ value: 'con gas', label: 'Con gas' }, { value: 'sin gas', label: 'Sin gas' }];
-                opciones.forEach(op => {
-                    const label = document.createElement('label');
-                    label.className = 'modal-opcion';
-                    label.innerHTML = `<input type="radio" name="variante" class="opcion-variante" value="${op.value}"> ${op.label}`;
-                    modalOpciones.appendChild(label);
-                });
-            }
-            modalPersonalizar.style.display = 'flex';
+            // Sonido 1: Ding agudo
+            const osc1 = audioContext.createOscillator();
+            const gain1 = audioContext.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioContext.destination);
+            osc1.frequency.value = 1200;
+            osc1.type = 'sine';
+            gain1.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            osc1.start(audioContext.currentTime);
+            osc1.stop(audioContext.currentTime + 0.3);
+            
+            // Sonido 2: Ding agudo (más tarde)
+            setTimeout(() => {
+                const osc2 = audioContext.createOscillator();
+                const gain2 = audioContext.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioContext.destination);
+                osc2.frequency.value = 1600;
+                osc2.type = 'sine';
+                gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                osc2.start(audioContext.currentTime);
+                osc2.stop(audioContext.currentTime + 0.4);
+            }, 200);
+        } catch (e) {
+            console.log('Error reproduciendo sonido:', e);
         }
-
-        productosGrid.forEach(card => {
-            card.addEventListener('click', function() {
-                const nombre = this.dataset.nombre.toLowerCase();
-                if (nombre.includes('shawarma') || nombre.includes('falafel') || nombre.includes('coca') || nombre.includes('agua')) {
-                    abrirModal(this);
-                } else {
-                    agregarAlCarrito(this.dataset.id, this.dataset.nombre, parseFloat(this.dataset.precio), '');
+    }
+    
+    // ==========================================
+    // Consultar pedidos nuevos cada 10 segundos
+    // ==========================================
+    let pedidosVistos = new Set();
+    
+    function consultarPedidos() {
+        fetch('/api/pedidos_nuevos')
+            .then(response => response.json())
+            .then(pedidos => {
+                if (!pedidos || pedidos.length === 0) return;
+                
+                // Buscar pedidos que NO se vieron antes
+                const pedidosNuevos = pedidos.filter(p => !pedidosVistos.has(p.numero_pedido));
+                
+                if (pedidosNuevos.length > 0) {
+                    // Marcar como vistos
+                    pedidosNuevos.forEach(p => pedidosVistos.add(p.numero_pedido));
+                    
+                    // Reproducir sonido
+                    reproducirSonido();
+                    
+                    // Mostrar alerta del primero (o todos)
+                    pedidosNuevos.forEach(p => {
+                        mostrarAlerta(p);
+                    });
                 }
-            });
-        });
-
-        function agregarConPersonalizacion() {
-            const seleccionadas = Array.from(modalOpciones.querySelectorAll('.opcion-ingrediente'))
-                .filter(op => op.checked)
-                .map(op => op.value);
-            const variante = modalOpciones.querySelector('.opcion-variante:checked');
-            const notas = seleccionadas.length > 0 ? seleccionadas.join(', ') : (variante ? variante.value : '');
-            if (productoPendiente) {
-                agregarAlCarrito(productoPendiente.dataset.id, productoPendiente.dataset.nombre, parseFloat(productoPendiente.dataset.precio), notas);
-                cerrarModal();
-            }
+            })
+            .catch(err => console.log('Error consultando pedidos:', err));
+    }
+    
+    function mostrarAlerta(pedido) {
+        // Crear la alerta
+        const alerta = document.createElement('div');
+        alerta.className = 'alerta-pedido';
+        alerta.innerHTML = `
+            <div class="titulo">🔔 PEDIDO PAGADO</div>
+            <div class="numero">N° ${pedido.numero_pedido}</div>
+            <div class="detalle">
+                ${pedido.productos.join('<br>')}<br>
+                <strong>Total: $${pedido.total}</strong>
+            </div>
+            <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
+        `;
+        
+        // Si ya hay una alerta, apilarla más abajo
+        const alertasExistentes = document.querySelectorAll('.alerta-pedido');
+        if (alertasExistentes.length > 0) {
+            alerta.style.top = (20 + (alertasExistentes.length * 260)) + 'px';
         }
+        
+        document.body.appendChild(alerta);
+        
+        // Auto-cerrar después de 2 minutos
+        setTimeout(() => {
+            if (alerta.parentElement) alerta.remove();
+        }, 120000);
+    }
+    
+    // Iniciar consulta cada 10 segundos
+    setInterval(consultarPedidos, 10000);
+    
+    // Primera consulta al cargar
+    setTimeout(consultarPedidos, 2000);
+    
+    // Activar el audio al primer clic (algunos navegadores requieren interacción)
+    document.addEventListener('click', () => {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            audioContext.resume();
+        } catch(e) {}
+    }, { once: true });
+</script>
 
-        function cerrarModal() {
-            modalPersonalizar.style.display = 'none';
-            productoPendiente = null;
-        }
-
-        function agregarAlCarrito(id, nombre, precio, notas) {
-            const itemExistente = carrito.find(i => i.id === id && i.notas === notas);
-            if (itemExistente) {
-                itemExistente.cantidad += 1;
-            } else {
-                carrito.push({ id, nombre, precio, cantidad: 1, notas });
-            }
-            actualizarCarrito();
-        }
-
-        function actualizarCarrito() {
-            carritoItems.innerHTML = '';
-            let total = 0;
-            carrito.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'carrito-item';
-                div.innerHTML = `
-                    <span class="carrito-nombre">${item.nombre}${item.notas ? ' (' + item.notas + ')' : ''}</span>
-                    <input type="number" class="carrito-cantidad" value="${item.cantidad}" min="1" onchange="cambiarCantidad(${index}, this.value)">
-                    <span class="carrito-precio">$${(item.precio * item.cantidad).toFixed(0)}</span>
-                    <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">🗑️</button>
-                `;
-                carritoItems.appendChild(div);
-                total += item.precio * item.cantidad;
-            });
-            carritoTotal.textContent = 'Total: $' + total.toFixed(0);
-        }
-
-        function cambiarCantidad(index, nuevaCantidad) {
-            const cantidad = parseInt(nuevaCantidad);
-            if (cantidad > 0) {
-                carrito[index].cantidad = cantidad;
-                actualizarCarrito();
-            }
-        }
-
-        function eliminarDelCarrito(index) {
-            carrito.splice(index, 1);
-            actualizarCarrito();
-        }
-
-        function vaciarCarrito() {
-            carrito = [];
-            actualizarCarrito();
-            pagosGrid.forEach(c => c.classList.remove('seleccionado'));
-            metodoSeleccionado = '';
-            clienteSelect.value = '';
-        }
-
-        function registrarVenta() {
-            if (carrito.length === 0) { alert('Agregá productos al carrito primero'); return; }
-            if (!metodoSeleccionado) { alert('Elegí un método de pago'); return; }
-            carritoJsonInput.value = JSON.stringify(carrito);
-            clienteIdInputReal.value = clienteSelect.value;
-            formReal.submit();
-        }
-
-        pagosGrid.forEach(card => {
-            card.addEventListener('click', function() {
-                pagosGrid.forEach(c => c.classList.remove('seleccionado'));
-                this.classList.add('seleccionado');
-                metodoSeleccionado = this.dataset.metodo;
-                metodoPagoInputReal.value = metodoSeleccionado;
-            });
-        });
-    </script>
 </body>
 </html>
