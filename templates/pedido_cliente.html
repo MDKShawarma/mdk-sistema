@@ -16,7 +16,9 @@
     
     <style>
         body { padding-bottom: 130px; }
+        
         .content { max-width: 700px; }
+        
         .categoria-titulo {
             color: #f4a460;
             font-size: 22px;
@@ -30,6 +32,7 @@
             letter-spacing: 2px;
             box-shadow: 0 5px 20px rgba(244, 164, 96, 0.2);
         }
+        
         .producto {
             background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
             border: 2px solid #333;
@@ -40,124 +43,280 @@
             position: relative;
             overflow: hidden;
         }
+        
         .producto.activo {
             border-color: #4CAF50;
             background: linear-gradient(135deg, #1a2a1a, #2a3a2a);
             box-shadow: 0 5px 25px rgba(76, 175, 80, 0.3);
         }
+        
         .producto-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 15px;
         }
+        
         .producto-info { flex: 1; }
-        .producto-nombre { font-size: 17px; font-weight: bold; margin-bottom: 5px; }
-        .producto-precio { color: #f4a460; font-size: 17px; font-weight: bold; }
-        .cantidad-control { display: flex; align-items: center; gap: 15px; }
+        .producto-nombre { 
+            font-size: 17px; 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+        }
+        .producto-precio { 
+            color: #f4a460; 
+            font-size: 17px; 
+            font-weight: bold; 
+        }
+        
+        .cantidad-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
         .btn-cantidad {
-            width: 50px; height: 50px; border-radius: 50%; border: none;
-            font-size: 26px; font-weight: bold; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            font-size: 26px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .btn-restar { background: linear-gradient(135deg, #f44336, #8a2d2d); color: white; }
-        .btn-restar:disabled { background: #333; color: #666; cursor: not-allowed; box-shadow: none; }
-        .btn-sumar { background: linear-gradient(135deg, #4CAF50, #2d7a4a); color: white; }
-        .btn-cantidad:active:not(:disabled) { transform: scale(0.9); }
+        
+        .btn-restar { 
+            background: linear-gradient(135deg, #f44336, #8a2d2d);
+            color: white;
+        }
+        
+        .btn-restar:disabled { 
+            background: #333; 
+            color: #666; 
+            cursor: not-allowed; 
+            box-shadow: none;
+        }
+        
+        .btn-sumar { 
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white;
+        }
+        
+        .btn-cantidad:active:not(:disabled) { 
+            transform: scale(0.9); 
+        }
+        
         .cantidad {
-            font-size: 24px; font-weight: bold; min-width: 35px;
-            text-align: center; color: #f4a460;
+            font-size: 24px;
+            font-weight: bold;
+            min-width: 35px;
+            text-align: center;
+            color: #f4a460;
         }
+        
         .personalizacion {
-            display: none; margin-top: 18px; padding-top: 18px;
-            border-top: 2px dashed #444; animation: fadeIn 0.3s ease;
+            display: none;
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 2px dashed #444;
+            animation: fadeIn 0.3s ease;
         }
+        
         .personalizacion.visible { display: block; }
+        
         .personalizacion-titulo {
-            color: #f4a460; font-size: 14px; margin-bottom: 12px;
-            font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+            color: #f4a460;
+            font-size: 14px;
+            margin-bottom: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .opciones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .opciones-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
         .opcion-check {
-            background: #1a1a1a; border: 2px solid #333; border-radius: 10px;
-            padding: 12px; text-align: center; cursor: pointer;
-            font-size: 13px; color: #ccc; user-select: none;
-            transition: all 0.2s; font-weight: 500;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: #ccc;
+            user-select: none;
+            transition: all 0.2s;
+            font-weight: 500;
         }
-        .opcion-check:hover { border-color: #f4a460; }
+        
+        .opcion-check:hover {
+            border-color: #f4a460;
+        }
+        
         .opcion-check.seleccionada {
             border-color: #f44336;
             background: linear-gradient(135deg, #2a1a1a, #3a2a2a);
-            color: #fff; font-weight: bold;
+            color: #fff;
+            font-weight: bold;
             box-shadow: 0 0 15px rgba(244, 67, 54, 0.3);
         }
+        
         .carrito-fijo {
-            position: fixed; bottom: 0; left: 0; right: 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: linear-gradient(135deg, #121212, #1e1e1e);
-            border-top: 3px solid #f4a460; padding: 18px; z-index: 50;
+            border-top: 3px solid #f4a460;
+            padding: 18px;
+            z-index: 50;
             box-shadow: 0 -5px 30px rgba(0,0,0,0.5);
         }
+        
         .carrito-total {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 12px; font-size: 20px;
-            max-width: 700px; margin-left: auto; margin-right: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 20px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .carrito-total .label {
-            color: #aaa; text-transform: uppercase;
-            letter-spacing: 1px; font-size: 15px;
+        
+        .carrito-total .label { 
+            color: #aaa; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 15px;
         }
-        .carrito-total .monto { color: #f4a460; font-weight: bold; font-size: 28px; }
+        
+        .carrito-total .monto { 
+            color: #f4a460; 
+            font-weight: bold; 
+            font-size: 28px; 
+        }
+        
         .btn-confirmar {
             background: linear-gradient(135deg, #4CAF50, #2d7a4a);
-            color: white; border: none; padding: 18px; border-radius: 15px;
-            font-size: 18px; font-weight: bold; cursor: pointer;
-            width: 100%; max-width: 700px; display: block; margin: 0 auto;
-            transition: all 0.3s; letter-spacing: 1px;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            max-width: 700px;
+            display: block;
+            margin: 0 auto;
+            transition: all 0.3s;
+            letter-spacing: 1px;
         }
-        .btn-confirmar:disabled { background: #333; color: #666; cursor: not-allowed; }
-        .btn-confirmar:not(:disabled):hover {
+        
+        .btn-confirmar:disabled { 
+            background: #333; 
+            color: #666; 
+            cursor: not-allowed; 
+        }
+        
+        .btn-confirmar:not(:disabled):hover { 
             transform: translateY(-3px);
             box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
         }
+        
         .formulario {
             background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
-            border: 2px solid #f4a460; border-radius: 20px;
-            padding: 25px; margin-top: 20px;
+            border: 2px solid #f4a460;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
             box-shadow: 0 10px 30px rgba(244, 164, 96, 0.2);
         }
+        
         .formulario h2 {
-            color: #f4a460; margin-bottom: 20px;
-            text-align: center; font-size: 22px;
+            color: #f4a460;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 22px;
         }
+        
         .formulario label {
-            display: block; margin-bottom: 8px; color: #ccc;
-            font-size: 14px; font-weight: bold;
-            text-transform: uppercase; letter-spacing: 1px;
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
+        
         .formulario input, .formulario select {
-            width: 100%; padding: 15px; background-color: #1a1a1a;
-            color: white; border: 2px solid #444; border-radius: 12px;
-            font-size: 16px; margin-bottom: 18px; transition: all 0.3s;
+            width: 100%;
+            padding: 15px;
+            background-color: #1a1a1a;
+            color: white;
+            border: 2px solid #444;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 18px;
+            transition: all 0.3s;
         }
+        
         .formulario input:focus, .formulario select:focus {
-            outline: none; border-color: #f4a460;
+            outline: none;
+            border-color: #f4a460;
             box-shadow: 0 0 15px rgba(244, 164, 96, 0.3);
         }
-        .opciones-servicio { display: flex; gap: 12px; margin-bottom: 18px; }
-        .opcion-servicio {
-            flex: 1; padding: 18px; background: #1a1a1a;
-            border: 2px solid #333; border-radius: 12px;
-            text-align: center; cursor: pointer; font-size: 15px;
-            font-weight: bold; transition: all 0.3s; user-select: none;
+        
+        .opciones-servicio {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
         }
-        .opcion-servicio:hover { border-color: #f4a460; }
+        
+        .opcion-servicio {
+            flex: 1;
+            padding: 18px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: all 0.3s;
+            user-select: none;
+        }
+        
+        .opcion-servicio:hover {
+            border-color: #f4a460;
+        }
+        
         .opcion-servicio.seleccionada {
             border-color: #4CAF50;
             background: linear-gradient(135deg, #1a2a1a, #2a3a2a);
             box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
         }
-        .btn-secundario { background: linear-gradient(135deg, #555, #333); margin-top: 12px; }
+        
+        .btn-secundario {
+            background: linear-gradient(135deg, #555, #333);
+            margin-top: 12px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -225,16 +384,28 @@
     function getTipoPersonalizacion(nombre) {
         const n = nombre.toLowerCase();
         if (n.includes('shawarma') || n.includes('falafel')) {
-            return { titulo: '🧂 ¿Qué querés sacarle?', opciones: ['Sin repollo', 'Sin tomate', 'Sin cebolla', 'Sin salsa'] };
+            return {
+                titulo: '🧂 ¿Qué querés sacarle?',
+                opciones: ['Sin repollo', 'Sin tomate', 'Sin cebolla', 'Sin salsa']
+            };
         }
         if (n.includes('coca')) {
-            return { titulo: '🥤 Elegí el tipo', opciones: ['Normal', 'Zero'] };
+            return {
+                titulo: '🥤 Elegí el tipo',
+                opciones: ['Normal', 'Zero']
+            };
         }
         if (n.includes('agua')) {
-            return { titulo: '💧 Elegí el tipo', opciones: ['Con gas', 'Sin gas'] };
+            return {
+                titulo: '💧 Elegí el tipo',
+                opciones: ['Con gas', 'Sin gas']
+            };
         }
         if (n.includes('smudis')) {
-            return { titulo: '🍊 Elegí el gusto', opciones: ['Naranja/Frutilla', 'Pomelo', 'Manzana', 'Multifruta'] };
+            return {
+                titulo: '🍊 Elegí el gusto',
+                opciones: ['Naranja/Frutilla', 'Pomelo', 'Manzana', 'Multifruta']
+            };
         }
         return null;
     }
@@ -270,6 +441,7 @@
             if (cat.includes('BEBIDA')) cat = 'BEBIDAS';
             if (cat.includes('COMIDA')) cat = 'PLATOS PRINCIPALES';
             if (cat.includes('POSTRE')) cat = 'POSTRES';
+            
             if (!categorias[cat]) categorias[cat] = [];
             categorias[cat].push(p);
         });
@@ -333,6 +505,7 @@
     function toggleOpcion(id, opcion, elemento) {
         const lista = personalizaciones[id];
         const index = lista.indexOf(opcion);
+        
         if (index === -1) {
             lista.push(opcion);
             elemento.classList.add('seleccionada');
@@ -433,30 +606,55 @@
             }
         });
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/nuevo_pedido';
-        
-        const campos = {
-            nombre: nombre,
-            telefono: telefono,
-            tipo_servicio: servicioSeleccionado,
-            mesa: '',
-            metodo_pago: metodo,
-            notas: notas,
-            carrito: JSON.stringify(carrito)
-        };
+        // Si elige MercadoPago, redirigir al checkout
+        if (metodo === 'mercadopago') {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/pagar_pedido';
+            
+            const campos = {
+                nombre: nombre,
+                telefono: telefono,
+                carrito: JSON.stringify(carrito)
+            };
 
-        Object.keys(campos).forEach(key => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = campos[key];
-            form.appendChild(input);
-        });
+            Object.keys(campos).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = campos[key];
+                form.appendChild(input);
+            });
 
-        document.body.appendChild(form);
-        form.submit();
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            // Efectivo: comportamiento original
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/nuevo_pedido';
+            
+            const campos = {
+                nombre: nombre,
+                telefono: telefono,
+                tipo_servicio: servicioSeleccionado,
+                mesa: '',
+                metodo_pago: metodo,
+                notas: notas,
+                carrito: JSON.stringify(carrito)
+            };
+
+            Object.keys(campos).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = campos[key];
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
 
     renderizarProductos();
