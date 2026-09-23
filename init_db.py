@@ -131,6 +131,20 @@ def inicializar_base_datos():
     ''')
 
     cursor.execute('''
+        CREATE TABLE IF NOT EXISTS pedidos_pendientes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            referencia TEXT UNIQUE,
+            nombre TEXT,
+            telefono TEXT,
+            carrito TEXT,
+            total REAL,
+            estado TEXT DEFAULT 'pendiente',
+            payment_id TEXT,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS cierres_caja (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fecha DATE UNIQUE,
