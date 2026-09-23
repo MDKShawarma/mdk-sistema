@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Exitoso</title>
+    <style>
+        body { background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }
+        h1 { color: #4CAF50; font-size: 32px; margin-bottom: 20px; }
+        .info { background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }
+        .numero { font-size: 40px; color: #f4a460; font-weight: bold; margin: 20px 0; }
+        a { color: #f4a460; text-decoration: none; font-size: 16px; }
+    </style>
+</head>
+<body>
+    {% if ya_procesado %}
+        <h1>✅ Pedido ya Confirmado</h1>
+        <div class="info">
+            <p>Gracias <strong>{{ nombre }}</strong>,</p>
+            <p>Tu pedido ya fue procesado anteriormente.</p>
+            <a href="/pedido">← Hacer otro pedido</a>
+        </div>
+    {% else %}
+        <h1>✅ ¡Pago Aprobado!</h1>
+        <div class="info">
+            <p>Gracias <strong>{{ nombre }}</strong>,</p>
+            <p>Tu pago fue procesado y tu pedido ya está en la cocina</p>
+            <div class="numero">N° {{ numero_pedido }}</div>
+            <p>🔔 Aguardá a ser llamado</p>
+            <a href="/pedido">← Hacer otro pedido</a>
+        </div>
+    {% endif %}
+</body>
+</html>

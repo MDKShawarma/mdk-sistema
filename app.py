@@ -9,16 +9,12 @@ import os
 from dotenv import load_dotenv
 import mercadopago
 
-# Cargar variables de entorno
 load_dotenv()
-
-# Configurar MercadoPago
 MP_ACCESS_TOKEN = os.getenv('MERCADOPAGO_ACCESS_TOKEN')
 mp_sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
 
 app = Flask(__name__)
 app.secret_key = 'mdk_secret_key_2026'
-
 CONTRASENA = 'MDK2026'
 
 def get_db():
@@ -32,7 +28,6 @@ def get_db():
     return conn
 
 def login_requerido(f):
-    """Solo el dueño puede acceder"""
     @functools.wraps(f)
     def decorador(*args, **kwargs):
         if session.get('rol') != 'dueno':
@@ -41,7 +36,6 @@ def login_requerido(f):
     return decorador
 
 def login_requerido_empleado(f):
-    """Dueño y empleado pueden acceder"""
     @functools.wraps(f)
     def decorador(*args, **kwargs):
         if session.get('rol') not in ['dueno', 'empleado']:
@@ -60,14 +54,7 @@ def limpiar_respuesta(texto):
 def preguntar_deepseek(pregunta):
     try:
         prompt = f"Respondé en español. Escribí solo la respuesta final, sin repetir sílabas ni palabras. Pregunta: {pregunta}"
-        resultado = subprocess.run(
-            ['ollama', 'run', 'mistral', prompt],
-            capture_output=True,
-            text=True,
-            encoding='utf-8',
-            errors='ignore',
-            timeout=180
-        )
+        resultado = subprocess.run(['ollama', 'run', 'mistral', prompt], capture_output=True, text=True, encoding='utf-8', errors='ignore', timeout=180)
         respuesta = resultado.stdout.strip()
         respuesta = limpiar_respuesta(respuesta)
         return respuesta[:800]
@@ -76,91 +63,45 @@ def preguntar_deepseek(pregunta):
 
 def get_emoji(nombre):
     nombre_lower = nombre.lower()
-    if 'bolsa de panes' in nombre_lower:
-        return '🥖'
-    if 'pan individual' in nombre_lower:
-        return '🫓'
-    emojis = {
-        'shawarma': '🌯',
-        'falafel': '🧆',
-        'fatay': '🥟',
-        'humus': '🫘',
-        'kebbe': '🥩',
-        'papas': '🍟',
-        'helado': '🍨',
-        'deditos': '🍡',
-        'baklava': '🍯',
-        'coca': '🥤',
-        'smudis': '🥤',
-        'agua': '💧',
-        'cerveza': '🍺',
-        'baileys': '🥃',
-        'gin': '🍸',
-        'vino': '🍷',
-        'pan': '🫓'
-    }
+    if 'bolsa de panes' in nombre_lower: return '🥖'
+    if 'pan individual' in nombre_lower: return '🫓'
+    emojis = {'shawarma': '🌯','falafel': '🧆','fatay': '🥟','humus': '🫘','kebbe': '🥩','papas': '🍟','helado': '🍨','deditos': '🍡','baklava': '🍯','coca': '🥤','smudis': '🥤','agua': '💧','cerveza': '🍺','baileys': '🥃','gin': '🍸','vino': '🍷','pan': '🫓'}
     for clave, emoji in emojis.items():
-        if clave in nombre_lower:
-            return emoji
+        if clave in nombre_lower: return emoji
     return '🍽️'
 
 def orden_importancia(nombre):
     nombre_lower = nombre.lower()
-    if 'combo' in nombre_lower:
-        return 5
-    elif 'shawarma' in nombre_lower:
-        return 0
-    elif 'falafel' in nombre_lower:
-        return 1
-    elif 'fatay' in nombre_lower:
-        return 2
-    elif 'humus' in nombre_lower:
-        return 3
-    elif 'kebbe' in nombre_lower:
-        return 4
-    elif 'papas' in nombre_lower:
-        return 6
-    elif any(p in nombre_lower for p in ['postre', 'helado', 'deditos', 'baklava']):
-        return 7
-    elif any(b in nombre_lower for b in ['agua', 'coca', 'smudis', 'cerveza', 'baileys', 'gin', 'vino']):
-        return 8
-    else:
-        return 9
+    if 'combo' in nombre_lower: return 5
+    elif 'shawarma' in nombre_lower: return 0
+    elif 'falafel' in nombre_lower: return 1
+    elif 'fatay' in nombre_lower: return 2
+    elif 'humus' in nombre_lower: return 3
+    elif 'kebbe' in nombre_lower: return 4
+    elif 'papas' in nombre_lower: return 6
+    elif any(p in nombre_lower for p in ['postre', 'helado', 'deditos', 'baklava']): return 7
+    elif any(b in nombre_lower for b in ['agua', 'coca', 'smudis', 'cerveza', 'baileys', 'gin', 'vino']): return 8
+    else: return 9
 
 def es_empleado():
-    ip = request.remote_addr
-    return ip != '127.0.0.1'
+    return request.remote_addr != '127.0.0.1'
 
-# ============================
-# INICIALIZAR BASE DE DATOS
-# ============================
 from init_db import inicializar_base_datos
 inicializar_base_datos()
 
-# ============================
-# CIERRE DE CAJA OBLIGATORIO
-# ============================
 @app.before_request
 def verificar_cierre_obligatorio():
-    """Después de las 22:30, si el empleado no cerró la caja, lo redirige a cerrar"""
     rutas_empleado = ['/empleado', '/ventas', '/productos', '/stock', '/gastos']
-    if request.path in rutas_empleado:
-        if session.get('rol') == 'empleado':
-            ahora = datetime.now()
-            minutos_actuales = ahora.hour * 60 + ahora.minute
-            minutos_limite = 22 * 60 + 30
-            if minutos_actuales >= minutos_limite:
-                conn = get_db()
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM cierres_caja WHERE fecha = date('now')")
-                ya_cerro = cursor.fetchone()[0] > 0
-                conn.close()
-                if not ya_cerro:
-                    return redirect(url_for('cierre_caja'))
-
-# ============================
-# RUTAS
-# ============================
+    if request.path in rutas_empleado and session.get('rol') == 'empleado':
+        ahora = datetime.now()
+        if (ahora.hour * 60 + ahora.minute) >= (22 * 60 + 30):
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM cierres_caja WHERE fecha = date('now')")
+            ya_cerro = cursor.fetchone()[0] > 0
+            conn.close()
+            if not ya_cerro:
+                return redirect(url_for('cierre_caja'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -179,22 +120,12 @@ def login():
 def cierre_caja():
     conn = get_db()
     cursor = conn.cursor()
-    
     es_dueno = (session.get('rol') == 'dueno')
-    
     cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
     cierre_existente = cursor.fetchone()
-    
-    cursor.execute("""
-        SELECT COALESCE(SUM(total), 0) FROM ventas 
-        WHERE date(fecha) = date('now') AND metodo_pago = 'efectivo'
-    """)
+    cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now') AND metodo_pago = 'efectivo'")
     efectivo_esperado = cursor.fetchone()[0]
-    
-    cursor.execute("""
-        SELECT COALESCE(SUM(total), 0) FROM ventas 
-        WHERE date(fecha) = date('now') AND metodo_pago = 'mercadopago'
-    """)
+    cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now') AND metodo_pago = 'mercadopago'")
     mercadopago_esperado = cursor.fetchone()[0]
     
     if request.method == 'POST' and not cierre_existente:
@@ -202,44 +133,20 @@ def cierre_caja():
             efectivo_contado = float(request.form.get('efectivo_contado', 0) or 0)
             mercadopago_contado = float(request.form.get('mercadopago_contado', 0) or 0)
             observaciones = request.form.get('observaciones', '')
-            
             total_esperado = efectivo_esperado + mercadopago_esperado
             total_contado = efectivo_contado + mercadopago_contado
-            
-            cursor.execute('''
-                INSERT INTO cierres_caja 
-                (fecha, efectivo_esperado, efectivo_contado, mercadopago_esperado, mercadopago_contado,
-                 diferencia_efectivo, diferencia_mercadopago, total_esperado, total_contado, 
-                 diferencia_total, observaciones)
-                VALUES (date('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                efectivo_esperado, efectivo_contado,
-                mercadopago_esperado, mercadopago_contado,
-                efectivo_contado - efectivo_esperado,
-                mercadopago_contado - mercadopago_esperado,
-                total_esperado, total_contado,
-                total_contado - total_esperado,
-                observaciones
-            ))
+            cursor.execute('''INSERT INTO cierres_caja (fecha, efectivo_esperado, efectivo_contado, mercadopago_esperado, mercadopago_contado, diferencia_efectivo, diferencia_mercadopago, total_esperado, total_contado, diferencia_total, observaciones) VALUES (date('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (efectivo_esperado, efectivo_contado, mercadopago_esperado, mercadopago_contado, efectivo_contado - efectivo_esperado, mercadopago_contado - mercadopago_esperado, total_esperado, total_contado, total_contado - total_esperado, observaciones))
             conn.commit()
-            
             cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
             cierre_existente = cursor.fetchone()
-        except Exception as e:
-            pass
+        except: pass
     
     historial = []
     if es_dueno:
         cursor.execute("SELECT * FROM cierres_caja ORDER BY fecha DESC LIMIT 30")
         historial = cursor.fetchall()
-    
     conn.close()
-    return render_template('cierre_caja.html',
-                         cierre_existente=cierre_existente,
-                         efectivo_esperado=efectivo_esperado,
-                         mercadopago_esperado=mercadopago_esperado,
-                         historial=historial,
-                         es_dueno=es_dueno)
+    return render_template('cierre_caja.html', cierre_existente=cierre_existente, efectivo_esperado=efectivo_esperado, mercadopago_esperado=mercadopago_esperado, historial=historial, es_dueno=es_dueno)
 
 @app.route('/logout')
 def logout():
@@ -256,7 +163,6 @@ def empleado():
 def inicio():
     if not session.get('autenticado'):
         return redirect(url_for('pedido_cliente'))
-    
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now')")
@@ -291,8 +197,7 @@ def productos():
     productos_raw = cursor.fetchall()
     productos = sorted(productos_raw, key=lambda p: (orden_importancia(p[1]), p[1]))
     conn.close()
-    empleado = es_empleado()
-    return render_template('productos.html', productos=productos, empleado=empleado)
+    return render_template('productos.html', productos=productos, empleado=es_empleado())
 
 @app.route('/agregar_producto', methods=['POST'])
 @login_requerido
@@ -304,10 +209,7 @@ def agregar_producto():
     if nombre and categoria and precio and stock:
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO productos (nombre, categoria, precio, stock, stock_minimo) VALUES (?, ?, ?, ?, ?)",
-            (nombre, categoria, float(precio), int(stock), 10)
-        )
+        cursor.execute("INSERT INTO productos (nombre, categoria, precio, stock, stock_minimo) VALUES (?, ?, ?, ?, ?)", (nombre, categoria, float(precio), int(stock), 10))
         conn.commit()
         conn.close()
     return redirect(url_for('productos'))
@@ -327,18 +229,14 @@ def stock():
             cantidad = request.form.get('cantidad')
             if ingrediente_id and cantidad:
                 cantidad = float(cantidad)
-                if accion == 'sumar':
-                    cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual + ? WHERE id = ?", (cantidad, ingrediente_id))
-                elif accion == 'restar':
-                    cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual - ? WHERE id = ?", (cantidad, ingrediente_id))
-                elif accion == 'fijar':
-                    cursor.execute("UPDATE ingredientes SET stock_actual = ? WHERE id = ?", (cantidad, ingrediente_id))
+                if accion == 'sumar': cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual + ? WHERE id = ?", (cantidad, ingrediente_id))
+                elif accion == 'restar': cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual - ? WHERE id = ?", (cantidad, ingrediente_id))
+                elif accion == 'fijar': cursor.execute("UPDATE ingredientes SET stock_actual = ? WHERE id = ?", (cantidad, ingrediente_id))
                 conn.commit()
     cursor.execute("SELECT * FROM ingredientes ORDER BY categoria, nombre")
     ingredientes = cursor.fetchall()
     conn.close()
-    empleado = es_empleado()
-    return render_template('stock.html', ingredientes=ingredientes, empleado=empleado)
+    return render_template('stock.html', ingredientes=ingredientes, empleado=es_empleado())
 
 @app.route('/ventas', methods=['GET', 'POST'])
 @login_requerido_empleado
@@ -346,12 +244,10 @@ def ventas():
     conn = get_db()
     cursor = conn.cursor()
     comanda = None
-
     if request.method == 'POST':
         carrito_json = request.form.get('carrito')
         cliente_id = request.form.get('cliente_id')
         metodo_pago = request.form.get('metodo_pago')
-
         if carrito_json and metodo_pago:
             carrito = json.loads(carrito_json)
             total_general = 0
@@ -364,10 +260,8 @@ def ventas():
                     conn.close()
                     return "Error: stock insuficiente para " + item['nombre'], 400
                 total_general += producto[1] * cantidad
-
             cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
             numero_pedido = cursor.fetchone()[0]
-
             for item in carrito:
                 producto_id = int(item['id'])
                 cantidad = int(item['cantidad'])
@@ -375,52 +269,25 @@ def ventas():
                 cursor.execute("SELECT nombre, precio FROM productos WHERE id = ?", (producto_id,))
                 producto = cursor.fetchone()
                 total_item = producto[1] * cantidad
-                cursor.execute('''
-                    INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (producto_id, cantidad, total_item, metodo_pago, notas, cliente_id if cliente_id else None, 'empleado', numero_pedido))
+                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (producto_id, cantidad, total_item, metodo_pago, notas, cliente_id if cliente_id else None, 'empleado', numero_pedido))
                 cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
-
             if cliente_id:
                 puntos_sumados = int(total_general / 1000)
                 cursor.execute('UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?', (total_general, puntos_sumados, int(cliente_id)))
                 if puntos_sumados > 0:
-                    cursor.execute('''
-                        INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo)
-                        VALUES (?, ?, 'suma', 'Compra en local')
-                    ''', (int(cliente_id), puntos_sumados))
-
+                    cursor.execute('''INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo) VALUES (?, ?, 'suma', 'Compra en local')''', (int(cliente_id), puntos_sumados))
             conn.commit()
-
-            comanda = {
-                'pedido_id': numero_pedido,
-                'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'productos_comanda': carrito,
-                'total': total_general,
-                'metodo_pago': metodo_pago
-            }
-
-    cursor.execute('''
-        SELECT v.id, p.nombre, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha, c.nombre as cliente_nombre
-        FROM ventas v
-        JOIN productos p ON v.producto_id = p.id
-        LEFT JOIN clientes c ON v.cliente_id = c.id
-        WHERE date(v.fecha) = date('now')
-        ORDER BY v.fecha DESC
-    ''')
+            comanda = {'pedido_id': numero_pedido, 'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'productos_comanda': carrito, 'total': total_general, 'metodo_pago': metodo_pago}
+    cursor.execute('''SELECT v.id, p.nombre, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha, c.nombre as cliente_nombre FROM ventas v JOIN productos p ON v.producto_id = p.id LEFT JOIN clientes c ON v.cliente_id = c.id WHERE date(v.fecha) = date('now') ORDER BY v.fecha DESC''')
     ventas = cursor.fetchall()
-
     cursor.execute("SELECT id, nombre, precio FROM productos WHERE stock > 0")
     productos_raw = cursor.fetchall()
     productos_ordenados = sorted(productos_raw, key=lambda p: (orden_importancia(p[1]), p[1]))
     productos = [(p[0], p[1], p[2], get_emoji(p[1])) for p in productos_ordenados]
-
     cursor.execute("SELECT id, nombre FROM clientes ORDER BY nombre")
     clientes = cursor.fetchall()
-
     conn.close()
-    empleado = es_empleado()
-    return render_template('ventas.html', ventas=ventas, productos=productos, clientes=clientes, comanda=comanda, empleado=empleado)
+    return render_template('ventas.html', ventas=ventas, productos=productos, clientes=clientes, comanda=comanda, empleado=es_empleado())
 
 @app.route('/gastos', methods=['GET', 'POST'])
 @login_requerido_empleado
@@ -439,8 +306,7 @@ def gastos():
     cursor.execute("SELECT COALESCE(SUM(monto), 0) FROM gastos WHERE date(fecha) = date('now')")
     total_gastos = cursor.fetchone()[0]
     conn.close()
-    empleado = es_empleado()
-    return render_template('gastos.html', gastos=gastos, total_gastos=total_gastos, empleado=empleado)
+    return render_template('gastos.html', gastos=gastos, total_gastos=total_gastos, empleado=es_empleado())
 
 @app.route('/gastos_fijos', methods=['GET', 'POST'])
 @login_requerido
@@ -490,79 +356,34 @@ def contador():
     balance = ingresos_mes - total_gastos
     iva_estimado = ingresos_mes * 0.21
     iibb_estimado = ingresos_mes * 0.035
-    cursor.execute("""
-        SELECT date(fecha) as dia, SUM(total) as total
-        FROM ventas
-        WHERE date(fecha) >= date('now', '-7 days')
-        GROUP BY date(fecha)
-        ORDER BY fecha DESC
-    """)
+    cursor.execute("SELECT date(fecha) as dia, SUM(total) as total FROM ventas WHERE date(fecha) >= date('now', '-7 days') GROUP BY date(fecha) ORDER BY fecha DESC")
     ventas_semana = cursor.fetchall()
     conn.close()
-    return render_template('contador.html',
-                         ingresos_mes=ingresos_mes,
-                         ingresos_hoy=ingresos_hoy,
-                         gastos_fijos=gastos_fijos_val,
-                         gastos_variables=gastos_variables,
-                         total_gastos=total_gastos,
-                         balance=balance,
-                         iva_estimado=iva_estimado,
-                         iibb_estimado=iibb_estimado,
-                         ventas_semana=ventas_semana)
+    return render_template('contador.html', ingresos_mes=ingresos_mes, ingresos_hoy=ingresos_hoy, gastos_fijos=gastos_fijos_val, gastos_variables=gastos_variables, total_gastos=total_gastos, balance=balance, iva_estimado=iva_estimado, iibb_estimado=iibb_estimado, ventas_semana=ventas_semana)
 
 @app.route('/informe')
 @login_requerido
 def informe():
     conn = get_db()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now')")
     ventas_hoy = cursor.fetchone()[0]
-    
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now', '-1 day')")
     ventas_ayer = cursor.fetchone()[0]
-    
     cursor.execute("SELECT SUM(monto_mensual) / 16 FROM gastos_fijos")
     gasto_diario = cursor.fetchone()[0]
-    
-    cursor.execute("""
-        SELECT date(fecha) as dia, SUM(total) as total, COUNT(*) as pedidos
-        FROM ventas
-        WHERE date(fecha) >= date('now', '-14 days')
-        GROUP BY date(fecha)
-        ORDER BY dia DESC
-    """)
+    cursor.execute("SELECT date(fecha) as dia, SUM(total) as total, COUNT(*) as pedidos FROM ventas WHERE date(fecha) >= date('now', '-14 days') GROUP BY date(fecha) ORDER BY dia DESC")
     dias_raw = cursor.fetchall()
-    
     historial = []
     for dia in dias_raw:
         fecha = dia[0]
         total = dia[1]
         pedidos = dia[2]
-        
-        cursor.execute("""
-            SELECT p.nombre, SUM(v.cantidad) as cantidad, SUM(v.total) as total
-            FROM ventas v
-            JOIN productos p ON v.producto_id = p.id
-            WHERE date(v.fecha) = ?
-            GROUP BY p.id
-            ORDER BY total DESC
-        """, (fecha,))
+        cursor.execute("SELECT p.nombre, SUM(v.cantidad) as cantidad, SUM(v.total) as total FROM ventas v JOIN productos p ON v.producto_id = p.id WHERE date(v.fecha) = ? GROUP BY p.id ORDER BY total DESC", (fecha,))
         productos = cursor.fetchall()
-        
-        historial.append({
-            'fecha': fecha,
-            'total': total,
-            'pedidos': pedidos,
-            'productos': [{'nombre': p[0], 'cantidad': p[1], 'total': p[2]} for p in productos]
-        })
-    
+        historial.append({'fecha': fecha, 'total': total, 'pedidos': pedidos, 'productos': [{'nombre': p[0], 'cantidad': p[1], 'total': p[2]} for p in productos]})
     conn.close()
-    return render_template('informe.html', 
-                         ventas_hoy=ventas_hoy, 
-                         ventas_ayer=ventas_ayer, 
-                         gasto_diario=gasto_diario, 
-                         historial=historial)
+    return render_template('informe.html', ventas_hoy=ventas_hoy, ventas_ayer=ventas_ayer, gasto_diario=gasto_diario, historial=historial)
 
 @app.route('/clientes', methods=['GET', 'POST'])
 @login_requerido
@@ -600,23 +421,10 @@ def cliente_detalle(cliente_id):
     if not cliente:
         conn.close()
         return "Cliente no encontrado", 404
-    cursor.execute('''
-        SELECT v.id, p.nombre, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha
-        FROM ventas v
-        JOIN productos p ON v.producto_id = p.id
-        WHERE v.cliente_id = ?
-        ORDER BY v.fecha DESC
-    ''', (cliente_id,))
+    cursor.execute("SELECT v.id, p.nombre, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha FROM ventas v JOIN productos p ON v.producto_id = p.id WHERE v.cliente_id = ? ORDER BY v.fecha DESC", (cliente_id,))
     compras = cursor.fetchall()
-    
-    cursor.execute('''
-        SELECT puntos, tipo, motivo, fecha FROM movimientos_puntos
-        WHERE cliente_id = ?
-        ORDER BY fecha DESC
-        LIMIT 20
-    ''', (cliente_id,))
+    cursor.execute("SELECT puntos, tipo, motivo, fecha FROM movimientos_puntos WHERE cliente_id = ? ORDER BY fecha DESC LIMIT 20", (cliente_id,))
     movimientos = cursor.fetchall()
-    
     conn.close()
     return render_template('cliente_detalle.html', cliente=cliente, compras=compras, movimientos=movimientos)
 
@@ -639,10 +447,7 @@ def agregar_proveedor():
     if nombre and telefono and productos:
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO proveedores (nombre, telefono, productos) VALUES (?, ?, ?)",
-            (nombre, telefono, productos)
-        )
+        cursor.execute("INSERT INTO proveedores (nombre, telefono, productos) VALUES (?, ?, ?)", (nombre, telefono, productos))
         conn.commit()
         conn.close()
     return redirect(url_for('proveedores'))
@@ -674,275 +479,148 @@ def pedido_cliente():
     cursor = conn.cursor()
     cursor.execute("SELECT id, nombre, precio, categoria FROM productos ORDER BY categoria, nombre")
     productos_raw = cursor.fetchall()
-    
-    productos_json = json.dumps([
-        {"id": p[0], "nombre": p[1], "precio": p[2], "categoria": p[3]}
-        for p in productos_raw
-    ])
-    
+    productos_json = json.dumps([{"id": p[0], "nombre": p[1], "precio": p[2], "categoria": p[3]} for p in productos_raw])
     conn.close()
     return render_template('pedido_cliente.html', productos_json=productos_json)
 
 @app.route('/pagar_pedido', methods=['POST'])
 def pagar_pedido():
-    """Crea una preferencia de pago en MercadoPago y redirige"""
     nombre = request.form.get('nombre')
     telefono = request.form.get('telefono')
     carrito_json = request.form.get('carrito')
-    
     if not carrito_json:
         return "Faltan datos", 400
-    
     carrito = json.loads(carrito_json)
-    
-    items = []
-    for item in carrito:
-        items.append({
-            "title": item['nombre'],
-            "quantity": int(item['cantidad']),
-            "unit_price": float(item['precio']),
-            "currency_id": "ARS"
-        })
-    
-    preference_data = {
-        "items": items,
-        "back_urls": {
-            "success": "https://sistema.mdk-shawarma.com/pago_exitoso",
-            "failure": "https://sistema.mdk-shawarma.com/pago_fallido",
-            "pending": "https://sistema.mdk-shawarma.com/pago_pendiente"
-        },
-        "auto_return": "approved",
-        "external_reference": telefono,
-        "statement_descriptor": "MDK SHAWARMA"
-    }
-    
+    total = sum(float(item['precio']) * int(item['cantidad']) for item in carrito)
+    import random
+    referencia = f"PED-{datetime.now().strftime('%Y%m%d%H%M%S')}-{random.randint(1000, 9999)}"
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''INSERT INTO pedidos_pendientes (referencia, nombre, telefono, carrito, total, estado) VALUES (?, ?, ?, ?, ?, 'pendiente')''', (referencia, nombre, telefono, carrito_json, total))
+    conn.commit()
+    conn.close()
+    items = [{"title": item['nombre'], "quantity": int(item['cantidad']), "unit_price": float(item['precio']), "currency_id": "ARS"} for item in carrito]
+    preference_data = {"items": items, "back_urls": {"success": "https://sistema.mdk-shawarma.com/pago_exitoso", "failure": "https://sistema.mdk-shawarma.com/pago_fallido", "pending": "https://sistema.mdk-shawarma.com/pago_pendiente"}, "auto_return": "approved", "external_reference": referencia, "statement_descriptor": "MDK SHAWARMA"}
     try:
         preference_response = mp_sdk.preference().create(preference_data)
         preference = preference_response["response"]
-        
-        session['carrito_pendiente'] = carrito
-        session['nombre_pendiente'] = nombre
-        session['telefono_pendiente'] = telefono
-        
         return redirect(preference['init_point'])
     except Exception as e:
         return f"Error al crear el pago: {str(e)}", 500
 
-
 @app.route('/pago_exitoso')
 def pago_exitoso():
-    return """
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pago Exitoso</title>
-        <style>
-            body { background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }
-            h1 { color: #4CAF50; font-size: 32px; }
-            .info { background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }
-            a { color: #f4a460; text-decoration: none; }
-        </style>
-    </head>
-    <body>
-        <h1>✅ ¡Pago Exitoso!</h1>
-        <div class="info">
-            <p>Tu pago fue procesado correctamente.</p>
-            <p>Tu pedido ya está en la cocina.</p>
-            <a href="/pedido">← Volver al menú</a>
-        </div>
-    </body>
-    </html>
-    """
-
+    payment_id = request.args.get('payment_id')
+    external_reference = request.args.get('external_reference')
+    if not external_reference:
+        return "Faltan datos del pedido", 400
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM pedidos_pendientes WHERE referencia = ?", (external_reference,))
+    pedido = cursor.fetchone()
+    if not pedido:
+        conn.close()
+        return "Pedido no encontrado", 404
+    if pedido['estado'] == 'completado':
+        conn.close()
+        return render_template('pago_exitoso.html', nombre=pedido['nombre'], ya_procesado=True)
+    try:
+        if payment_id:
+            payment_info = mp_sdk.payment().get(payment_id)
+            status = payment_info["response"]["status"]
+            if status != "approved":
+                return redirect(url_for('pago_pendiente'))
+    except: pass
+    cursor.execute('''UPDATE pedidos_pendientes SET estado = 'completado', payment_id = ? WHERE referencia = ?''', (payment_id, external_reference))
+    carrito = json.loads(pedido['carrito'])
+    nombre = pedido['nombre']
+    telefono = pedido['telefono']
+    total_general = 0
+    cursor.execute("SELECT id FROM clientes WHERE telefono = ?", (telefono,))
+    cliente = cursor.fetchone()
+    if cliente:
+        cliente_id = cliente[0]
+    else:
+        nombre_con_año = f"{nombre} Cliente {datetime.now().year}"
+        cursor.execute("INSERT INTO clientes (nombre, telefono) VALUES (?, ?)", (nombre_con_año, telefono))
+        cliente_id = cursor.lastrowid
+    cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
+    numero_pedido = cursor.fetchone()[0]
+    for item in carrito:
+        producto_id = int(item['id'])
+        cantidad = int(item['cantidad'])
+        cursor.execute("SELECT nombre, precio, stock FROM productos WHERE id = ?", (producto_id,))
+        producto = cursor.fetchone()
+        if not producto: continue
+        total_item = producto[1] * cantidad
+        total_general += total_item
+        notas_completas = f"Pago: mercadopago (ONLINE) | Pago ID: {payment_id}"
+        if item.get('notas'): notas_completas += f" | {item['notas']}"
+        cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido) VALUES (?, ?, ?, 'mercadopago', ?, ?, 'qr', ?)''', (producto_id, cantidad, total_item, notas_completas, cliente_id, numero_pedido))
+        cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
+    puntos_sumados = int(total_general / 1000)
+    cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, cliente_id))
+    if puntos_sumados > 0:
+        cursor.execute('''INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo) VALUES (?, ?, 'suma', 'Pedido por QR (MercadoPago)')''', (cliente_id, puntos_sumados))
+    conn.commit()
+    conn.close()
+    return render_template('pago_exitoso.html', nombre=nombre, numero_pedido=numero_pedido, ya_procesado=False)
 
 @app.route('/pago_fallido')
 def pago_fallido():
-    return """
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pago Fallido</title>
-        <style>
-            body { background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }
-            h1 { color: #f44336; font-size: 32px; }
-            .info { background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }
-            a { color: #f4a460; text-decoration: none; }
-        </style>
-    </head>
-    <body>
-        <h1>❌ Pago Fallido</h1>
-        <div class="info">
-            <p>Hubo un problema con tu pago.</p>
-            <p>Podés intentar de nuevo o pagar en efectivo.</p>
-            <a href="/pedido">← Volver al menú</a>
-        </div>
-    </body>
-    </html>
-    """
-
+    return render_template('pago_fallido.html')
 
 @app.route('/pago_pendiente')
 def pago_pendiente():
-    return """
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pago Pendiente</title>
-        <style>
-            body { background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }
-            h1 { color: #ff9800; font-size: 32px; }
-            .info { background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }
-            a { color: #f4a460; text-decoration: none; }
-        </style>
-    </head>
-    <body>
-        <h1>⏳ Pago Pendiente</h1>
-        <div class="info">
-            <p>Tu pago está siendo procesado.</p>
-            <p>Te avisaremos cuando se confirme.</p>
-            <a href="/pedido">← Volver al menú</a>
-        </div>
-    </body>
-    </html>
-    """
-
+    return render_template('pago_pendiente.html')
 
 @app.route('/nuevo_pedido', methods=['POST'])
 def nuevo_pedido():
     nombre = request.form.get('nombre')
     telefono = request.form.get('telefono')
     tipo_servicio = request.form.get('tipo_servicio')
-    mesa = request.form.get('mesa', '')
     metodo_pago = request.form.get('metodo_pago')
     notas = request.form.get('notas', '')
     carrito_json = request.form.get('carrito')
-    
     if not nombre or not telefono or not carrito_json:
         return "Faltan datos", 400
-    
     carrito = json.loads(carrito_json)
     total_general = 0
-    
     conn = get_db()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT id FROM clientes WHERE telefono = ?", (telefono,))
     cliente = cursor.fetchone()
-    
     if cliente:
         cliente_id = cliente[0]
     else:
         nombre_con_año = f"{nombre} Cliente {datetime.now().year}"
-        cursor.execute(
-            "INSERT INTO clientes (nombre, telefono) VALUES (?, ?)",
-            (nombre_con_año, telefono)
-        )
+        cursor.execute("INSERT INTO clientes (nombre, telefono) VALUES (?, ?)", (nombre_con_año, telefono))
         cliente_id = cursor.lastrowid
-    
     cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
     numero_pedido = cursor.fetchone()[0]
-    
     for item in carrito:
         producto_id = int(item['id'])
         cantidad = int(item['cantidad'])
-        
         cursor.execute("SELECT nombre, precio, stock FROM productos WHERE id = ?", (producto_id,))
         producto = cursor.fetchone()
-        
         if not producto:
             conn.close()
             return f"Error: producto no encontrado {item['nombre']}", 400
-        
         total_item = producto[1] * cantidad
         total_general += total_item
-        
         notas_completas = f"{tipo_servicio} | Pago: {metodo_pago}"
-        if item.get('notas'):
-            notas_completas += f" | {item['notas']}"
-        if notas:
-            notas_completas += f" | Sugerencia: {notas}"
-        
-        cursor.execute('''
-            INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id, 'qr', numero_pedido))
-        
+        if item.get('notas'): notas_completas += f" | {item['notas']}"
+        if notas: notas_completas += f" | Sugerencia: {notas}"
+        cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id, 'qr', numero_pedido))
         cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
-    
     puntos_sumados = int(total_general / 1000)
-    cursor.execute('''
-        UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ?
-        WHERE id = ?
-    ''', (total_general, puntos_sumados, cliente_id))
+    cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, cliente_id))
     if puntos_sumados > 0:
-        cursor.execute('''
-            INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo)
-            VALUES (?, ?, 'suma', 'Pedido por QR')
-        ''', (cliente_id, puntos_sumados))
-    
+        cursor.execute('''INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo) VALUES (?, ?, 'suma', 'Pedido por QR')''', (cliente_id, puntos_sumados))
     conn.commit()
-    
-    cursor.execute("""
-        SELECT COUNT(*) FROM ventas 
-        WHERE fecha >= datetime('now', '-30 minutes')
-    """)
-    pedidos_pendientes = cursor.fetchone()[0]
-    
-    if pedidos_pendientes >= 15:
-        demora_texto = "60 minutos"
-        mostrar_demora = True
-    elif pedidos_pendientes >= 12:
-        demora_texto = "50 minutos"
-        mostrar_demora = True
-    elif pedidos_pendientes >= 10:
-        demora_texto = "40 minutos"
-        mostrar_demora = True
-    else:
-        demora_texto = ""
-        mostrar_demora = False
-    
     conn.close()
-    
-    bloque_demora = ""
-    if mostrar_demora:
-        bloque_demora = f'<div class="demora">⏱️ Demora estimada: {demora_texto}</div>'
-    
-    return f"""
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pedido Confirmado</title>
-        <style>
-            body {{ background-color: #121212; color: white; font-family: Arial; text-align: center; padding: 30px; }}
-            h1 {{ color: #4CAF50; font-size: 32px; margin-bottom: 20px; }}
-            .info {{ background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 500px; margin: 20px auto; border: 2px solid #f4a460; }}
-            .numero {{ font-size: 40px; color: #f4a460; font-weight: bold; margin: 20px 0; }}
-            .demora {{ background-color: #ff9800; border: 2px solid #ff9800; color: #fff; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 18px; font-weight: bold; }}
-            a {{ color: #f4a460; text-decoration: none; font-size: 16px; }}
-            a:hover {{ text-decoration: underline; }}
-        </style>
-    </head>
-    <body>
-        <h1>✅ ¡Pedido Confirmado!</h1>
-        <div class="info">
-            <p>Gracias <strong>{nombre}</strong>,</p>
-            <p>tu pedido fue enviado a la cocina</p>
-            <div class="numero">N° {numero_pedido}</div>
-            {bloque_demora}
-            <p>🔔 Aguardá a ser llamado</p>
-        </div>
-        <a href="/pedido">← Hacer otro pedido</a>
-    </body>
-    </html>
-    """
+    return render_template('pedido_confirmado.html', nombre=nombre, numero_pedido=numero_pedido)
 
-# ==========================================
-# PWA - Service Worker
-# ==========================================
 @app.route('/service-worker.js')
 def service_worker():
     return send_from_directory('static', 'service-worker.js')
