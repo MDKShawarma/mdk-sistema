@@ -31,7 +31,7 @@
             background: #fff; color: #000; padding: 25px; border-radius: 15px;
             max-width: 400px; width: 100%; font-family: 'Courier New', monospace;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
+            margin-bottom: 0;
         }
         .comanda h2 { text-align: center; font-size: 22px; margin-bottom: 5px; }
         .comanda .subtitulo { text-align: center; font-size: 12px; color: #666; margin-bottom: 10px; }
@@ -45,6 +45,37 @@
         .comanda .fecha { text-align: center; font-size: 12px; color: #666; margin-bottom: 10px; }
         .comanda .btn-imprimir { display: block; width: 100%; padding: 15px; margin-top: 20px; background: #4CAF50; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .comanda .btn-cerrar { display: block; width: 100%; padding: 15px; margin-top: 10px; background: #555; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+
+        /* ============ TROQUELADO / LINEA DE CORTE ============ */
+        .linea-corte {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            color: #000;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+            padding: 15px 0;
+            margin: 0 auto;
+            border-top: 3px dashed #000;
+            border-bottom: 3px dashed #000;
+            background: #fff;
+            position: relative;
+            user-select: none;
+        }
+        .linea-corte .tijera {
+            display: inline-block;
+            font-size: 22px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .linea-corte .texto-corte {
+            font-size: 11px;
+            color: #666;
+            display: block;
+            margin-top: 5px;
+            letter-spacing: 2px;
+        }
 
         /* ============ MODAL DE PERSONALIZACION ============ */
         .modal-personalizacion {
@@ -121,13 +152,27 @@
                 width: 100% !important;
                 padding: 15px 20px !important;
                 margin: 0 !important;
-                page-break-after: always !important;
-                break-after: page !important;
             }
 
-            .comanda:last-of-type {
-                page-break-after: auto !important;
-                break-after: auto !important;
+            /* Troquelado visible en la impresión */
+            .linea-corte {
+                display: block !important;
+                visibility: visible !important;
+                background: white !important;
+                color: #000 !important;
+                border-top: 3px dashed #000 !important;
+                border-bottom: 3px dashed #000 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 15px 0 !important;
+                margin: 0 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .linea-corte * {
+                visibility: visible !important;
+                color: #000 !important;
             }
 
             .btn-imprimir, .btn-cerrar {
@@ -193,6 +238,12 @@
             <div style="text-align: center; font-size: 12px; margin-top: 10px;">
                 Total: ${{ "%.0f"|format(comanda.total) }} | {{ comanda.metodo_pago }}
             </div>
+        </div>
+
+        <!-- ============ TROQUELADO / LINEA DE CORTE ============ -->
+        <div class="linea-corte">
+            <span class="tijera">✂️</span> - - - - - - - - - - - - - - - - - - - - - - - - -
+            <span class="texto-corte">CORTAR AQUÍ</span>
         </div>
 
         <!-- ============ COPIA CLIENTE ============ -->
