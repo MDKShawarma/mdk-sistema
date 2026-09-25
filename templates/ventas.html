@@ -7,20 +7,11 @@
     <link rel="stylesheet" href="/static/style.css">
     <style>
         .alerta-pedido {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
-            color: white;
-            padding: 25px 40px;
-            border-radius: 20px;
-            border: 3px solid #fff;
-            box-shadow: 0 10px 40px rgba(76, 175, 80, 0.6);
-            z-index: 9999;
-            text-align: center;
-            animation: aparecer 0.5s ease, pulsar 1s infinite;
-            max-width: 90%;
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a); color: white;
+            padding: 25px 40px; border-radius: 20px; border: 3px solid #fff;
+            box-shadow: 0 10px 40px rgba(76, 175, 80, 0.6); z-index: 9999;
+            text-align: center; animation: aparecer 0.5s ease, pulsar 1s infinite; max-width: 90%;
         }
         .alerta-pedido .titulo { font-size: 20px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
         .alerta-pedido .numero { font-size: 50px; font-weight: bold; margin: 10px 0; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
@@ -31,23 +22,13 @@
 
         /* ============ COMANDA ============ */
         .comanda-container {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); z-index: 10000;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
         }
         .comanda {
-            background: #fff;
-            color: #000;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 400px;
-            width: 100%;
-            font-family: 'Courier New', monospace;
+            background: #fff; color: #000; padding: 30px; border-radius: 15px;
+            max-width: 400px; width: 100%; font-family: 'Courier New', monospace;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
         .comanda h2 { text-align: center; font-size: 24px; margin-bottom: 5px; }
@@ -57,125 +38,57 @@
         .comanda .fila.total { font-weight: bold; font-size: 20px; margin-top: 15px; }
         .comanda .numero-pedido { text-align: center; font-size: 60px; font-weight: bold; margin: 20px 0; }
         .comanda .fecha { text-align: center; font-size: 12px; color: #666; margin-bottom: 15px; }
-        .comanda .btn-imprimir {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-top: 20px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
+        .comanda .btn-imprimir { display: block; width: 100%; padding: 15px; margin-top: 20px; background: #4CAF50; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .comanda .btn-cerrar { display: block; width: 100%; padding: 15px; margin-top: 10px; background: #555; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+
+        /* ============ MODAL DE PERSONALIZACION ============ */
+        .modal-personalizacion {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); z-index: 10001;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
         }
-        .comanda .btn-cerrar {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-top: 10px;
-            background: #555;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
+        .modal-box {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #f4a460; border-radius: 20px;
+            padding: 25px; max-width: 450px; width: 100%; color: white;
         }
+        .modal-box h2 { color: #f4a460; text-align: center; margin-bottom: 20px; }
+        .modal-box .titulo-opciones { color: #f4a460; font-size: 14px; margin: 15px 0 10px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .opciones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .opcion-check {
+            background: #1a1a1a; border: 2px solid #333; border-radius: 10px;
+            padding: 12px; text-align: center; cursor: pointer;
+            font-size: 13px; color: #ccc; user-select: none; transition: all 0.2s; font-weight: 500;
+        }
+        .opcion-check:hover { border-color: #f4a460; }
+        .opcion-check.seleccionada { border-color: #f44336; background: linear-gradient(135deg, #2a1a1a, #3a2a2a); color: #fff; font-weight: bold; box-shadow: 0 0 15px rgba(244, 67, 54, 0.3); }
+        .modal-box .cantidad-control { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 20px 0; }
+        .modal-box .btn-cant { width: 50px; height: 50px; border-radius: 50%; border: none; font-size: 24px; font-weight: bold; cursor: pointer; }
+        .modal-box .btn-mas { background: #4CAF50; color: white; }
+        .modal-box .btn-menos { background: #f44336; color: white; }
+        .modal-box .cant { font-size: 28px; font-weight: bold; color: #f4a460; min-width: 50px; text-align: center; }
+        .modal-box .btn-agregar { width: 100%; padding: 15px; background: linear-gradient(135deg, #4CAF50, #2d7a4a); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .modal-box .btn-cancelar { width: 100%; padding: 15px; background: #555; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
         /* ============ CARRITO ============ */
-        .productos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .producto-btn {
-            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
-            border: 2px solid #333;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            color: white;
-            transition: all 0.2s;
-        }
-        .producto-btn:hover {
-            border-color: #f4a460;
-            transform: translateY(-3px);
-        }
+        .productos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .producto-btn { background: linear-gradient(135deg, #1e1e1e, #2a2a2a); border: 2px solid #333; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; color: white; transition: all 0.2s; }
+        .producto-btn:hover { border-color: #f4a460; transform: translateY(-3px); }
         .producto-btn .nombre { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
         .producto-btn .precio { color: #f4a460; font-size: 16px; font-weight: bold; }
-        .carrito-resumen {
-            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
-            border: 2px solid #f4a460;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .carrito-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #333;
-            font-size: 14px;
-        }
-        .carrito-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 22px;
-            font-weight: bold;
-            color: #f4a460;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #f4a460;
-        }
-        .btn-confirmar {
-            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-        }
+        .carrito-resumen { background: linear-gradient(135deg, #1e1e1e, #2a2a2a); border: 2px solid #f4a460; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .carrito-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
+        .carrito-total { display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; color: #f4a460; margin-top: 15px; padding-top: 15px; border-top: 2px solid #f4a460; }
+        .btn-confirmar { background: linear-gradient(135deg, #4CAF50, #2d7a4a); color: white; border: none; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
         .btn-confirmar:disabled { background: #333; color: #666; cursor: not-allowed; }
-        select, .input-campo {
-            width: 100%;
-            padding: 12px;
-            background: #1a1a1a;
-            color: white;
-            border: 2px solid #444;
-            border-radius: 10px;
-            font-size: 15px;
-            margin-bottom: 10px;
-        }
+        select, .input-campo { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px; }
 
-        /* ============ IMPRESION ============ */
         @media print {
             body * { visibility: hidden; }
             .comanda, .comanda * { visibility: visible; }
-            .comanda {
-                position: absolute;
-                left: 0; top: 0;
-                box-shadow: none;
-                background: white !important;
-                color: black !important;
-                border: none !important;
-                border-radius: 0 !important;
-                max-width: 100% !important;
-                width: 100% !important;
-            }
+            .comanda { position: absolute; left: 0; top: 0; box-shadow: none; background: white !important; color: black !important; border: none !important; border-radius: 0 !important; max-width: 100% !important; width: 100% !important; }
             .btn-imprimir, .btn-cerrar { display: none !important; }
-            .comanda-container {
-                background: white !important;
-                position: static !important;
-                padding: 0 !important;
-            }
+            .comanda-container { background: white !important; position: static !important; padding: 0 !important; }
         }
     </style>
 </head>
@@ -191,7 +104,6 @@
 
 <div class="content">
 
-    <!-- ============ COMANDA (aparece al hacer una venta) ============ -->
     {% if comanda %}
     <div class="comanda-container" id="comanda-container">
         <div class="comanda">
@@ -221,9 +133,7 @@
                 <span>{{ comanda.metodo_pago }}</span>
             </div>
             <div class="linea"></div>
-            <div style="text-align: center; font-size: 14px; margin-top: 15px;">
-                ¡Gracias por su compra!
-            </div>
+            <div style="text-align: center; font-size: 14px; margin-top: 15px;">¡Gracias por su compra!</div>
             <button class="btn-imprimir" onclick="window.print()">🖨️ IMPRIMIR TICKET</button>
             <button class="btn-cerrar" onclick="document.getElementById('comanda-container').style.display='none'">CERRAR</button>
         </div>
@@ -232,14 +142,13 @@
 
     <h1 style="color: #f4a460;">💰 Ventas del Día</h1>
 
-    <!-- ============ NUEVA VENTA (carrito) ============ -->
     <details style="background: #1e1e1e; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #f4a460;">
         <summary style="color: #f4a460; font-size: 20px; font-weight: bold; cursor: pointer;">➕ NUEVA VENTA (tocar para abrir)</summary>
         <div style="margin-top: 20px;">
 
             <div class="productos-grid" id="productos-grid">
                 {% for p in productos %}
-                <div class="producto-btn" onclick="agregarProducto({{ p[0] }}, '{{ p[1] }}', {{ p[2] }})">
+                <div class="producto-btn" onclick="abrirPersonalizacion({{ p[0] }}, '{{ p[1] }}', {{ p[2] }})">
                     <div class="nombre">{{ p[3] }} {{ p[1] }}</div>
                     <div class="precio">${{ "%.0f"|format(p[2]) }}</div>
                 </div>
@@ -271,7 +180,6 @@
         </div>
     </details>
 
-    <!-- ============ TABLA DE VENTAS ============ -->
     {% if ventas %}
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <tr style="background: #f4a460; color: #1a1a1a;">
@@ -310,18 +218,112 @@
     </div>
 </div>
 
+<!-- ============ MODAL DE PERSONALIZACION ============ -->
+<div id="modal-personalizacion" style="display: none;">
+    <div class="modal-personalizacion">
+        <div class="modal-box">
+            <h2 id="modal-titulo">Producto</h2>
+            <div id="modal-opciones"></div>
+            <div class="cantidad-control">
+                <button class="btn-cant btn-menos" onclick="cambiarCantidad(-1)">−</button>
+                <span class="cant" id="modal-cantidad">1</span>
+                <button class="btn-cant btn-mas" onclick="cambiarCantidad(1)">+</button>
+            </div>
+            <button class="btn-agregar" onclick="agregarAlCarrito()">✅ AGREGAR AL CARRITO</button>
+            <button class="btn-cancelar" onclick="cerrarModal()">CANCELAR</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // ============ CARRITO ============
     let carrito = [];
+    let productoActual = null;
+    let personalizacionesActuales = [];
+    let cantidadActual = 1;
 
-    function agregarProducto(id, nombre, precio) {
-        const item = carrito.find(i => i.id === id);
-        if (item) {
-            item.cantidad++;
+    function getTipoPersonalizacion(nombre) {
+        const n = nombre.toLowerCase();
+        if (n.includes('shawarma') || n.includes('falafel')) {
+            return { titulo: '🧂 ¿Qué querés sacarle?', opciones: ['Sin repollo', 'Sin tomate', 'Sin cebolla', 'Sin salsa'] };
+        }
+        if (n.includes('coca') || n.includes('gaseosa')) {
+            return { titulo: '🥤 Elegí el tipo', opciones: ['Normal', 'Zero'] };
+        }
+        if (n.includes('agua')) {
+            return { titulo: '💧 Elegí el tipo', opciones: ['Con gas', 'Sin gas'] };
+        }
+        if (n.includes('smudis')) {
+            return { titulo: '🍊 Elegí el gusto', opciones: ['Naranja/Frutilla', 'Pomelo', 'Manzana', 'Multifruta'] };
+        }
+        return null;
+    }
+
+    function abrirPersonalizacion(id, nombre, precio) {
+        productoActual = { id: id, nombre: nombre, precio: precio };
+        personalizacionesActuales = [];
+        cantidadActual = 1;
+
+        document.getElementById('modal-titulo').textContent = nombre;
+        document.getElementById('modal-cantidad').textContent = '1';
+
+        const pers = getTipoPersonalizacion(nombre);
+        const divOpciones = document.getElementById('modal-opciones');
+
+        if (pers) {
+            divOpciones.innerHTML = `
+                <div class="titulo-opciones">${pers.titulo}</div>
+                <div class="opciones-grid">
+                    ${pers.opciones.map(op => `
+                        <div class="opcion-check" onclick="toggleOpcion('${op}', this)">${op}</div>
+                    `).join('')}
+                </div>
+            `;
         } else {
-            carrito.push({ id: id, nombre: nombre, precio: precio, cantidad: 1 });
+            divOpciones.innerHTML = '';
+        }
+
+        document.getElementById('modal-personalizacion').style.display = 'block';
+    }
+
+    function toggleOpcion(opcion, elemento) {
+        const index = personalizacionesActuales.indexOf(opcion);
+        if (index === -1) {
+            personalizacionesActuales.push(opcion);
+            elemento.classList.add('seleccionada');
+        } else {
+            personalizacionesActuales.splice(index, 1);
+            elemento.classList.remove('seleccionada');
+        }
+    }
+
+    function cambiarCantidad(delta) {
+        cantidadActual += delta;
+        if (cantidadActual < 1) cantidadActual = 1;
+        document.getElementById('modal-cantidad').textContent = cantidadActual;
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-personalizacion').style.display = 'none';
+        productoActual = null;
+    }
+
+    function agregarAlCarrito() {
+        if (!productoActual) return;
+        const item = carrito.find(i => i.id === productoActual.id && JSON.stringify(i.notas) === JSON.stringify(personalizacionesActuales));
+        if (item) {
+            item.cantidad += cantidadActual;
+        } else {
+            carrito.push({
+                id: productoActual.id,
+                nombre: productoActual.nombre,
+                precio: productoActual.precio,
+                cantidad: cantidadActual,
+                notas: personalizacionesActuales.join(', ')
+            });
         }
         renderizarCarrito();
+        cerrarModal();
     }
 
     function renderizarCarrito() {
@@ -333,15 +335,26 @@
             return;
         }
         let total = 0;
-        div.innerHTML = carrito.map(i => {
+        div.innerHTML = carrito.map((i, idx) => {
             const subtotal = i.precio * i.cantidad;
             total += subtotal;
             return `<div class="carrito-item">
-                <span>${i.cantidad}x ${i.nombre}</span>
-                <span>$${subtotal}</span>
+                <div>
+                    <strong>${i.cantidad}x ${i.nombre}</strong>
+                    ${i.notas ? `<br><small style="color: #f4a460;">↳ ${i.notas}</small>` : ''}
+                </div>
+                <div>
+                    $${subtotal}
+                    <button onclick="eliminarItem(${idx})" style="background: #f44336; color: white; border: none; border-radius: 5px; padding: 3px 8px; margin-left: 10px; cursor: pointer;">X</button>
+                </div>
             </div>`;
         }).join('');
         totalSpan.textContent = '$' + total;
+    }
+
+    function eliminarItem(idx) {
+        carrito.splice(idx, 1);
+        renderizarCarrito();
     }
 
     function confirmarVenta() {
