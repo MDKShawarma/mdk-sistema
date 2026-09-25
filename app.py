@@ -269,7 +269,7 @@ def ventas():
                 cursor.execute("SELECT nombre, precio FROM productos WHERE id = ?", (producto_id,))
                 producto = cursor.fetchone()
                 total_item = producto[1] * cantidad
-                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (producto_id, cantidad, total_item, metodo_pago, notas, cliente_id if cliente_id else None, 'empleado', numero_pedido))
+                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas, cliente_id if cliente_id else None, 'empleado', numero_pedido))
                 cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
             if cliente_id:
                 puntos_sumados = int(total_general / 1000)
@@ -556,7 +556,7 @@ def pago_exitoso():
         total_general += total_item
         notas_completas = f"Pago: mercadopago (ONLINE) | Pago ID: {payment_id}"
         if item.get('notas'): notas_completas += f" | {item['notas']}"
-        cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido) VALUES (?, ?, ?, 'mercadopago', ?, ?, 'qr', ?)''', (producto_id, cantidad, total_item, notas_completas, cliente_id, numero_pedido))
+        cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, 'mercadopago', ?, ?, 'qr', ?, 0)''', (producto_id, cantidad, total_item, notas_completas, cliente_id, numero_pedido))
         cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
     puntos_sumados = int(total_general / 1000)
     cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, cliente_id))
@@ -611,7 +611,7 @@ def nuevo_pedido():
         notas_completas = f"{tipo_servicio} | Pago: {metodo_pago}"
         if item.get('notas'): notas_completas += f" | {item['notas']}"
         if notas: notas_completas += f" | Sugerencia: {notas}"
-        cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id, 'qr', numero_pedido))
+        cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id, 'qr', numero_pedido))
         cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
     puntos_sumados = int(total_general / 1000)
     cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, cliente_id))
@@ -620,24 +620,17 @@ def nuevo_pedido():
     conn.commit()
     conn.close()
     return render_template('pedido_confirmado.html', nombre=nombre, numero_pedido=numero_pedido)
+
 # ==========================================
 # API - Pedidos nuevos pagados (para la pantalla de ventas)
 # ==========================================
 @app.route('/api/pedidos_nuevos')
 @login_requerido_empleado
 def api_pedidos_nuevos():
-    """Devuelve los pedidos pagados en los últimos 2 minutos"""
     conn = get_db()
     cursor = conn.cursor()
-    
-    # Buscar pedidos pagados con MercadoPago en los últimos 2 minutos
     cursor.execute("""
-        SELECT 
-            v.numero_pedido,
-            p.nombre as producto,
-            v.cantidad,
-            v.total,
-            v.fecha
+        SELECT v.numero_pedido, p.nombre as producto, v.cantidad, v.total, v.fecha
         FROM ventas v
         JOIN productos p ON v.producto_id = p.id
         WHERE v.metodo_pago = 'mercadopago'
@@ -647,23 +640,90 @@ def api_pedidos_nuevos():
     """)
     pedidos = cursor.fetchall()
     conn.close()
-    
-    # Agrupar por número de pedido
     pedidos_agrupados = {}
     for p in pedidos:
         num = p['numero_pedido']
         if num not in pedidos_agrupados:
-            pedidos_agrupados[num] = {
-                'numero_pedido': num,
-                'productos': [],
-                'total': 0,
-                'fecha': p['fecha']
-            }
+            pedidos_agrupados[num] = {'numero_pedido': num, 'productos': [], 'total': 0, 'fecha': p['fecha']}
         pedidos_agrupados[num]['productos'].append(f"{p['producto']} x{p['cantidad']}")
         pedidos_agrupados[num]['total'] += p['total']
-    
     return json.dumps(list(pedidos_agrupados.values()))
 
+
+# ==========================================
+# API - Impresión de comandas
+# ==========================================
+@app.route('/api/pedidos_para_imprimir')
+@login_requerido_empleado
+def api_pedidos_para_imprimir():
+    """Devuelve pedidos no impresos agrupados por número de pedido"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 
+            v.id,
+            v.numero_pedido,
+            v.cantidad,
+            v.total,
+            v.metodo_pago,
+            v.notas,
+            v.fecha,
+            p.nombre as producto,
+            c.nombre as cliente
+        FROM ventas v
+        JOIN productos p ON v.producto_id = p.id
+        LEFT JOIN clientes c ON v.cliente_id = c.id
+        WHERE v.impreso = 0
+        ORDER BY v.numero_pedido, v.id
+    """)
+    filas = cursor.fetchall()
+    conn.close()
+    pedidos = {}
+    for f in filas:
+        num = f['numero_pedido']
+        if num not in pedidos:
+            pedidos[num] = {
+                'numero_pedido': num,
+                'fecha': f['fecha'],
+                'metodo_pago': f['metodo_pago'],
+                'cliente': f['cliente'] or 'Sin cliente',
+                'ids_venta': [],
+                'items': [],
+                'total': 0
+            }
+        pedidos[num]['ids_venta'].append(f['id'])
+        pedidos[num]['items'].append({
+            'cantidad': f['cantidad'],
+            'producto': f['producto'],
+            'notas': f['notas'] or ''
+        })
+        pedidos[num]['total'] += f['total']
+    return json.dumps(list(pedidos.values()))
+
+
+@app.route('/api/marcar_impreso', methods=['POST'])
+@login_requerido_empleado
+def api_marcar_impreso():
+    """Marca los pedidos como impresos"""
+    ids_json = request.form.get('ids_venta')
+    if not ids_json:
+        return "Faltan datos", 400
+    try:
+        ids = json.loads(ids_json)
+    except:
+        return "Datos inválidos", 400
+    conn = get_db()
+    cursor = conn.cursor()
+    for id_venta in ids:
+        cursor.execute("UPDATE ventas SET impreso = 1 WHERE id = ?", (id_venta,))
+    conn.commit()
+    conn.close()
+    return json.dumps({"ok": True, "marcados": len(ids)})
+
+
+# ==========================================
+# PWA - Service Worker
+# ==========================================
 @app.route('/service-worker.js')
 def service_worker():
     return send_from_directory('static', 'service-worker.js')

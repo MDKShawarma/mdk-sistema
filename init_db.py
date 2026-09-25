@@ -58,9 +58,17 @@ def inicializar_base_datos():
             cliente_id INTEGER,
             tipo_origen TEXT DEFAULT 'empleado',
             numero_pedido INTEGER,
+            impreso INTEGER DEFAULT 0,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
+    # Agregar columna impreso si no existe (por si la tabla ya existía)
+    try:
+        cursor.execute("ALTER TABLE ventas ADD COLUMN impreso INTEGER DEFAULT 0")
+        print("✅ Columna 'impreso' agregada a ventas")
+    except sqlite3.OperationalError:
+        pass
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS gastos (
