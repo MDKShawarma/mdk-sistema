@@ -103,9 +103,11 @@
 
         /* ============ IMPRESION ============ */
         @media print {
-            body > *:not(.comanda-container) { display: none !important; }
-            .content { display: none !important; }
+            /* Ocultar header y content */
             .header { display: none !important; }
+            .content { display: none !important; }
+            
+            /* Mostrar solo comanda-container */
             .comanda-container {
                 display: block !important;
                 position: static !important;
@@ -116,16 +118,19 @@
                 height: auto !important;
                 overflow: visible !important;
             }
+            
             .comanda-container > div:last-child { display: none !important; }
+            
             .comanda {
                 background: white !important; color: black !important;
                 box-shadow: none !important; border: none !important; border-radius: 0 !important;
                 max-width: 100% !important; width: 100% !important;
-                padding: 10px !important; margin: 0 !important;
+                padding: 10px 15px !important; margin: 0 !important;
                 page-break-after: always !important;
                 break-after: page !important;
             }
             .comanda:last-of-type { page-break-after: auto !important; break-after: auto !important; }
+            
             .linea-corte {
                 display: block !important;
                 background: white !important; color: #000 !important;
@@ -133,7 +138,9 @@
                 width: 100% !important; padding: 10px 0 !important; margin: 0 !important;
                 page-break-inside: avoid !important;
             }
+            
             .btn-imprimir, .btn-cerrar { display: none !important; }
+            
             .copia-cocina {
                 background: #d32f2f !important; color: #fff !important;
                 -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
@@ -142,6 +149,7 @@
                 background: #1976d2 !important; color: #fff !important;
                 -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
+            
             @page { size: 58mm auto; margin: 0; }
         }
     </style>
@@ -156,82 +164,82 @@
     <div class="header-subtitle">Ventas</div>
 </div>
 
-<div class="content">
+{% if comanda %}
+<div class="comanda-container" id="comanda-container">
 
-    {% if comanda %}
-    <div class="comanda-container" id="comanda-container">
-
-        <!-- ============ COPIA COCINA ============ -->
-        <div class="comanda">
-            <h2>MDK SHAWARMA</h2>
-            <div class="subtitulo">Maison du Kebab</div>
-            <div class="copia copia-cocina">👨‍🍳 COCINA</div>
-            <div class="fecha">{{ comanda.fecha }}</div>
-            <div class="linea"></div>
-            <div style="text-align: center; font-size: 14px;">PEDIDO</div>
-            <div class="numero-pedido">N° {{ comanda.pedido_id }}</div>
-            <div class="linea"></div>
-            {% for item in comanda.productos_comanda %}
-            <div class="fila">
-                <span><strong>{{ item.cantidad }}x {{ item.nombre }}</strong></span>
-            </div>
-            {% if item.notas %}
-            <div style="font-size: 13px; color: #d32f2f; margin-bottom: 8px; font-weight: bold;">⚠️ {{ item.notas }}</div>
-            {% endif %}
-            {% endfor %}
-            <div class="linea"></div>
-            <div style="text-align: center; font-size: 12px; margin-top: 10px;">
-                Total: ${{ "%.0f"|format(comanda.total) }} | {{ comanda.metodo_pago }}
-            </div>
+    <!-- ============ COPIA COCINA ============ -->
+    <div class="comanda">
+        <h2>MDK SHAWARMA</h2>
+        <div class="subtitulo">Maison du Kebab</div>
+        <div class="copia copia-cocina">👨‍🍳 COCINA</div>
+        <div class="fecha">{{ comanda.fecha }}</div>
+        <div class="linea"></div>
+        <div style="text-align: center; font-size: 14px;">PEDIDO</div>
+        <div class="numero-pedido">N° {{ comanda.pedido_id }}</div>
+        <div class="linea"></div>
+        {% for item in comanda.productos_comanda %}
+        <div class="fila">
+            <span><strong>{{ item.cantidad }}x {{ item.nombre }}</strong></span>
         </div>
-
-        <!-- ============ TROQUELADO / LINEA DE CORTE ============ -->
-        <div class="linea-corte">
-            <span class="tijera">✂️</span> - - - - - - - - - - - - - - - - - - - - - - - - -
-            <span class="texto-corte">CORTAR AQUÍ</span>
-        </div>
-
-        <!-- ============ COPIA CLIENTE ============ -->
-        <div class="comanda">
-            <h2>MDK SHAWARMA</h2>
-            <div class="subtitulo">Maison du Kebab</div>
-            <div class="copia copia-cliente">🧾 CLIENTE</div>
-            <div class="fecha">{{ comanda.fecha }}</div>
-            <div class="linea"></div>
-            <div style="text-align: center; font-size: 14px;">PEDIDO</div>
-            <div class="numero-pedido">N° {{ comanda.pedido_id }}</div>
-            <div class="linea"></div>
-            {% for item in comanda.productos_comanda %}
-            <div class="fila">
-                <span>{{ item.cantidad }}x {{ item.nombre }}</span>
-                <span>${{ "%.0f"|format(item.precio * item.cantidad) }}</span>
-            </div>
-            {% if item.notas %}
-            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">↳ {{ item.notas }}</div>
-            {% endif %}
-            {% endfor %}
-            <div class="linea"></div>
-            <div class="fila total">
-                <span>TOTAL:</span>
-                <span>${{ "%.0f"|format(comanda.total) }}</span>
-            </div>
-            <div class="fila">
-                <span>Método:</span>
-                <span>{{ comanda.metodo_pago }}</span>
-            </div>
-            <div class="linea"></div>
-            <div style="text-align: center; font-size: 13px; margin-top: 15px;">
-                ¡Gracias por su compra!<br>
-                Vuelva pronto 🙏
-            </div>
-        </div>
-
-        <div style="text-align: center; padding: 10px;">
-            <button class="btn-imprimir" onclick="window.print()" style="max-width: 400px;">🖨️ IMPRIMIR (navegador)</button>
-            <button class="btn-cerrar" onclick="document.getElementById('comanda-container').style.display='none'" style="max-width: 400px;">CERRAR</button>
+        {% if item.notas %}
+        <div style="font-size: 13px; color: #d32f2f; margin-bottom: 8px; font-weight: bold;">⚠️ {{ item.notas }}</div>
+        {% endif %}
+        {% endfor %}
+        <div class="linea"></div>
+        <div style="text-align: center; font-size: 12px; margin-top: 10px;">
+            Total: ${{ "%.0f"|format(comanda.total) }} | {{ comanda.metodo_pago }}
         </div>
     </div>
-    {% endif %}
+
+    <!-- ============ TROQUELADO / LINEA DE CORTE ============ -->
+    <div class="linea-corte">
+        <span class="tijera">✂️</span> - - - - - - - - - - - - - - - - - - - - - - - - -
+        <span class="texto-corte">CORTAR AQUÍ</span>
+    </div>
+
+    <!-- ============ COPIA CLIENTE ============ -->
+    <div class="comanda">
+        <h2>MDK SHAWARMA</h2>
+        <div class="subtitulo">Maison du Kebab</div>
+        <div class="copia copia-cliente">🧾 CLIENTE</div>
+        <div class="fecha">{{ comanda.fecha }}</div>
+        <div class="linea"></div>
+        <div style="text-align: center; font-size: 14px;">PEDIDO</div>
+        <div class="numero-pedido">N° {{ comanda.pedido_id }}</div>
+        <div class="linea"></div>
+        {% for item in comanda.productos_comanda %}
+        <div class="fila">
+            <span>{{ item.cantidad }}x {{ item.nombre }}</span>
+            <span>${{ "%.0f"|format(item.precio * item.cantidad) }}</span>
+        </div>
+        {% if item.notas %}
+        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">↳ {{ item.notas }}</div>
+        {% endif %}
+        {% endfor %}
+        <div class="linea"></div>
+        <div class="fila total">
+            <span>TOTAL:</span>
+            <span>${{ "%.0f"|format(comanda.total) }}</span>
+        </div>
+        <div class="fila">
+            <span>Método:</span>
+            <span>{{ comanda.metodo_pago }}</span>
+        </div>
+        <div class="linea"></div>
+        <div style="text-align: center; font-size: 13px; margin-top: 15px;">
+            ¡Gracias por su compra!<br>
+            Vuelva pronto 🙏
+        </div>
+    </div>
+
+    <div style="text-align: center; padding: 10px;">
+        <button class="btn-imprimir" onclick="window.print()" style="max-width: 400px;">🖨️ IMPRIMIR (navegador)</button>
+        <button class="btn-cerrar" onclick="document.getElementById('comanda-container').style.display='none'" style="max-width: 400px;">CERRAR</button>
+    </div>
+</div>
+{% endif %}
+
+<div class="content">
 
     <h1 style="color: #f4a460;">💰 Ventas del Día</h1>
 
@@ -578,7 +586,6 @@
                 .trim();
         }
 
-        // ============ COMANDA COCINA ============
         let cocina = '';
         cocina += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cocina += centrarTexto('Maison du Kebab', ancho) + '\n';
@@ -597,10 +604,8 @@
         cocina += guion + '\n';
         cocina += centrarTexto('Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago), ancho) + '\n';
 
-        // ============ LINEA DE CORTE ============
         const corte = guion + '\n' + centrarTexto('CORTAR AQUI', ancho) + '\n' + guion + '\n';
 
-        // ============ COMANDA CLIENTE ============
         let cliente = '';
         cliente += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cliente += centrarTexto('Maison du Kebab', ancho) + '\n';
