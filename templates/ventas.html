@@ -24,20 +24,25 @@
         .comanda-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); z-index: 10000;
-            display: flex; align-items: center; justify-content: center; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 20px; overflow-y: auto;
         }
         .comanda {
-            background: #fff; color: #000; padding: 30px; border-radius: 15px;
+            background: #fff; color: #000; padding: 25px; border-radius: 15px;
             max-width: 400px; width: 100%; font-family: 'Courier New', monospace;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
         }
-        .comanda h2 { text-align: center; font-size: 24px; margin-bottom: 5px; }
-        .comanda .subtitulo { text-align: center; font-size: 12px; color: #666; margin-bottom: 15px; }
-        .comanda .linea { border-top: 1px dashed #000; margin: 15px 0; }
-        .comanda .fila { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
-        .comanda .fila.total { font-weight: bold; font-size: 20px; margin-top: 15px; }
-        .comanda .numero-pedido { text-align: center; font-size: 60px; font-weight: bold; margin: 20px 0; }
-        .comanda .fecha { text-align: center; font-size: 12px; color: #666; margin-bottom: 15px; }
+        .comanda h2 { text-align: center; font-size: 22px; margin-bottom: 5px; }
+        .comanda .subtitulo { text-align: center; font-size: 12px; color: #666; margin-bottom: 10px; }
+        .comanda .copia { text-align: center; font-size: 18px; font-weight: bold; background: #000; color: #fff; padding: 8px; margin: 10px 0; letter-spacing: 3px; }
+        .comanda .copia-cocina { background: #d32f2f; color: #fff; }
+        .comanda .copia-cliente { background: #1976d2; color: #fff; }
+        .comanda .linea { border-top: 1px dashed #000; margin: 12px 0; }
+        .comanda .fila { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+        .comanda .fila.total { font-weight: bold; font-size: 18px; margin-top: 12px; }
+        .comanda .numero-pedido { text-align: center; font-size: 55px; font-weight: bold; margin: 15px 0; }
+        .comanda .fecha { text-align: center; font-size: 12px; color: #666; margin-bottom: 10px; }
         .comanda .btn-imprimir { display: block; width: 100%; padding: 15px; margin-top: 20px; background: #4CAF50; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .comanda .btn-cerrar { display: block; width: 100%; padding: 15px; margin-top: 10px; background: #555; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
@@ -83,12 +88,13 @@
         .btn-confirmar:disabled { background: #333; color: #666; cursor: not-allowed; }
         select, .input-campo { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px; }
 
+        /* ============ IMPRESION ============ */
         @media print {
             body * { visibility: hidden; }
-            .comanda, .comanda * { visibility: visible; }
-            .comanda { position: absolute; left: 0; top: 0; box-shadow: none; background: white !important; color: black !important; border: none !important; border-radius: 0 !important; max-width: 100% !important; width: 100% !important; }
+            .comanda-container { visibility: visible; position: absolute; left: 0; top: 0; background: white !important; padding: 0 !important; display: block !important; }
+            .comanda { visibility: visible; box-shadow: none; background: white !important; color: black !important; border: none !important; border-radius: 0 !important; max-width: 100% !important; width: 100% !important; page-break-after: always; margin: 0 !important; padding: 15px !important; }
+            .comanda:last-child { page-break-after: auto; }
             .btn-imprimir, .btn-cerrar { display: none !important; }
-            .comanda-container { background: white !important; position: static !important; padding: 0 !important; }
         }
     </style>
 </head>
@@ -106,9 +112,36 @@
 
     {% if comanda %}
     <div class="comanda-container" id="comanda-container">
+
+        <!-- ============ COPIA COCINA ============ -->
         <div class="comanda">
             <h2>MDK SHAWARMA</h2>
             <div class="subtitulo">Maison du Kebab</div>
+            <div class="copia copia-cocina">👨‍🍳 COCINA</div>
+            <div class="fecha">{{ comanda.fecha }}</div>
+            <div class="linea"></div>
+            <div style="text-align: center; font-size: 14px;">PEDIDO</div>
+            <div class="numero-pedido">N° {{ comanda.pedido_id }}</div>
+            <div class="linea"></div>
+            {% for item in comanda.productos_comanda %}
+            <div class="fila">
+                <span><strong>{{ item.cantidad }}x {{ item.nombre }}</strong></span>
+            </div>
+            {% if item.notas %}
+            <div style="font-size: 13px; color: #d32f2f; margin-bottom: 8px; font-weight: bold;">⚠️ {{ item.notas }}</div>
+            {% endif %}
+            {% endfor %}
+            <div class="linea"></div>
+            <div style="text-align: center; font-size: 12px; margin-top: 10px;">
+                Total: ${{ "%.0f"|format(comanda.total) }} | {{ comanda.metodo_pago }}
+            </div>
+        </div>
+
+        <!-- ============ COPIA CLIENTE ============ -->
+        <div class="comanda">
+            <h2>MDK SHAWARMA</h2>
+            <div class="subtitulo">Maison du Kebab</div>
+            <div class="copia copia-cliente">🧾 CLIENTE</div>
             <div class="fecha">{{ comanda.fecha }}</div>
             <div class="linea"></div>
             <div style="text-align: center; font-size: 14px;">PEDIDO</div>
@@ -133,9 +166,15 @@
                 <span>{{ comanda.metodo_pago }}</span>
             </div>
             <div class="linea"></div>
-            <div style="text-align: center; font-size: 14px; margin-top: 15px;">¡Gracias por su compra!</div>
-            <button class="btn-imprimir" onclick="window.print()">🖨️ IMPRIMIR TICKET</button>
-            <button class="btn-cerrar" onclick="document.getElementById('comanda-container').style.display='none'">CERRAR</button>
+            <div style="text-align: center; font-size: 13px; margin-top: 15px;">
+                ¡Gracias por su compra!<br>
+                Vuelva pronto 🙏
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 10px;">
+            <button class="btn-imprimir" onclick="window.print()" style="max-width: 400px;">🖨️ IMPRIMIR DUPLICADO</button>
+            <button class="btn-cerrar" onclick="document.getElementById('comanda-container').style.display='none'" style="max-width: 400px;">CERRAR</button>
         </div>
     </div>
     {% endif %}
@@ -310,7 +349,7 @@
 
     function agregarAlCarrito() {
         if (!productoActual) return;
-        const item = carrito.find(i => i.id === productoActual.id && JSON.stringify(i.notas) === JSON.stringify(personalizacionesActuales));
+        const item = carrito.find(i => i.id === productoActual.id && i.notas === personalizacionesActuales.join(', '));
         if (item) {
             item.cantidad += cantidadActual;
         } else {
