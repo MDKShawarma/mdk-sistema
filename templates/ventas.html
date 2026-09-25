@@ -16,7 +16,8 @@
         .alerta-pedido .titulo { font-size: 20px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
         .alerta-pedido .numero { font-size: 50px; font-weight: bold; margin: 10px 0; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
         .alerta-pedido .detalle { font-size: 16px; margin-top: 10px; opacity: 0.95; }
-        .alerta-pedido .cerrar { margin-top: 15px; padding: 10px 20px; background: rgba(255,255,255,0.2); border: 2px solid white; color: white; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .alerta-pedido .cerrar { margin-top: 15px; padding: 12px 25px; background: rgba(255,255,255,0.3); border: 2px solid white; color: white; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; margin: 5px; }
+        .alerta-pedido .btn-imprimir-alerta { background: #ff9800; border-color: #fff; font-size: 17px; padding: 15px 30px; }
         @keyframes aparecer { from { opacity: 0; transform: translateX(-50%) translateY(-30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         @keyframes pulsar { 0%, 100% { box-shadow: 0 10px 40px rgba(76, 175, 80, 0.6); } 50% { box-shadow: 0 10px 60px rgba(76, 175, 80, 0.9); } }
 
@@ -48,34 +49,15 @@
 
         /* ============ TROQUELADO / LINEA DE CORTE ============ */
         .linea-corte {
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            color: #000;
-            font-size: 16px;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 3px;
-            padding: 15px 0;
-            margin: 0 auto;
-            border-top: 3px dashed #000;
-            border-bottom: 3px dashed #000;
-            background: #fff;
-            position: relative;
-            user-select: none;
+            width: 100%; max-width: 400px;
+            text-align: center; color: #000; font-size: 16px;
+            font-family: 'Courier New', monospace; letter-spacing: 3px;
+            padding: 15px 0; margin: 0 auto;
+            border-top: 3px dashed #000; border-bottom: 3px dashed #000;
+            background: #fff; position: relative; user-select: none;
         }
-        .linea-corte .tijera {
-            display: inline-block;
-            font-size: 22px;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-        .linea-corte .texto-corte {
-            font-size: 11px;
-            color: #666;
-            display: block;
-            margin-top: 5px;
-            letter-spacing: 2px;
-        }
+        .linea-corte .tijera { display: inline-block; font-size: 22px; margin-right: 10px; vertical-align: middle; }
+        .linea-corte .texto-corte { font-size: 11px; color: #666; display: block; margin-top: 5px; letter-spacing: 2px; }
 
         /* ============ MODAL DE PERSONALIZACION ============ */
         .modal-personalizacion {
@@ -119,84 +101,40 @@
         .btn-confirmar:disabled { background: #333; color: #666; cursor: not-allowed; }
         select, .input-campo { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px; }
 
-        /* ============ IMPRESION ============ */
+        /* ============ IMPRESION (para navegador de la compu) ============ */
         @media print {
-            body * {
-                visibility: hidden;
-            }
-
-            .comanda-container,
-            .comanda-container * {
-                visibility: visible;
-            }
-
+            body * { visibility: hidden; }
+            .comanda-container, .comanda-container * { visibility: visible; }
             .comanda-container {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                display: block !important;
-                overflow: visible !important;
+                position: absolute !important; left: 0 !important; top: 0 !important;
+                width: 100% !important; background: white !important;
+                padding: 0 !important; margin: 0 !important;
+                display: block !important; overflow: visible !important;
             }
-
             .comanda {
-                background: white !important;
-                color: black !important;
-                box-shadow: none !important;
-                border: none !important;
-                border-radius: 0 !important;
-                max-width: 100% !important;
-                width: 100% !important;
-                padding: 15px 20px !important;
-                margin: 0 !important;
+                background: white !important; color: black !important;
+                box-shadow: none !important; border: none !important; border-radius: 0 !important;
+                max-width: 100% !important; width: 100% !important;
+                padding: 15px 20px !important; margin: 0 !important;
             }
-
-            /* Troquelado visible en la impresión */
             .linea-corte {
-                display: block !important;
-                visibility: visible !important;
-                background: white !important;
-                color: #000 !important;
-                border-top: 3px dashed #000 !important;
-                border-bottom: 3px dashed #000 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 15px 0 !important;
-                margin: 0 !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
+                display: block !important; visibility: visible !important;
+                background: white !important; color: #000 !important;
+                border-top: 3px dashed #000 !important; border-bottom: 3px dashed #000 !important;
+                width: 100% !important; max-width: 100% !important;
+                padding: 15px 0 !important; margin: 0 !important;
+                page-break-inside: avoid !important; break-inside: avoid !important;
             }
-
-            .linea-corte * {
-                visibility: visible !important;
-                color: #000 !important;
-            }
-
-            .btn-imprimir, .btn-cerrar {
-                display: none !important;
-                visibility: hidden !important;
-            }
-
-            .comanda-container > div:last-child {
-                display: none !important;
-                visibility: hidden !important;
-            }
-
+            .linea-corte * { visibility: visible !important; color: #000 !important; }
+            .btn-imprimir, .btn-cerrar { display: none !important; visibility: hidden !important; }
+            .comanda-container > div:last-child { display: none !important; visibility: hidden !important; }
             .copia-cocina {
-                background: #d32f2f !important;
-                color: #fff !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                background: #d32f2f !important; color: #fff !important;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
-
             .copia-cliente {
-                background: #1976d2 !important;
-                color: #fff !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                background: #1976d2 !important; color: #fff !important;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
         }
     </style>
@@ -282,7 +220,7 @@
         </div>
 
         <div style="text-align: center; padding: 10px;">
-            <button class="btn-imprimir" onclick="window.print()" style="max-width: 400px;">🖨️ IMPRIMIR DUPLICADO</button>
+            <button class="btn-imprimir" onclick="window.print()" style="max-width: 400px;">🖨️ IMPRIMIR (navegador)</button>
             <button class="btn-cerrar" onclick="document.getElementById('comanda-container').style.display='none'" style="max-width: 400px;">CERRAR</button>
         </div>
     </div>
@@ -578,6 +516,7 @@
     function mostrarAlerta(pedido) {
         const alerta = document.createElement('div');
         alerta.className = 'alerta-pedido';
+        alerta.id = 'alerta-' + pedido.numero_pedido;
         alerta.innerHTML = `
             <div class="titulo">🔔 PEDIDO PAGADO</div>
             <div class="numero">N° ${pedido.numero_pedido}</div>
@@ -585,12 +524,113 @@
                 ${pedido.productos.join('<br>')}<br>
                 <strong>Total: $${pedido.total}</strong>
             </div>
+            <button class="cerrar btn-imprimir-alerta" onclick="imprimirPedido(${pedido.numero_pedido})">🖨️ IMPRIMIR COMANDA</button>
             <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
         `;
         const existentes = document.querySelectorAll('.alerta-pedido');
-        if (existentes.length > 0) alerta.style.top = (20 + (existentes.length * 260)) + 'px';
+        if (existentes.length > 0) alerta.style.top = (20 + (existentes.length * 320)) + 'px';
         document.body.appendChild(alerta);
-        setTimeout(() => { if (alerta.parentElement) alerta.remove(); }, 120000);
+        setTimeout(() => { if (alerta.parentElement) alerta.remove(); }, 300000);
+    }
+
+    // ============ IMPRESIÓN VÍA RAWBT ============
+    function imprimirPedido(numeroPedido) {
+        // 1) Pedir al servidor los datos completos del pedido
+        fetch('/api/pedidos_para_imprimir')
+            .then(r => r.json())
+            .then(pedidos => {
+                const pedido = pedidos.find(p => p.numero_pedido === numeroPedido);
+                if (!pedido) {
+                    alert('Pedido no encontrado o ya impreso');
+                    return;
+                }
+                generarYEnviarARawBT(pedido);
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error al obtener el pedido');
+            });
+    }
+
+    function centrarTexto(txt, ancho) {
+        txt = String(txt).substring(0, ancho);
+        const esp = ancho - txt.length;
+        const izq = Math.floor(esp / 2);
+        return ' '.repeat(izq) + txt + ' '.repeat(esp - izq);
+    }
+
+    function generarYEnviarARawBT(pedido) {
+        const ancho = 32;
+        const linea = '================================';
+        const guion = '--------------------------------';
+
+        // ============ COMANDA COCINA ============
+        let cocina = '';
+        cocina += centrarTexto('MDK SHAWARMA', ancho) + '\n';
+        cocina += centrarTexto('Maison du Kebab', ancho) + '\n';
+        cocina += linea + '\n';
+        cocina += centrarTexto('*** COCINA ***', ancho) + '\n';
+        cocina += linea + '\n';
+        cocina += centrarTexto('PEDIDO N ' + pedido.numero_pedido, ancho) + '\n';
+        cocina += centrarTexto(pedido.fecha, ancho) + '\n';
+        cocina += guion + '\n';
+        pedido.items.forEach(function(item) {
+            cocina += item.cantidad + 'x ' + item.producto + '\n';
+            if (item.notas) {
+                cocina += '   > ' + item.notas + '\n';
+            }
+        });
+        cocina += guion + '\n';
+        cocina += centrarTexto('Total: $' + pedido.total + ' | ' + pedido.metodo_pago, ancho) + '\n';
+        cocina += '\n\n';
+
+        // ============ LINEA DE CORTE ============
+        const corte = '\n' + guion + '\n' + centrarTexto('CORTAR AQUI', ancho) + '\n' + guion + '\n\n';
+
+        // ============ COMANDA CLIENTE ============
+        let cliente = '';
+        cliente += centrarTexto('MDK SHAWARMA', ancho) + '\n';
+        cliente += centrarTexto('Maison du Kebab', ancho) + '\n';
+        cliente += linea + '\n';
+        cliente += centrarTexto('*** CLIENTE ***', ancho) + '\n';
+        cliente += linea + '\n';
+        cliente += centrarTexto('PEDIDO N ' + pedido.numero_pedido, ancho) + '\n';
+        cliente += centrarTexto(pedido.fecha, ancho) + '\n';
+        cliente += guion + '\n';
+        pedido.items.forEach(function(item) {
+            cliente += item.cantidad + 'x ' + item.producto + '\n';
+        });
+        cliente += guion + '\n';
+        cliente += centrarTexto('TOTAL: $' + pedido.total, ancho) + '\n';
+        cliente += centrarTexto('Metodo: ' + pedido.metodo_pago, ancho) + '\n';
+        cliente += guion + '\n';
+        cliente += '\n' + centrarTexto('Gracias por su compra!', ancho) + '\n';
+        cliente += centrarTexto('Vuelva pronto', ancho) + '\n\n\n';
+
+        const textoCompleto = cocina + corte + cliente;
+
+        // Enviar a RawBT
+        const encoded = encodeURIComponent(textoCompleto);
+        window.location.href = 'rawbt:' + encoded;
+
+        // Marcar como impreso en el servidor
+        fetch('/api/marcar_impreso', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'ids_venta=' + encodeURIComponent(JSON.stringify(pedido.ids_venta))
+        }).then(function() {
+            console.log('Pedido ' + pedido.numero_pedido + ' marcado como impreso');
+            // Actualizar el cartel
+            const alerta = document.getElementById('alerta-' + pedido.numero_pedido);
+            if (alerta) {
+                const btn = alerta.querySelector('.btn-imprimir-alerta');
+                if (btn) {
+                    btn.textContent = '✅ IMPRESO';
+                    btn.style.background = '#4CAF50';
+                    btn.disabled = true;
+                }
+            }
+        });
     }
 
     setInterval(consultarPedidos, 10000);
