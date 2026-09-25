@@ -22,48 +22,160 @@
             animation: aparecer 0.5s ease, pulsar 1s infinite;
             max-width: 90%;
         }
-        
-        .alerta-pedido .titulo {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .alerta-pedido .titulo { font-size: 20px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .alerta-pedido .numero { font-size: 50px; font-weight: bold; margin: 10px 0; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
+        .alerta-pedido .detalle { font-size: 16px; margin-top: 10px; opacity: 0.95; }
+        .alerta-pedido .cerrar { margin-top: 15px; padding: 10px 20px; background: rgba(255,255,255,0.2); border: 2px solid white; color: white; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        @keyframes aparecer { from { opacity: 0; transform: translateX(-50%) translateY(-30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes pulsar { 0%, 100% { box-shadow: 0 10px 40px rgba(76, 175, 80, 0.6); } 50% { box-shadow: 0 10px 60px rgba(76, 175, 80, 0.9); } }
+
+        /* ============ COMANDA ============ */
+        .comanda-container {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        
-        .alerta-pedido .numero {
-            font-size: 50px;
-            font-weight: bold;
-            margin: 10px 0;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        .comanda {
+            background: #fff;
+            color: #000;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 100%;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
-        
-        .alerta-pedido .detalle {
-            font-size: 16px;
-            margin-top: 10px;
-            opacity: 0.95;
-        }
-        
-        .alerta-pedido .cerrar {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border: 2px solid white;
+        .comanda h2 { text-align: center; font-size: 24px; margin-bottom: 5px; }
+        .comanda .subtitulo { text-align: center; font-size: 12px; color: #666; margin-bottom: 15px; }
+        .comanda .linea { border-top: 1px dashed #000; margin: 15px 0; }
+        .comanda .fila { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
+        .comanda .fila.total { font-weight: bold; font-size: 20px; margin-top: 15px; }
+        .comanda .numero-pedido { text-align: center; font-size: 60px; font-weight: bold; margin: 20px 0; }
+        .comanda .fecha { text-align: center; font-size: 12px; color: #666; margin-bottom: 15px; }
+        .comanda .btn-imprimir {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background: #4CAF50;
             color: white;
+            border: none;
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
         }
-        
-        @keyframes aparecer {
-            from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .comanda .btn-cerrar {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            background: #555;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
         }
-        
-        @keyframes pulsar {
-            0%, 100% { box-shadow: 0 10px 40px rgba(76, 175, 80, 0.6); }
-            50% { box-shadow: 0 10px 60px rgba(76, 175, 80, 0.9); }
+
+        /* ============ CARRITO ============ */
+        .productos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .producto-btn {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            transition: all 0.2s;
+        }
+        .producto-btn:hover {
+            border-color: #f4a460;
+            transform: translateY(-3px);
+        }
+        .producto-btn .nombre { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+        .producto-btn .precio { color: #f4a460; font-size: 16px; font-weight: bold; }
+        .carrito-resumen {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #f4a460;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .carrito-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+        }
+        .carrito-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 22px;
+            font-weight: bold;
+            color: #f4a460;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #f4a460;
+        }
+        .btn-confirmar {
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .btn-confirmar:disabled { background: #333; color: #666; cursor: not-allowed; }
+        select, .input-campo {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a1a;
+            color: white;
+            border: 2px solid #444;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        /* ============ IMPRESION ============ */
+        @media print {
+            body * { visibility: hidden; }
+            .comanda, .comanda * { visibility: visible; }
+            .comanda {
+                position: absolute;
+                left: 0; top: 0;
+                box-shadow: none;
+                background: white !important;
+                color: black !important;
+                border: none !important;
+                border-radius: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            .btn-imprimir, .btn-cerrar { display: none !important; }
+            .comanda-container {
+                background: white !important;
+                position: static !important;
+                padding: 0 !important;
+            }
         }
     </style>
 </head>
@@ -78,8 +190,88 @@
 </div>
 
 <div class="content">
+
+    <!-- ============ COMANDA (aparece al hacer una venta) ============ -->
+    {% if comanda %}
+    <div class="comanda-container" id="comanda-container">
+        <div class="comanda">
+            <h2>MDK SHAWARMA</h2>
+            <div class="subtitulo">Maison du Kebab</div>
+            <div class="fecha">{{ comanda.fecha }}</div>
+            <div class="linea"></div>
+            <div style="text-align: center; font-size: 14px;">PEDIDO</div>
+            <div class="numero-pedido">N° {{ comanda.pedido_id }}</div>
+            <div class="linea"></div>
+            {% for item in comanda.productos_comanda %}
+            <div class="fila">
+                <span>{{ item.cantidad }}x {{ item.nombre }}</span>
+                <span>${{ "%.0f"|format(item.precio * item.cantidad) }}</span>
+            </div>
+            {% if item.notas %}
+            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">↳ {{ item.notas }}</div>
+            {% endif %}
+            {% endfor %}
+            <div class="linea"></div>
+            <div class="fila total">
+                <span>TOTAL:</span>
+                <span>${{ "%.0f"|format(comanda.total) }}</span>
+            </div>
+            <div class="fila">
+                <span>Método:</span>
+                <span>{{ comanda.metodo_pago }}</span>
+            </div>
+            <div class="linea"></div>
+            <div style="text-align: center; font-size: 14px; margin-top: 15px;">
+                ¡Gracias por su compra!
+            </div>
+            <button class="btn-imprimir" onclick="window.print()">🖨️ IMPRIMIR TICKET</button>
+            <button class="btn-cerrar" onclick="document.getElementById('comanda-container').style.display='none'">CERRAR</button>
+        </div>
+    </div>
+    {% endif %}
+
     <h1 style="color: #f4a460;">💰 Ventas del Día</h1>
-    
+
+    <!-- ============ NUEVA VENTA (carrito) ============ -->
+    <details style="background: #1e1e1e; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #f4a460;">
+        <summary style="color: #f4a460; font-size: 20px; font-weight: bold; cursor: pointer;">➕ NUEVA VENTA (tocar para abrir)</summary>
+        <div style="margin-top: 20px;">
+
+            <div class="productos-grid" id="productos-grid">
+                {% for p in productos %}
+                <div class="producto-btn" onclick="agregarProducto({{ p[0] }}, '{{ p[1] }}', {{ p[2] }})">
+                    <div class="nombre">{{ p[3] }} {{ p[1] }}</div>
+                    <div class="precio">${{ "%.0f"|format(p[2]) }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="carrito-resumen" id="carrito-resumen">
+                <div id="carrito-items" style="color: #888; text-align: center;">Carrito vacío</div>
+                <div class="carrito-total">
+                    <span>TOTAL:</span>
+                    <span id="total-carrito">$0</span>
+                </div>
+            </div>
+
+            <select id="cliente_id">
+                <option value="">-- Cliente (opcional) --</option>
+                {% for c in clientes %}
+                <option value="{{ c[0] }}">{{ c[1] }}</option>
+                {% endfor %}
+            </select>
+
+            <select id="metodo_pago">
+                <option value="">-- Método de pago --</option>
+                <option value="efectivo">💵 Efectivo</option>
+                <option value="mercadopago">📱 MercadoPago</option>
+            </select>
+
+            <button class="btn-confirmar" onclick="confirmarVenta()">✅ CONFIRMAR VENTA</button>
+        </div>
+    </details>
+
+    <!-- ============ TABLA DE VENTAS ============ -->
     {% if ventas %}
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <tr style="background: #f4a460; color: #1a1a1a;">
@@ -110,7 +302,7 @@
     {% else %}
     <p style="text-align: center; color: #888; margin-top: 40px;">No hay ventas hoy</p>
     {% endif %}
-    
+
     <div style="text-align: center; margin-top: 30px;">
         <a href="/empleado" style="background: linear-gradient(135deg, #555, #333); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold;">
             ← Volver al Panel
@@ -119,14 +311,67 @@
 </div>
 
 <script>
-    // ==========================================
-    // Sonido de alerta (Web Audio API - no necesita archivos externos)
-    // ==========================================
+    // ============ CARRITO ============
+    let carrito = [];
+
+    function agregarProducto(id, nombre, precio) {
+        const item = carrito.find(i => i.id === id);
+        if (item) {
+            item.cantidad++;
+        } else {
+            carrito.push({ id: id, nombre: nombre, precio: precio, cantidad: 1 });
+        }
+        renderizarCarrito();
+    }
+
+    function renderizarCarrito() {
+        const div = document.getElementById('carrito-items');
+        const totalSpan = document.getElementById('total-carrito');
+        if (carrito.length === 0) {
+            div.innerHTML = '<div style="color: #888; text-align: center;">Carrito vacío</div>';
+            totalSpan.textContent = '$0';
+            return;
+        }
+        let total = 0;
+        div.innerHTML = carrito.map(i => {
+            const subtotal = i.precio * i.cantidad;
+            total += subtotal;
+            return `<div class="carrito-item">
+                <span>${i.cantidad}x ${i.nombre}</span>
+                <span>$${subtotal}</span>
+            </div>`;
+        }).join('');
+        totalSpan.textContent = '$' + total;
+    }
+
+    function confirmarVenta() {
+        if (carrito.length === 0) { alert('Agregá al menos un producto'); return; }
+        const metodo = document.getElementById('metodo_pago').value;
+        if (!metodo) { alert('Elegí el método de pago'); return; }
+        const cliente_id = document.getElementById('cliente_id').value;
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/ventas';
+        const campos = {
+            carrito: JSON.stringify(carrito),
+            cliente_id: cliente_id,
+            metodo_pago: metodo
+        };
+        Object.keys(campos).forEach(key => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = campos[key];
+            form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // ============ SONIDO Y ALERTA ============
     function reproducirSonido() {
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Sonido 1: Ding agudo
             const osc1 = audioContext.createOscillator();
             const gain1 = audioContext.createGain();
             osc1.connect(gain1);
@@ -137,8 +382,6 @@
             gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
             osc1.start(audioContext.currentTime);
             osc1.stop(audioContext.currentTime + 0.3);
-            
-            // Sonido 2: Ding agudo (más tarde)
             setTimeout(() => {
                 const osc2 = audioContext.createOscillator();
                 const gain2 = audioContext.createGain();
@@ -151,43 +394,27 @@
                 osc2.start(audioContext.currentTime);
                 osc2.stop(audioContext.currentTime + 0.4);
             }, 200);
-        } catch (e) {
-            console.log('Error reproduciendo sonido:', e);
-        }
+        } catch (e) { console.log('Error sonido:', e); }
     }
-    
-    // ==========================================
-    // Consultar pedidos nuevos cada 10 segundos
-    // ==========================================
+
     let pedidosVistos = new Set();
-    
+
     function consultarPedidos() {
         fetch('/api/pedidos_nuevos')
-            .then(response => response.json())
+            .then(r => r.json())
             .then(pedidos => {
                 if (!pedidos || pedidos.length === 0) return;
-                
-                // Buscar pedidos que NO se vieron antes
-                const pedidosNuevos = pedidos.filter(p => !pedidosVistos.has(p.numero_pedido));
-                
-                if (pedidosNuevos.length > 0) {
-                    // Marcar como vistos
-                    pedidosNuevos.forEach(p => pedidosVistos.add(p.numero_pedido));
-                    
-                    // Reproducir sonido
+                const nuevos = pedidos.filter(p => !pedidosVistos.has(p.numero_pedido));
+                if (nuevos.length > 0) {
+                    nuevos.forEach(p => pedidosVistos.add(p.numero_pedido));
                     reproducirSonido();
-                    
-                    // Mostrar alerta del primero (o todos)
-                    pedidosNuevos.forEach(p => {
-                        mostrarAlerta(p);
-                    });
+                    nuevos.forEach(p => mostrarAlerta(p));
                 }
             })
-            .catch(err => console.log('Error consultando pedidos:', err));
+            .catch(err => console.log('Error:', err));
     }
-    
+
     function mostrarAlerta(pedido) {
-        // Crear la alerta
         const alerta = document.createElement('div');
         alerta.className = 'alerta-pedido';
         alerta.innerHTML = `
@@ -199,28 +426,15 @@
             </div>
             <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
         `;
-        
-        // Si ya hay una alerta, apilarla más abajo
-        const alertasExistentes = document.querySelectorAll('.alerta-pedido');
-        if (alertasExistentes.length > 0) {
-            alerta.style.top = (20 + (alertasExistentes.length * 260)) + 'px';
-        }
-        
+        const existentes = document.querySelectorAll('.alerta-pedido');
+        if (existentes.length > 0) alerta.style.top = (20 + (existentes.length * 260)) + 'px';
         document.body.appendChild(alerta);
-        
-        // Auto-cerrar después de 2 minutos
-        setTimeout(() => {
-            if (alerta.parentElement) alerta.remove();
-        }, 120000);
+        setTimeout(() => { if (alerta.parentElement) alerta.remove(); }, 120000);
     }
-    
-    // Iniciar consulta cada 10 segundos
+
     setInterval(consultarPedidos, 10000);
-    
-    // Primera consulta al cargar
     setTimeout(consultarPedidos, 2000);
-    
-    // Activar el audio al primer clic (algunos navegadores requieren interacción)
+
     document.addEventListener('click', () => {
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
