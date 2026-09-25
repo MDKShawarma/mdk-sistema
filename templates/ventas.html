@@ -90,11 +90,61 @@
 
         /* ============ IMPRESION ============ */
         @media print {
-            body * { visibility: hidden; }
-            .comanda-container { visibility: visible; position: absolute; left: 0; top: 0; background: white !important; padding: 0 !important; display: block !important; }
-            .comanda { visibility: visible; box-shadow: none; background: white !important; color: black !important; border: none !important; border-radius: 0 !important; max-width: 100% !important; width: 100% !important; page-break-after: always; margin: 0 !important; padding: 15px !important; }
-            .comanda:last-child { page-break-after: auto; }
-            .btn-imprimir, .btn-cerrar { display: none !important; }
+            body > * {
+                display: none !important;
+            }
+
+            body > .comanda-container {
+                display: block !important;
+                position: static !important;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                width: 100% !important;
+                height: auto !important;
+            }
+
+            .comanda {
+                background: white !important;
+                color: black !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 15px 20px !important;
+                margin: 0 !important;
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+
+            .comanda:last-of-type {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            .btn-imprimir, .btn-cerrar {
+                display: none !important;
+            }
+
+            .comanda-container > div:last-child {
+                display: none !important;
+            }
+
+            .copia-cocina {
+                background: #d32f2f !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .copia-cliente {
+                background: #1976d2 !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
