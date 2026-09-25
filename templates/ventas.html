@@ -101,7 +101,7 @@
         .btn-confirmar:disabled { background: #333; color: #666; cursor: not-allowed; }
         select, .input-campo { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px; }
 
-        /* ============ IMPRESION (para navegador de la compu) ============ */
+        /* ============ IMPRESION ============ */
         @media print {
             body * { visibility: hidden; }
             .comanda-container, .comanda-container * { visibility: visible; }
@@ -535,7 +535,6 @@
 
     // ============ IMPRESIÓN VÍA RAWBT ============
     function imprimirPedido(numeroPedido) {
-        // 1) Pedir al servidor los datos completos del pedido
         fetch('/api/pedidos_para_imprimir')
             .then(r => r.json())
             .then(pedidos => {
@@ -564,6 +563,14 @@
         const linea = '================================';
         const guion = '--------------------------------';
 
+        function limpiar(txt) {
+            return String(txt)
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^\x20-\x7E\n]/g, '')
+                .trim();
+        }
+
         // ============ COMANDA COCINA ============
         let cocina = '';
         cocina += centrarTexto('MDK SHAWARMA', ancho) + '\n';
@@ -572,20 +579,19 @@
         cocina += centrarTexto('*** COCINA ***', ancho) + '\n';
         cocina += linea + '\n';
         cocina += centrarTexto('PEDIDO N ' + pedido.numero_pedido, ancho) + '\n';
-        cocina += centrarTexto(pedido.fecha, ancho) + '\n';
+        cocina += centrarTexto(limpiar(pedido.fecha), ancho) + '\n';
         cocina += guion + '\n';
         pedido.items.forEach(function(item) {
-            cocina += item.cantidad + 'x ' + item.producto + '\n';
+            cocina += limpiar(item.cantidad + 'x ' + item.producto) + '\n';
             if (item.notas) {
-                cocina += '   > ' + item.notas + '\n';
+                cocina += '   > ' + limpiar(item.notas) + '\n';
             }
         });
         cocina += guion + '\n';
-        cocina += centrarTexto('Total: $' + pedido.total + ' | ' + pedido.metodo_pago, ancho) + '\n';
-        cocina += '\n\n';
+        cocina += centrarTexto('Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago), ancho) + '\n';
 
         // ============ LINEA DE CORTE ============
-        const corte = '\n' + guion + '\n' + centrarTexto('CORTAR AQUI', ancho) + '\n' + guion + '\n\n';
+        const corte = guion + '\n' + centrarTexto('CORTAR AQUI', ancho) + '\n' + guion + '\n';
 
         // ============ COMANDA CLIENTE ============
         let cliente = '';
@@ -595,32 +601,29 @@
         cliente += centrarTexto('*** CLIENTE ***', ancho) + '\n';
         cliente += linea + '\n';
         cliente += centrarTexto('PEDIDO N ' + pedido.numero_pedido, ancho) + '\n';
-        cliente += centrarTexto(pedido.fecha, ancho) + '\n';
+        cliente += centrarTexto(limpiar(pedido.fecha), ancho) + '\n';
         cliente += guion + '\n';
         pedido.items.forEach(function(item) {
-            cliente += item.cantidad + 'x ' + item.producto + '\n';
+            cliente += limpiar(item.cantidad + 'x ' + item.producto) + '\n';
         });
         cliente += guion + '\n';
-        cliente += centrarTexto('TOTAL: $' + pedido.total, ancho) + '\n';
-        cliente += centrarTexto('Metodo: ' + pedido.metodo_pago, ancho) + '\n';
+        cliente += centrarTexto('TOTAL: $' + Math.round(pedido.total), ancho) + '\n';
+        cliente += centrarTexto('Metodo: ' + limpiar(pedido.metodo_pago), ancho) + '\n';
         cliente += guion + '\n';
-        cliente += '\n' + centrarTexto('Gracias por su compra!', ancho) + '\n';
-        cliente += centrarTexto('Vuelva pronto', ancho) + '\n\n\n';
+        cliente += centrarTexto('Gracias por su compra!', ancho) + '\n';
+        cliente += centrarTexto('Vuelva pronto', ancho) + '\n';
 
         const textoCompleto = cocina + corte + cliente;
 
-        // Enviar a RawBT
         const encoded = encodeURIComponent(textoCompleto);
         window.location.href = 'rawbt:' + encoded;
 
-        // Marcar como impreso en el servidor
         fetch('/api/marcar_impreso', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'ids_venta=' + encodeURIComponent(JSON.stringify(pedido.ids_venta))
         }).then(function() {
             console.log('Pedido ' + pedido.numero_pedido + ' marcado como impreso');
-            // Actualizar el cartel
             const alerta = document.getElementById('alerta-' + pedido.numero_pedido);
             if (alerta) {
                 const btn = alerta.querySelector('.btn-imprimir-alerta');
