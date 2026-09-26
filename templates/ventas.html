@@ -103,11 +103,9 @@
 
         /* ============ IMPRESION ============ */
         @media print {
-            /* Ocultar header y content */
             .header { display: none !important; }
             .content { display: none !important; }
             
-            /* Mostrar solo comanda-container */
             .comanda-container {
                 display: block !important;
                 position: static !important;
@@ -586,6 +584,7 @@
                 .trim();
         }
 
+        // ============ COMANDA COCINA ============
         let cocina = '';
         cocina += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cocina += centrarTexto('Maison du Kebab', ancho) + '\n';
@@ -604,8 +603,10 @@
         cocina += guion + '\n';
         cocina += centrarTexto('Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago), ancho) + '\n';
 
+        // ============ LINEA DE CORTE ============
         const corte = guion + '\n' + centrarTexto('CORTAR AQUI', ancho) + '\n' + guion + '\n';
 
+        // ============ COMANDA CLIENTE ============
         let cliente = '';
         cliente += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cliente += centrarTexto('Maison du Kebab', ancho) + '\n';
@@ -627,8 +628,9 @@
 
         const textoCompleto = cocina + corte + cliente;
 
-        const encoded = encodeURIComponent(textoCompleto);
-        window.location.href = 'rawbt:' + encoded;
+        // Codificar en Base64 UTF-8 (formato recomendado por RawBT)
+        const base64 = btoa(unescape(encodeURIComponent(textoCompleto)));
+        window.location.href = 'rawbt:base64,' + base64;
 
         fetch('/api/marcar_impreso', {
             method: 'POST',
