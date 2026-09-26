@@ -21,7 +21,6 @@
         @keyframes aparecer { from { opacity: 0; transform: translateX(-50%) translateY(-30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         @keyframes pulsar { 0%, 100% { box-shadow: 0 10px 40px rgba(76, 175, 80, 0.6); } 50% { box-shadow: 0 10px 60px rgba(76, 175, 80, 0.9); } }
 
-        /* ============ COMANDA ============ */
         .comanda-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); z-index: 10000;
@@ -47,7 +46,6 @@
         .comanda .btn-imprimir { display: block; width: 100%; padding: 15px; margin-top: 20px; background: #4CAF50; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .comanda .btn-cerrar { display: block; width: 100%; padding: 15px; margin-top: 10px; background: #555; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-        /* ============ TROQUELADO / LINEA DE CORTE ============ */
         .linea-corte {
             width: 100%; max-width: 400px;
             text-align: center; color: #000; font-size: 16px;
@@ -59,7 +57,6 @@
         .linea-corte .tijera { display: inline-block; font-size: 22px; margin-right: 10px; vertical-align: middle; }
         .linea-corte .texto-corte { font-size: 11px; color: #666; display: block; margin-top: 5px; letter-spacing: 2px; }
 
-        /* ============ MODAL DE PERSONALIZACION ============ */
         .modal-personalizacion {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); z-index: 10001;
@@ -88,7 +85,6 @@
         .modal-box .btn-agregar { width: 100%; padding: 15px; background: linear-gradient(135deg, #4CAF50, #2d7a4a); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
         .modal-box .btn-cancelar { width: 100%; padding: 15px; background: #555; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* ============ CARRITO ============ */
         .productos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .producto-btn { background: linear-gradient(135deg, #1e1e1e, #2a2a2a); border: 2px solid #333; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; color: white; transition: all 0.2s; }
         .producto-btn:hover { border-color: #f4a460; transform: translateY(-3px); }
@@ -101,53 +97,33 @@
         .btn-confirmar:disabled { background: #333; color: #666; cursor: not-allowed; }
         select, .input-campo { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px; }
 
-        /* ============ IMPRESION ============ */
         @media print {
             .header { display: none !important; }
             .content { display: none !important; }
-            
             .comanda-container {
-                display: block !important;
-                position: static !important;
-                background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-                height: auto !important;
-                overflow: visible !important;
+                display: block !important; position: static !important;
+                background: white !important; padding: 0 !important;
+                margin: 0 !important; width: 100% !important;
+                height: auto !important; overflow: visible !important;
             }
-            
             .comanda-container > div:last-child { display: none !important; }
-            
             .comanda {
                 background: white !important; color: black !important;
                 box-shadow: none !important; border: none !important; border-radius: 0 !important;
                 max-width: 100% !important; width: 100% !important;
                 padding: 10px 15px !important; margin: 0 !important;
-                page-break-after: always !important;
-                break-after: page !important;
+                page-break-after: always !important; break-after: page !important;
             }
             .comanda:last-of-type { page-break-after: auto !important; break-after: auto !important; }
-            
             .linea-corte {
-                display: block !important;
-                background: white !important; color: #000 !important;
+                display: block !important; background: white !important; color: #000 !important;
                 border-top: 3px dashed #000 !important; border-bottom: 3px dashed #000 !important;
                 width: 100% !important; padding: 10px 0 !important; margin: 0 !important;
                 page-break-inside: avoid !important;
             }
-            
             .btn-imprimir, .btn-cerrar { display: none !important; }
-            
-            .copia-cocina {
-                background: #d32f2f !important; color: #fff !important;
-                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
-            }
-            .copia-cliente {
-                background: #1976d2 !important; color: #fff !important;
-                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
-            }
-            
+            .copia-cocina { background: #d32f2f !important; color: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .copia-cliente { background: #1976d2 !important; color: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             @page { size: 58mm auto; margin: 0; }
         }
     </style>
@@ -165,7 +141,6 @@
 {% if comanda %}
 <div class="comanda-container" id="comanda-container">
 
-    <!-- ============ COPIA COCINA ============ -->
     <div class="comanda">
         <h2>MDK SHAWARMA</h2>
         <div class="subtitulo">Maison du Kebab</div>
@@ -189,13 +164,11 @@
         </div>
     </div>
 
-    <!-- ============ TROQUELADO / LINEA DE CORTE ============ -->
     <div class="linea-corte">
         <span class="tijera">✂️</span> - - - - - - - - - - - - - - - - - - - - - - - - -
         <span class="texto-corte">CORTAR AQUÍ</span>
     </div>
 
-    <!-- ============ COPIA CLIENTE ============ -->
     <div class="comanda">
         <h2>MDK SHAWARMA</h2>
         <div class="subtitulo">Maison du Kebab</div>
@@ -317,7 +290,6 @@
     </div>
 </div>
 
-<!-- ============ MODAL DE PERSONALIZACION ============ -->
 <div id="modal-personalizacion" style="display: none;">
     <div class="modal-personalizacion">
         <div class="modal-box">
@@ -335,7 +307,6 @@
 </div>
 
 <script>
-    // ============ CARRITO ============
     let carrito = [];
     let productoActual = null;
     let personalizacionesActuales = [];
@@ -362,38 +333,27 @@
         productoActual = { id: id, nombre: nombre, precio: precio };
         personalizacionesActuales = [];
         cantidadActual = 1;
-
         document.getElementById('modal-titulo').textContent = nombre;
         document.getElementById('modal-cantidad').textContent = '1';
-
         const pers = getTipoPersonalizacion(nombre);
         const divOpciones = document.getElementById('modal-opciones');
-
         if (pers) {
             divOpciones.innerHTML = `
                 <div class="titulo-opciones">${pers.titulo}</div>
                 <div class="opciones-grid">
-                    ${pers.opciones.map(op => `
-                        <div class="opcion-check" onclick="toggleOpcion('${op}', this)">${op}</div>
-                    `).join('')}
+                    ${pers.opciones.map(op => `<div class="opcion-check" onclick="toggleOpcion('${op}', this)">${op}</div>`).join('')}
                 </div>
             `;
         } else {
             divOpciones.innerHTML = '';
         }
-
         document.getElementById('modal-personalizacion').style.display = 'block';
     }
 
     function toggleOpcion(opcion, elemento) {
         const index = personalizacionesActuales.indexOf(opcion);
-        if (index === -1) {
-            personalizacionesActuales.push(opcion);
-            elemento.classList.add('seleccionada');
-        } else {
-            personalizacionesActuales.splice(index, 1);
-            elemento.classList.remove('seleccionada');
-        }
+        if (index === -1) { personalizacionesActuales.push(opcion); elemento.classList.add('seleccionada'); }
+        else { personalizacionesActuales.splice(index, 1); elemento.classList.remove('seleccionada'); }
     }
 
     function cambiarCantidad(delta) {
@@ -410,15 +370,11 @@
     function agregarAlCarrito() {
         if (!productoActual) return;
         const item = carrito.find(i => i.id === productoActual.id && i.notas === personalizacionesActuales.join(', '));
-        if (item) {
-            item.cantidad += cantidadActual;
-        } else {
+        if (item) { item.cantidad += cantidadActual; }
+        else {
             carrito.push({
-                id: productoActual.id,
-                nombre: productoActual.nombre,
-                precio: productoActual.precio,
-                cantidad: cantidadActual,
-                notas: personalizacionesActuales.join(', ')
+                id: productoActual.id, nombre: productoActual.nombre, precio: productoActual.precio,
+                cantidad: cantidadActual, notas: personalizacionesActuales.join(', ')
             });
         }
         renderizarCarrito();
@@ -428,33 +384,20 @@
     function renderizarCarrito() {
         const div = document.getElementById('carrito-items');
         const totalSpan = document.getElementById('total-carrito');
-        if (carrito.length === 0) {
-            div.innerHTML = '<div style="color: #888; text-align: center;">Carrito vacío</div>';
-            totalSpan.textContent = '$0';
-            return;
-        }
+        if (carrito.length === 0) { div.innerHTML = '<div style="color: #888; text-align: center;">Carrito vacío</div>'; totalSpan.textContent = '$0'; return; }
         let total = 0;
         div.innerHTML = carrito.map((i, idx) => {
             const subtotal = i.precio * i.cantidad;
             total += subtotal;
             return `<div class="carrito-item">
-                <div>
-                    <strong>${i.cantidad}x ${i.nombre}</strong>
-                    ${i.notas ? `<br><small style="color: #f4a460;">↳ ${i.notas}</small>` : ''}
-                </div>
-                <div>
-                    $${subtotal}
-                    <button onclick="eliminarItem(${idx})" style="background: #f44336; color: white; border: none; border-radius: 5px; padding: 3px 8px; margin-left: 10px; cursor: pointer;">X</button>
-                </div>
+                <div><strong>${i.cantidad}x ${i.nombre}</strong>${i.notas ? `<br><small style="color: #f4a460;">↳ ${i.notas}</small>` : ''}</div>
+                <div>$${subtotal}<button onclick="eliminarItem(${idx})" style="background: #f44336; color: white; border: none; border-radius: 5px; padding: 3px 8px; margin-left: 10px; cursor: pointer;">X</button></div>
             </div>`;
         }).join('');
         totalSpan.textContent = '$' + total;
     }
 
-    function eliminarItem(idx) {
-        carrito.splice(idx, 1);
-        renderizarCarrito();
-    }
+    function eliminarItem(idx) { carrito.splice(idx, 1); renderizarCarrito(); }
 
     function confirmarVenta() {
         if (carrito.length === 0) { alert('Agregá al menos un producto'); return; }
@@ -464,47 +407,34 @@
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/ventas';
-        const campos = {
-            carrito: JSON.stringify(carrito),
-            cliente_id: cliente_id,
-            metodo_pago: metodo
-        };
+        const campos = { carrito: JSON.stringify(carrito), cliente_id: cliente_id, metodo_pago: metodo };
         Object.keys(campos).forEach(key => {
             const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = campos[key];
+            input.type = 'hidden'; input.name = key; input.value = campos[key];
             form.appendChild(input);
         });
         document.body.appendChild(form);
         form.submit();
     }
 
-    // ============ SONIDO Y ALERTA ============
     function reproducirSonido() {
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const osc1 = audioContext.createOscillator();
             const gain1 = audioContext.createGain();
-            osc1.connect(gain1);
-            gain1.connect(audioContext.destination);
-            osc1.frequency.value = 1200;
-            osc1.type = 'sine';
+            osc1.connect(gain1); gain1.connect(audioContext.destination);
+            osc1.frequency.value = 1200; osc1.type = 'sine';
             gain1.gain.setValueAtTime(0.3, audioContext.currentTime);
             gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            osc1.start(audioContext.currentTime);
-            osc1.stop(audioContext.currentTime + 0.3);
+            osc1.start(audioContext.currentTime); osc1.stop(audioContext.currentTime + 0.3);
             setTimeout(() => {
                 const osc2 = audioContext.createOscillator();
                 const gain2 = audioContext.createGain();
-                osc2.connect(gain2);
-                gain2.connect(audioContext.destination);
-                osc2.frequency.value = 1600;
-                osc2.type = 'sine';
+                osc2.connect(gain2); gain2.connect(audioContext.destination);
+                osc2.frequency.value = 1600; osc2.type = 'sine';
                 gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
                 gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-                osc2.start(audioContext.currentTime);
-                osc2.stop(audioContext.currentTime + 0.4);
+                osc2.start(audioContext.currentTime); osc2.stop(audioContext.currentTime + 0.4);
             }, 200);
         } catch (e) { console.log('Error sonido:', e); }
     }
@@ -512,18 +442,15 @@
     let pedidosVistos = new Set();
 
     function consultarPedidos() {
-        fetch('/api/pedidos_nuevos')
-            .then(r => r.json())
-            .then(pedidos => {
-                if (!pedidos || pedidos.length === 0) return;
-                const nuevos = pedidos.filter(p => !pedidosVistos.has(p.numero_pedido));
-                if (nuevos.length > 0) {
-                    nuevos.forEach(p => pedidosVistos.add(p.numero_pedido));
-                    reproducirSonido();
-                    nuevos.forEach(p => mostrarAlerta(p));
-                }
-            })
-            .catch(err => console.log('Error:', err));
+        fetch('/api/pedidos_nuevos').then(r => r.json()).then(pedidos => {
+            if (!pedidos || pedidos.length === 0) return;
+            const nuevos = pedidos.filter(p => !pedidosVistos.has(p.numero_pedido));
+            if (nuevos.length > 0) {
+                nuevos.forEach(p => pedidosVistos.add(p.numero_pedido));
+                reproducirSonido();
+                nuevos.forEach(p => mostrarAlerta(p));
+            }
+        }).catch(err => console.log('Error:', err));
     }
 
     function mostrarAlerta(pedido) {
@@ -533,10 +460,7 @@
         alerta.innerHTML = `
             <div class="titulo">🔔 PEDIDO PAGADO</div>
             <div class="numero">N° ${pedido.numero_pedido}</div>
-            <div class="detalle">
-                ${pedido.productos.join('<br>')}<br>
-                <strong>Total: $${pedido.total}</strong>
-            </div>
+            <div class="detalle">${pedido.productos.join('<br>')}<br><strong>Total: $${pedido.total}</strong></div>
             <button class="cerrar btn-imprimir-alerta" onclick="imprimirPedido(${pedido.numero_pedido})">🖨️ IMPRIMIR COMANDA</button>
             <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
         `;
@@ -546,22 +470,15 @@
         setTimeout(() => { if (alerta.parentElement) alerta.remove(); }, 300000);
     }
 
-    // ============ IMPRESIÓN VÍA RAWBT ============
     function imprimirPedido(numeroPedido) {
-        fetch('/api/pedidos_para_imprimir')
-            .then(r => r.json())
-            .then(pedidos => {
-                const pedido = pedidos.find(p => p.numero_pedido === numeroPedido);
-                if (!pedido) {
-                    alert('Pedido no encontrado o ya impreso');
-                    return;
-                }
-                generarYEnviarARawBT(pedido);
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Error al obtener el pedido');
-            });
+        fetch('/api/pedidos_para_imprimir').then(r => r.json()).then(pedidos => {
+            const pedido = pedidos.find(p => p.numero_pedido === numeroPedido);
+            if (!pedido) { alert('Pedido no encontrado o ya impreso'); return; }
+            generarYEnviarARawBT(pedido);
+        }).catch(err => {
+            console.error('Error:', err);
+            alert('Error al obtener el pedido');
+        });
     }
 
     function centrarTexto(txt, ancho) {
@@ -577,14 +494,9 @@
         const guion = '--------------------------------';
 
         function limpiar(txt) {
-            return String(txt)
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^\x20-\x7E\n]/g, '')
-                .trim();
+            return String(txt).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7E\n]/g, '').trim();
         }
 
-        // ============ COMANDA COCINA ============
         let cocina = '';
         cocina += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cocina += centrarTexto('Maison du Kebab', ancho) + '\n';
@@ -596,17 +508,13 @@
         cocina += guion + '\n';
         pedido.items.forEach(function(item) {
             cocina += limpiar(item.cantidad + 'x ' + item.producto) + '\n';
-            if (item.notas) {
-                cocina += '   > ' + limpiar(item.notas) + '\n';
-            }
+            if (item.notas) cocina += '   > ' + limpiar(item.notas) + '\n';
         });
         cocina += guion + '\n';
         cocina += centrarTexto('Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago), ancho) + '\n';
 
-        // ============ LINEA DE CORTE ============
         const corte = guion + '\n' + centrarTexto('CORTAR AQUI', ancho) + '\n' + guion + '\n';
 
-        // ============ COMANDA CLIENTE ============
         let cliente = '';
         cliente += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cliente += centrarTexto('Maison du Kebab', ancho) + '\n';
@@ -628,9 +536,12 @@
 
         const textoCompleto = cocina + corte + cliente;
 
-        // Codificar en Base64 UTF-8 (formato recomendado por RawBT)
+        // Codificar en Base64 UTF-8
         const base64 = btoa(unescape(encodeURIComponent(textoCompleto)));
-        window.location.href = 'rawbt:base64,' + base64;
+
+        // Usar intent:// específico de Android para forzar RawBT
+        const intentUrl = 'intent:base64,' + base64 + '#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;';
+        window.location.href = intentUrl;
 
         fetch('/api/marcar_impreso', {
             method: 'POST',
