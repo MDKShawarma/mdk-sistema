@@ -622,20 +622,21 @@ def nuevo_pedido():
     return render_template('pedido_confirmado.html', nombre=nombre, numero_pedido=numero_pedido)
 
 # ==========================================
-# API - Pedidos nuevos pagados (para la pantalla de ventas)
+# API - Pedidos nuevos (pantalla de ventas)
 # ==========================================
 @app.route('/api/pedidos_nuevos')
 @login_requerido_empleado
 def api_pedidos_nuevos():
+    """Devuelve pedidos nuevos (efectivo o pagados) de los últimos 5 min, no impresos"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT v.numero_pedido, p.nombre as producto, v.cantidad, v.total, v.fecha
+        SELECT v.numero_pedido, p.nombre as producto, v.cantidad, v.total, v.fecha, v.metodo_pago, v.notas
         FROM ventas v
         JOIN productos p ON v.producto_id = p.id
-        WHERE v.metodo_pago = 'mercadopago'
-          AND v.notas LIKE '%ONLINE%'
-          AND v.fecha >= datetime('now', '-2 minutes', 'localtime')
+        WHERE v.tipo_origen = 'qr'
+          AND v.impreso = 0
+          AND v.fecha >= datetime('now', '-5 minutes', 'localtime')
         ORDER BY v.id DESC
     """)
     pedidos = cursor.fetchall()
@@ -644,7 +645,15 @@ def api_pedidos_nuevos():
     for p in pedidos:
         num = p['numero_pedido']
         if num not in pedidos_agrupados:
-            pedidos_agrupados[num] = {'numero_pedido': num, 'productos': [], 'total': 0, 'fecha': p['fecha']}
+            es_pagado = 'ONLINE' in (p['notas'] or '')
+            pedidos_agrupados[num] = {
+                'numero_pedido': num,
+                'productos': [],
+                'total': 0,
+                'fecha': p['fecha'],
+                'metodo_pago': p['metodo_pago'],
+                'pagado': es_pagado
+            }
         pedidos_agrupados[num]['productos'].append(f"{p['producto']} x{p['cantidad']}")
         pedidos_agrupados[num]['total'] += p['total']
     return json.dumps(list(pedidos_agrupados.values()))
@@ -682,10 +691,12 @@ def api_pedidos_para_imprimir():
     for f in filas:
         num = f['numero_pedido']
         if num not in pedidos:
+            es_pagado = 'ONLINE' in (f['notas'] or '')
             pedidos[num] = {
                 'numero_pedido': num,
                 'fecha': f['fecha'],
                 'metodo_pago': f['metodo_pago'],
+                'pagado': es_pagado,
                 'cliente': f['cliente'] or 'Sin cliente',
                 'ids_venta': [],
                 'items': [],
