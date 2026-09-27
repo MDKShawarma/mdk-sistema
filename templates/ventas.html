@@ -457,13 +457,37 @@
         const alerta = document.createElement('div');
         alerta.className = 'alerta-pedido';
         alerta.id = 'alerta-' + pedido.numero_pedido;
-        alerta.innerHTML = `
-            <div class="titulo">🔔 PEDIDO PAGADO</div>
-            <div class="numero">N° ${pedido.numero_pedido}</div>
-            <div class="detalle">${pedido.productos.join('<br>')}<br><strong>Total: $${pedido.total}</strong></div>
-            <button class="cerrar btn-imprimir-alerta" onclick="imprimirPedido(${pedido.numero_pedido})">🖨️ IMPRIMIR COMANDA</button>
-            <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
-        `;
+        
+        if (pedido.pagado) {
+            // PEDIDO PAGADO (VERDE)
+            alerta.innerHTML = `
+                <div class="titulo">✅ PEDIDO PAGADO</div>
+                <div class="numero">N° ${pedido.numero_pedido}</div>
+                <div class="detalle">
+                    ${pedido.productos.join('<br>')}<br>
+                    <strong>Total: $${pedido.total}</strong><br>
+                    <small>Pagado con ${pedido.metodo_pago}</small>
+                </div>
+                <button class="cerrar btn-imprimir-alerta" onclick="imprimirPedido(${pedido.numero_pedido})">🖨️ IMPRIMIR COMANDA</button>
+                <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
+            `;
+        } else {
+            // PEDIDO A COBRAR (NARANJA)
+            alerta.style.background = 'linear-gradient(135deg, #ff9800, #e68900)';
+            alerta.style.borderColor = '#fff';
+            alerta.innerHTML = `
+                <div class="titulo">💰 PEDIDO A COBRAR</div>
+                <div class="numero">N° ${pedido.numero_pedido}</div>
+                <div class="detalle">
+                    ${pedido.productos.join('<br>')}<br>
+                    <strong>Total: $${pedido.total}</strong><br>
+                    <small style="background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 5px; display: inline-block; margin-top: 5px; font-weight: bold;">COBRAR EN EFECTIVO</small>
+                </div>
+                <button class="cerrar btn-imprimir-alerta" onclick="imprimirPedido(${pedido.numero_pedido})">🖨️ IMPRIMIR COMANDA</button>
+                <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
+            `;
+        }
+        
         const existentes = document.querySelectorAll('.alerta-pedido');
         if (existentes.length > 0) alerta.style.top = (20 + (existentes.length * 320)) + 'px';
         document.body.appendChild(alerta);
@@ -501,10 +525,21 @@
                 .trim();
         }
 
+        // ============ SELLO DE PAGO ============
+        let sello = '';
+        sello += centrarTexto('******************************', ancho) + '\n';
+        if (pedido.pagado) {
+            sello += centrarTexto('*        P A G A D O       *', ancho) + '\n';
+        } else {
+            sello += centrarTexto('*      A  C O B R A R      *', ancho) + '\n';
+        }
+        sello += centrarTexto('******************************', ancho) + '\n';
+
         // ============ COMANDA COCINA ============
         let cocina = '';
         cocina += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cocina += centrarTexto('Maison du Kebab', ancho) + '\n';
+        cocina += sello;
         cocina += linea + '\n';
         cocina += centrarTexto('*** COCINA ***', ancho) + '\n';
         cocina += linea + '\n';
@@ -527,6 +562,7 @@
         let cliente = '';
         cliente += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cliente += centrarTexto('Maison du Kebab', ancho) + '\n';
+        cliente += sello;
         cliente += linea + '\n';
         cliente += centrarTexto('*** CLIENTE ***', ancho) + '\n';
         cliente += linea + '\n';
@@ -545,7 +581,6 @@
 
         const textoCompleto = cocina + corte + cliente;
 
-        // --- CAMBIO CLAVE: Enviar al servidor local de RawBT ---
         fetch('http://127.0.0.1:40213/print', {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
