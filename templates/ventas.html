@@ -459,7 +459,6 @@
         alerta.id = 'alerta-' + pedido.numero_pedido;
         
         if (pedido.pagado) {
-            // PEDIDO PAGADO (VERDE)
             alerta.innerHTML = `
                 <div class="titulo">✅ PEDIDO PAGADO</div>
                 <div class="numero">N° ${pedido.numero_pedido}</div>
@@ -472,7 +471,6 @@
                 <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
             `;
         } else {
-            // PEDIDO A COBRAR (NARANJA)
             alerta.style.background = 'linear-gradient(135deg, #ff9800, #e68900)';
             alerta.style.borderColor = '#fff';
             alerta.innerHTML = `
@@ -581,37 +579,26 @@
 
         const textoCompleto = cocina + corte + cliente;
 
-        fetch('http://127.0.0.1:40213/print', {
+        // --- ENVIAR A THERMER ---
+        const textoBase64 = btoa(unescape(encodeURIComponent(textoCompleto)));
+        const urlThermer = 'thermalprinter://print?data=' + textoBase64;
+        window.location.href = urlThermer;
+
+        // Marcar como impreso en el servidor
+        fetch('/api/marcar_impreso', {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: textoCompleto
-        })
-        .then(response => {
-            if (response.ok) {
-                console.log('Pedido enviado a imprimir vía servidor local');
-                fetch('/api/marcar_impreso', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'ids_venta=' + encodeURIComponent(JSON.stringify(pedido.ids_venta))
-                }).then(() => {
-                    const alerta = document.getElementById('alerta-' + pedido.numero_pedido);
-                    if (alerta) {
-                        const btn = alerta.querySelector('.btn-imprimir-alerta');
-                        if (btn) {
-                            btn.textContent = '✅ IMPRESO';
-                            btn.style.background = '#4CAF50';
-                            btn.disabled = true;
-                        }
-                    }
-                });
-            } else {
-                console.error('Error del servidor RawBT:', response.statusText);
-                alert('Error al comunicarse con el servidor de impresión.');
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'ids_venta=' + encodeURIComponent(JSON.stringify(pedido.ids_venta))
+        }).then(() => {
+            const alerta = document.getElementById('alerta-' + pedido.numero_pedido);
+            if (alerta) {
+                const btn = alerta.querySelector('.btn-imprimir-alerta');
+                if (btn) {
+                    btn.textContent = '✅ IMPRESO';
+                    btn.style.background = '#4CAF50';
+                    btn.disabled = true;
+                }
             }
-        })
-        .catch(error => {
-            console.error('Error de red:', error);
-            alert('No se pudo conectar al servidor de impresión. Asegurate de que la app "Server for RawBT" esté abierta y en la misma red.');
         });
     }
 
