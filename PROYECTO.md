@@ -1,6 +1,6 @@
 # PROYECTO MDK SHAWARMA - SISTEMA DE GESTION
 
-Ultima actualizacion: 23/09/2026
+Ultima actualizacion: 26/09/2026
 
 ## DESCRIPCION
 
@@ -129,7 +129,7 @@ Sistema web de gestion para MDK Shawarma (Maison du Kebab), negocio de comida ar
 - Aviso de demora si hay 10+ pedidos pendientes
 - Registro automatico de cliente nuevo
 
-### Pago Online con MercadoPago (NUEVO - 23/09/2026)
+### Pago Online con MercadoPago
 - Cliente elige "MercadoPago" al hacer el pedido
 - Se guarda el pedido en tabla `pedidos_pendientes`
 - Se crea una preferencia de pago en MercadoPago
@@ -142,7 +142,7 @@ Sistema web de gestion para MDK Shawarma (Maison du Kebab), negocio de comida ar
 - Se suman puntos al cliente
 - Se muestra el numero de pedido al cliente
 
-### Alerta para Empleado (NUEVO - 23/09/2026)
+### Alerta para Empleado
 - En la pantalla de ventas (/ventas), cada 10 segundos se consulta si hay pedidos nuevos pagados online
 - Si hay, suena un "ding" y aparece un cartel verde grande con:
   - Numero de pedido
@@ -150,6 +150,21 @@ Sistema web de gestion para MDK Shawarma (Maison du Kebab), negocio de comida ar
   - Total
 - El empleado toca "OK, VISTO" para cerrarlo
 - En la tabla de ventas, los pedidos pagados online aparecen con etiqueta verde "PAGADO ONLINE"
+
+### Impresion de Comandas (NUEVO - 26/09/2026)
+- Impresora: Xprinter XP58IIH BT (termica 58mm, Bluetooth, sin cortador)
+- Tablet: Xiaomi HyperOS
+- App puente: RawBT inkless print service + Server for RawBT
+- Al tocar "IMPRIMIR COMANDA" en la alerta, se envia por fetch al servidor local:
+  - URL: http://127.0.0.1:40213/print
+  - Metodo: POST con texto plano
+- Se imprime DUPLICADO:
+  - Copia COCINA (con notas y personalizaciones)
+  - Linea de corte (CORTAR AQUI)
+  - Copia CLIENTE (con precios y total)
+- Se marca el pedido como "impreso" en el servidor
+- Boton cambia a "IMPRESO" para no repetir
+- Limpieza de caracteres: sin emojis, sin acentos, solo ASCII
 
 ### PWA (App instalable)
 - Manifest.json
@@ -160,9 +175,9 @@ Sistema web de gestion para MDK Shawarma (Maison du Kebab), negocio de comida ar
 
 ## FUNCIONES PENDIENTES
 
+- Mejorar nitidez de impresion (cabezal sucio, papel, o densidad)
 - Sistema de puntos (canje de puntos por descuentos)
 - WhatsApp automatico
-- Impresora de comandas
 - Integracion con PedidosYa
 - Marketing automatico (generacion de contenido con IA)
 - Prediccion de demanda
@@ -192,7 +207,7 @@ MDK_Sistema/
   - empleado.html
   - productos.html
   - stock.html
-  - ventas.html (con alerta de pedidos nuevos)
+  - ventas.html (con alerta de pedidos + impresion RawBT)
   - gastos.html
   - gastos_fijos.html
   - contador.html
@@ -203,14 +218,14 @@ MDK_Sistema/
   - chat.html
   - cierre_caja.html
   - pedido_cliente.html (con boton MercadoPago)
-  - pago_exitoso.html (NUEVO)
-  - pago_fallido.html (NUEVO)
-  - pago_pendiente.html (NUEVO)
+  - pago_exitoso.html
+  - pago_fallido.html
+  - pago_pendiente.html
 
 ## BASE DE DATOS - TABLAS
 
 - productos (29 cargados)
-- ventas
+- ventas (con columna impreso para control de impresion)
 - gastos
 - gastos_fijos (10 cargados)
 - clientes
@@ -218,7 +233,7 @@ MDK_Sistema/
 - ingredientes (23 cargados)
 - proveedores (2 cargados)
 - cierres_caja
-- pedidos_pendientes (NUEVO - para pagos online)
+- pedidos_pendientes (para pagos online)
 
 ## ACCESO AL SERVIDOR
 
@@ -247,18 +262,36 @@ Despues, en PuTTY:
 - nginx: servidor web con proxy al puerto 5000
 - certbot: renueva el certificado SSL automaticamente cada 90 dias
 
+## CONFIGURACION DE IMPRESION
+
+### En la tablet (Xiaomi HyperOS)
+1. RawBT instalado
+2. Server for RawBT instalado
+3. Impresora Xprinter XP58IIH BT emparejada por Bluetooth
+4. Server for RawBT corriendo en puerto 40213
+5. Chrome abierto en https://sistema.mdk-shawarma.com/ventas
+
+### Flujo de impresion
+1. Entra un pedido pagado por MercadoPago
+2. Suena el ding en la tablet
+3. Aparece cartel verde con "IMPRIMIR COMANDA"
+4. El empleado toca el boton
+5. El navegador hace fetch a http://127.0.0.1:40213/print
+6. Server for RawBT recibe el texto y lo manda a la impresora
+7. Se imprimen las 2 comandas (cocina + cliente)
+
 ## PROBLEMAS CONOCIDOS Y SOLUCIONES
 
 - La base de datos se borra si se cambia la estructura (init_db.py detecta y borra)
 - El service worker puede servir version vieja en el celular (solucion: cambiar CACHE_NAME)
 - MercadoPago no permite pagarse a uno mismo (usar cuenta de otra persona)
-- El servidor se actualiza automaticamente cada 90 dias con SSL
+- La impresion sale tenue (pendiente: limpiar cabezal o ajustar densidad)
+- HyperOS bloquea intent:// (solucion: usar Server for RawBT con fetch local)
 
 ## PROXIMOS PASOS
 
 Inmediatos:
-1. Actualizar PROYECTO.md (HECHO - 23/09/2026)
-2. Probar todo en el negocio
+1. Mejorar nitidez de impresion
 
 Corto plazo:
 1. Sistema de puntos (canje)
@@ -266,7 +299,7 @@ Corto plazo:
 3. Marketing automatico
 
 Mediano plazo:
-1. Impresora de comandas
+1. Impresora con cortador automatico
 2. Prediccion de demanda
 3. Alertas inteligentes
 
@@ -280,10 +313,11 @@ Si estas leyendo esto porque perdiste el contexto:
 4. La contrasena del dueno es MDK2026
 5. El empleado entra sin contrasena en /empleado
 6. Los clientes piden por QR en /pedido
-7. El sistema acepta pagos online con MercadoPago (funcionando desde 23/09/2026)
-8. El codigo esta en GitHub y se sube con git push
-9. El servidor se actualiza con git pull + systemctl restart mdk
-10. Cuando dudes, preguntar antes de asumir
+7. El sistema acepta pagos online con MercadoPago
+8. La impresion se hace desde una tablet Xiaomi con RawBT + Server for RawBT
+9. El codigo esta en GitHub y se sube con git push
+10. El servidor se actualiza con git pull + systemctl restart mdk
+11. Cuando dudes, preguntar antes de asumir
 
 ## CONTACTO
 
