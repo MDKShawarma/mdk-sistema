@@ -59,6 +59,31 @@
         .fila .label { color: #aaa; }
         .fila .valor { color: #f4a460; font-weight: bold; font-size: 18px; }
         
+        .fila.destacada {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4CAF50;
+            padding-left: 12px;
+            margin: 5px 0;
+        }
+        
+        .error-mp {
+            background: #f4433620;
+            border: 2px solid #f44336;
+            color: #f44336;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .info-extra {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: 8px;
+        }
+        
         .input-group { margin-bottom: 20px; }
         .input-group label {
             display: block; color: #ccc; font-size: 14px;
@@ -100,6 +125,20 @@
         .historial-titulo {
             color: #f4a460; font-size: 20px; font-weight: bold;
             margin-top: 30px; margin-bottom: 15px; text-align: center;
+        }
+        
+        .btn-refresh {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            display: block;
+            width: 100%;
         }
     </style>
 </head>
@@ -162,6 +201,12 @@
         🔒 CERRAR CAJA OBLIGATORIO
     </div>
     
+    {% if error_mp %}
+    <div class="error-mp">
+        ⚠️ {{ error_mp }}
+    </div>
+    {% endif %}
+    
     <div class="card">
         <h2>💵 Efectivo</h2>
         <div class="fila"><span class="label">Esperado según ventas:</span><span class="valor">${{ "%.2f"|format(efectivo_esperado) }}</span></div>
@@ -169,7 +214,19 @@
     
     <div class="card">
         <h2>📱 MercadoPago</h2>
-        <div class="fila"><span class="label">Esperado según ventas:</span><span class="valor">${{ "%.2f"|format(mercadopago_esperado) }}</span></div>
+        {% if mercadopago_real is not none %}
+        <div class="fila destacada">
+            <span class="label">✅ Total en tu cuenta MP:</span>
+            <span class="valor" style="color: #4CAF50;">${{ "%.2f"|format(mercadopago_real) }}</span>
+        </div>
+        <div class="info-extra">
+            Consulta automática a la API de MercadoPago
+        </div>
+        {% endif %}
+        <div class="fila" style="margin-top: 10px;">
+            <span class="label">Según sistema (DB):</span>
+            <span class="valor">${{ "%.2f"|format(mercadopago_sistema) }}</span>
+        </div>
     </div>
     
     <form method="POST" action="/cierre_caja">
@@ -183,7 +240,11 @@
             
             <div class="input-group">
                 <label>📱 ¿Cuánto ves en MercadoPago hoy?</label>
-                <input type="number" name="mercadopago_contado" step="0.01" min="0" placeholder="0.00" required>
+                <input type="number" name="mercadopago_contado" step="0.01" min="0" placeholder="0.00" 
+                       value="{{ '%.2f'|format(mercadopago_real) if mercadopago_real is not none else '' }}" required>
+                {% if mercadopago_real is not none %}
+                <div class="info-extra">↑ Ya cargado automáticamente desde MercadoPago. Verificá y ajustá si hace falta.</div>
+                {% endif %}
             </div>
             
             <div class="input-group">
