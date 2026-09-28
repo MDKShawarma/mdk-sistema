@@ -83,6 +83,56 @@ def orden_importancia(nombre):
     elif any(b in nombre_lower for b in ['agua', 'coca', 'smudis', 'cerveza', 'baileys', 'gin', 'vino']): return 8
     else: return 9
 
+def obtener_total_mercadopago_hoy():
+    """Consulta la API de MercadoPago y devuelve el total aprobado de hoy"""
+    try:
+        ahora = datetime.now()
+        inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
+        fin = ahora.replace(hour=23, minute=59, second=59, microsecond=999999)
+        
+        begin_date = inicio.strftime('%Y-%m-%dT%H:%M:%S.000-03:00')
+        end_date = fin.strftime('%Y-%m-%dT%H:%M:%S.999-03:00')
+        
+        total = 0
+        offset = 0
+        limit = 100
+        
+        while True:
+            filtros = {
+                "begin_date": begin_date,
+                "end_date": end_date,
+                "status": "approved",
+                "sort": "date_created",
+                "criteria": "desc",
+                "limit": limit,
+                "offset": offset
+            }
+            
+            resultado = mp_sdk.payment().search(filtros)
+            response = resultado.get("response", {})
+            pagos = response.get("results", [])
+            
+            if not pagos:
+                break
+            
+            for pago in pagos:
+                monto = pago.get("transaction_amount", 0) or 0
+                reembolsado = pago.get("transaction_amount_refunded", 0) or 0
+                total += (monto - reembolsado)
+            
+            if len(pagos) < limit:
+                break
+            
+            offset += limit
+            
+            if offset > 5000:
+                break
+        
+        return round(total, 2)
+    except Exception as e:
+        print(f"Error consultando MercadoPago: {e}")
+        return None
+
 def es_empleado():
     return request.remote_addr != '127.0.0.1'
 
@@ -123,10 +173,21 @@ def cierre_caja():
     es_dueno = (session.get('rol') == 'dueno')
     cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
     cierre_existente = cursor.fetchone()
+    
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now') AND metodo_pago = 'efectivo'")
     efectivo_esperado = cursor.fetchone()[0]
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now') AND metodo_pago = 'mercadopago'")
-    mercadopago_esperado = cursor.fetchone()[0]
+    mercadopago_sistema = cursor.fetchone()[0]
+    
+    mercadopago_real = None
+    error_mp = None
+    if not cierre_existente:
+        mercadopago_real = obtener_total_mercadopago_hoy()
+        if mercadopago_real is None:
+            error_mp = "No se pudo conectar con MercadoPago. Usá el valor del sistema."
+            mercadopago_real = mercadopago_sistema
+    
+    mercadopago_esperado = mercadopago_real if mercadopago_real is not None else mercadopago_sistema
     
     if request.method == 'POST' and not cierre_existente:
         try:
@@ -146,7 +207,15 @@ def cierre_caja():
         cursor.execute("SELECT * FROM cierres_caja ORDER BY fecha DESC LIMIT 30")
         historial = cursor.fetchall()
     conn.close()
-    return render_template('cierre_caja.html', cierre_existente=cierre_existente, efectivo_esperado=efectivo_esperado, mercadopago_esperado=mercadopago_esperado, historial=historial, es_dueno=es_dueno)
+    return render_template('cierre_caja.html',
+                         cierre_existente=cierre_existente,
+                         efectivo_esperado=efectivo_esperado,
+                         mercadopago_esperado=mercadopago_esperado,
+                         mercadopago_sistema=mercadopago_sistema,
+                         mercadopago_real=mercadopago_real,
+                         error_mp=error_mp,
+                         historial=historial,
+                         es_dueno=es_dueno)
 
 @app.route('/logout')
 def logout():
