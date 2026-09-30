@@ -2,39 +2,16 @@ import sqlite3
 import os
 
 def inicializar_base_datos():
-    # Si existe BD vieja con estructura incorrecta, borrarla
-    if os.path.exists('mdk.db'):
-        try:
-            conn_test = sqlite3.connect('mdk.db')
-            cursor_test = conn_test.cursor()
-            
-            # Verificar tabla ventas
-            cursor_test.execute("PRAGMA table_info(ventas)")
-            columnas_ventas = [col[1] for col in cursor_test.fetchall()]
-            
-            # Verificar tabla clientes
-            cursor_test.execute("PRAGMA table_info(clientes)")
-            columnas_clientes = [col[1] for col in cursor_test.fetchall()]
-            
-            conn_test.close()
-            
-            # Columnas que DEBE tener cada tabla
-            ventas_ok = all(c in columnas_ventas for c in ['numero_pedido', 'tipo_origen', 'cliente_id'])
-            clientes_ok = 'puntos' in columnas_clientes
-            
-            # Si falta alguna columna, borrar la BD
-            if not ventas_ok or not clientes_ok:
-                os.remove('mdk.db')
-                print("🗑️ Base de datos vieja eliminada (faltan columnas)")
-        except:
-            pass
+    """Crea o actualiza la base de datos SIN BORRAR NUNCA los datos existentes"""
 
-    """Crea la base de datos con datos iniciales si no existe"""
+    # ============================
+    # CREAR CONEXION
+    # ============================
     conn = sqlite3.connect('mdk.db')
     cursor = conn.cursor()
 
     # ============================
-    # CREAR TABLAS
+    # CREAR TABLAS SI NO EXISTEN
     # ============================
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
@@ -58,17 +35,9 @@ def inicializar_base_datos():
             cliente_id INTEGER,
             tipo_origen TEXT DEFAULT 'empleado',
             numero_pedido INTEGER,
-            impreso INTEGER DEFAULT 0,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-
-    # Agregar columna impreso si no existe (por si la tabla ya existía)
-    try:
-        cursor.execute("ALTER TABLE ventas ADD COLUMN impreso INTEGER DEFAULT 0")
-        print("✅ Columna 'impreso' agregada a ventas")
-    except sqlite3.OperationalError:
-        pass
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS gastos (
@@ -98,13 +67,6 @@ def inicializar_base_datos():
             puntos INTEGER DEFAULT 0
         )
     ''')
-
-    # Agregar columna puntos si no existe (por si la tabla ya existía)
-    try:
-        cursor.execute("ALTER TABLE clientes ADD COLUMN puntos INTEGER DEFAULT 0")
-        print("✅ Columna 'puntos' agregada a clientes")
-    except sqlite3.OperationalError:
-        pass
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS movimientos_puntos (
@@ -170,8 +132,33 @@ def inicializar_base_datos():
         )
     ''')
 
+    conn.commit()
+
     # ============================
-    # CARGAR PRODUCTOS SI ESTÁ VACÍO
+    # AGREGAR COLUMNAS QUE FALTEN (SIN BORRAR NADA)
+    # ============================
+    def agregar_columna_si_falta(tabla, columna, definicion):
+        try:
+            cursor.execute(f"PRAGMA table_info({tabla})")
+            columnas = [col[1] for col in cursor.fetchall()]
+            if columna not in columnas:
+                cursor.execute(f"ALTER TABLE {tabla} ADD COLUMN {columna} {definicion}")
+                conn.commit()
+                print(f"OK: Columna '{columna}' agregada a {tabla}")
+        except Exception as e:
+            print(f"AVISO: No se pudo agregar '{columna}' a {tabla}: {e}")
+
+    # ventas: columnas nuevas que fuimos agregando
+    agregar_columna_si_falta('ventas', 'tipo_origen', "TEXT DEFAULT 'empleado'")
+    agregar_columna_si_falta('ventas', 'numero_pedido', 'INTEGER')
+    agregar_columna_si_falta('ventas', 'cliente_id', 'INTEGER')
+    agregar_columna_si_falta('ventas', 'impreso', 'INTEGER DEFAULT 0')
+
+    # clientes: columnas nuevas
+    agregar_columna_si_falta('clientes', 'puntos', 'INTEGER DEFAULT 0')
+
+    # ============================
+    # CARGAR PRODUCTOS SI ESTA VACIO
     # ============================
     cursor.execute("SELECT COUNT(*) FROM productos")
     if cursor.fetchone()[0] == 0:
@@ -206,17 +193,16 @@ def inicializar_base_datos():
             ("VINO - Partridge", "Bebidas con alcohol", 6000, 1, 0),
             ("VINO - Killka", "Bebidas con alcohol", 8000, 2, 0),
         ]
-
         for prod in productos:
             cursor.execute('''
                 INSERT INTO productos (nombre, categoria, precio, stock, stock_minimo)
                 VALUES (?, ?, ?, ?, ?)
             ''', prod)
-
-        print(f"✅ {len(productos)} productos cargados")
+        conn.commit()
+        print(f"OK: {len(productos)} productos cargados")
 
     # ============================
-    # CARGAR GASTOS FIJOS
+    # CARGAR GASTOS FIJOS SI ESTA VACIO
     # ============================
     cursor.execute("SELECT COUNT(*) FROM gastos_fijos")
     if cursor.fetchone()[0] == 0:
@@ -232,14 +218,13 @@ def inicializar_base_datos():
             ("Lautaro monotributo", 52000),
             ("Empleados (2)", 1920000)
         ]
-
         for g in gastos:
             cursor.execute("INSERT INTO gastos_fijos (concepto, monto_mensual) VALUES (?, ?)", g)
-
-        print(f"✅ {len(gastos)} gastos fijos cargados")
+        conn.commit()
+        print(f"OK: {len(gastos)} gastos fijos cargados")
 
     # ============================
-    # CARGAR PROVEEDORES
+    # CARGAR PROVEEDORES SI ESTA VACIO
     # ============================
     cursor.execute("SELECT COUNT(*) FROM proveedores")
     if cursor.fetchone()[0] == 0:
@@ -247,14 +232,13 @@ def inicializar_base_datos():
             ("Ezequiel", "1166204775", "carne,verduras,bebidas,papas,garbanzos,queso,especias,vinagre,harina,sal"),
             ("Sergio", "1170634208", "pan,kebbes,postres,pasta_mani,garam_masala,aceite_freidora"),
         ]
-
         for p in proveedores:
             cursor.execute("INSERT INTO proveedores (nombre, telefono, productos) VALUES (?, ?, ?)", p)
-
-        print(f"✅ {len(proveedores)} proveedores cargados")
+        conn.commit()
+        print(f"OK: {len(proveedores)} proveedores cargados")
 
     # ============================
-    # CARGAR INGREDIENTES
+    # CARGAR INGREDIENTES SI ESTA VACIO
     # ============================
     cursor.execute("SELECT COUNT(*) FROM ingredientes")
     if cursor.fetchone()[0] == 0:
@@ -283,18 +267,20 @@ def inicializar_base_datos():
             ("Kebbes", "congelados", 50, "unidades", 10),
             ("Postres", "postres", 5, "kg", 1),
         ]
-
         for ing in ingredientes:
             cursor.execute('''
                 INSERT INTO ingredientes (nombre, categoria, stock_actual, unidad, stock_minimo)
                 VALUES (?, ?, ?, ?, ?)
             ''', ing)
+        conn.commit()
+        print(f"OK: {len(ingredientes)} ingredientes cargados")
 
-        print(f"✅ {len(ingredientes)} ingredientes cargados")
-
-    conn.commit()
+    # ============================
+    # CERRAR
+    # ============================
     conn.close()
-    print("🎉 Base de datos inicializada correctamente")
+    print("Base de datos lista (sin borrar datos)")
+
 
 if __name__ == '__main__':
     inicializar_base_datos()
