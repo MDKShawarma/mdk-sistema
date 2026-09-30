@@ -329,3 +329,26 @@ Si estas leyendo esto porque perdiste el contexto:
 ---
 
 Este archivo es la memoria del proyecto. Actualizarlo cada vez que se haga un cambio importante.
+---
+
+## ACTUALIZACION 30/09/2026
+
+### Blindaje de la base de datos
+- init_db.py ya NO borra la base de datos nunca mas
+- Si falta una columna, la agrega con ALTER TABLE
+- Ya no se pierden datos en los deploys
+
+### Recuperacion de clientes
+- Se perdieron 332 clientes por un borrado accidental de la base
+- Se recuperaron 527 clientes desde contacts 2026-2.csv
+- Scripts: generar_json.py (local) e importar_clientes.py (servidor)
+- Archivo de datos: clientes_importar.json
+- Total actual: 535 clientes
+
+### Backup
+- Se creo mdk.db.backup en el servidor como respaldo
+
+### Pendiente
+- Impresora XP-V320N con cortador automatico (comprada, sin entregar)
+- Sistema de puntos (canje)
+- Mejorar nitidez de impresion
