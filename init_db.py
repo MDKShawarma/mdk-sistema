@@ -148,13 +148,10 @@ def inicializar_base_datos():
         except Exception as e:
             print(f"AVISO: No se pudo agregar '{columna}' a {tabla}: {e}")
 
-    # ventas: columnas nuevas que fuimos agregando
     agregar_columna_si_falta('ventas', 'tipo_origen', "TEXT DEFAULT 'empleado'")
     agregar_columna_si_falta('ventas', 'numero_pedido', 'INTEGER')
     agregar_columna_si_falta('ventas', 'cliente_id', 'INTEGER')
     agregar_columna_si_falta('ventas', 'impreso', 'INTEGER DEFAULT 0')
-
-    # clientes: columnas nuevas
     agregar_columna_si_falta('clientes', 'puntos', 'INTEGER DEFAULT 0')
 
     # ============================
