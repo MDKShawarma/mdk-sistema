@@ -459,6 +459,7 @@
         alerta.id = 'alerta-' + pedido.numero_pedido;
         
         if (pedido.pagado) {
+            // PEDIDO PAGADO (VERDE)
             alerta.innerHTML = `
                 <div class="titulo">✅ PEDIDO PAGADO</div>
                 <div class="numero">N° ${pedido.numero_pedido}</div>
@@ -471,6 +472,7 @@
                 <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
             `;
         } else {
+            // PEDIDO A COBRAR (NARANJA)
             alerta.style.background = 'linear-gradient(135deg, #ff9800, #e68900)';
             alerta.style.borderColor = '#fff';
             alerta.innerHTML = `
@@ -579,26 +581,34 @@
 
         const textoCompleto = cocina + corte + cliente;
 
-        // --- ENVIAR A THERMER ---
-        const textoBase64 = btoa(unescape(encodeURIComponent(textoCompleto)));
-        const urlThermer = 'thermalprinter://print?data=' + textoBase64;
-        window.location.href = urlThermer;
-
-        // Marcar como impreso en el servidor
-        fetch('/api/marcar_impreso', {
+        // ============ ENVIAR AL PUENTE MDK ============
+        fetch('http://192.168.100.175:5001/imprimir', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'ids_venta=' + encodeURIComponent(JSON.stringify(pedido.ids_venta))
-        }).then(() => {
-            const alerta = document.getElementById('alerta-' + pedido.numero_pedido);
-            if (alerta) {
-                const btn = alerta.querySelector('.btn-imprimir-alerta');
-                if (btn) {
-                    btn.textContent = '✅ IMPRESO';
-                    btn.style.background = '#4CAF50';
-                    btn.disabled = true;
+            headers: { 'Content-Type': 'text/plain' },
+            body: textoCompleto
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error del puente: ' + response.status);
+            console.log('Pedido enviado al puente MDK');
+            fetch('/api/marcar_impreso', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'ids_venta=' + encodeURIComponent(JSON.stringify(pedido.ids_venta))
+            }).then(() => {
+                const alerta = document.getElementById('alerta-' + pedido.numero_pedido);
+                if (alerta) {
+                    const btn = alerta.querySelector('.btn-imprimir-alerta');
+                    if (btn) {
+                        btn.textContent = '✅ IMPRESO';
+                        btn.style.background = '#4CAF50';
+                        btn.disabled = true;
+                    }
                 }
-            }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('No se pudo imprimir. Verificá que el puente MDK esté corriendo en la compu del negocio.');
         });
     }
 
