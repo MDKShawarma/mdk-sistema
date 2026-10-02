@@ -139,6 +139,13 @@
 </div>
 
 <div class="menu">
+    {% if empleado %}
+    <a href="/ventas">💰 Ventas</a>
+    <a href="/productos">📦 Productos</a>
+    <a href="/stock">🔄 Stock</a>
+    <a href="/gastos">💸 Gastos</a>
+    <a href="/cierre_caja">🔒 Cierre de Caja</a>
+    {% else %}
     <a href="/">📊 Panel</a>
     <a href="/productos">📦 Productos</a>
     <a href="/stock">🔄 Stock</a>
@@ -150,6 +157,7 @@
     <a href="/proveedores">📞 Proveedores</a>
     <a href="/chat">💬 Chat</a>
     <a href="/clientes">👥 Clientes</a>
+    {% endif %}
 </div>
 
 {% if comanda %}
