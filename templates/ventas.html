@@ -98,7 +98,7 @@
         select, .input-campo { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px; }
 
         @media print {
-            .header { display: none !important; }
+            .header, .menu { display: none !important; }
             .content { display: none !important; }
             .comanda-container {
                 display: block !important; position: static !important;
@@ -136,6 +136,20 @@
         <h2>MDK SHAWARMA</h2>
     </div>
     <div class="header-subtitle">Ventas</div>
+</div>
+
+<div class="menu">
+    <a href="/">📊 Panel</a>
+    <a href="/productos">📦 Productos</a>
+    <a href="/stock">🔄 Stock</a>
+    <a href="/ventas">💰 Ventas</a>
+    <a href="/gastos">💸 Gastos</a>
+    <a href="/gastos_fijos">📋 Fijos</a>
+    <a href="/contador">🧾 Contador</a>
+    <a href="/informe">📈 Informe</a>
+    <a href="/proveedores">📞 Proveedores</a>
+    <a href="/chat">💬 Chat</a>
+    <a href="/clientes">👥 Clientes</a>
 </div>
 
 {% if comanda %}
@@ -284,7 +298,7 @@
     {% endif %}
 
     <div style="text-align: center; margin-top: 30px;">
-        <a href="/empleado" style="background: linear-gradient(135deg, #555, #333); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold;">
+        <a href="/" style="background: linear-gradient(135deg, #555, #333); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold;">
             ← Volver al Panel
         </a>
     </div>
@@ -459,7 +473,6 @@
         alerta.id = 'alerta-' + pedido.numero_pedido;
         
         if (pedido.pagado) {
-            // PEDIDO PAGADO (VERDE)
             alerta.innerHTML = `
                 <div class="titulo">✅ PEDIDO PAGADO</div>
                 <div class="numero">N° ${pedido.numero_pedido}</div>
@@ -472,7 +485,6 @@
                 <button class="cerrar" onclick="this.parentElement.remove()">OK, VISTO</button>
             `;
         } else {
-            // PEDIDO A COBRAR (NARANJA)
             alerta.style.background = 'linear-gradient(135deg, #ff9800, #e68900)';
             alerta.style.borderColor = '#fff';
             alerta.innerHTML = `
@@ -525,7 +537,6 @@
                 .trim();
         }
 
-        // ============ SELLO DE PAGO ============
         let sello = '';
         sello += centrarTexto('******************************', ancho) + '\n';
         if (pedido.pagado) {
@@ -535,7 +546,6 @@
         }
         sello += centrarTexto('******************************', ancho) + '\n';
 
-        // ============ COMANDA COCINA ============
         let cocina = '';
         cocina += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cocina += centrarTexto('Maison du Kebab', ancho) + '\n';
@@ -555,10 +565,8 @@
         cocina += guion + '\n';
         cocina += centrarTexto('Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago), ancho) + '\n';
 
-        // ============ LINEA DE CORTE ============
         const corte = guion + '\n' + centrarTexto('CORTAR AQUI', ancho) + '\n' + guion + '\n';
 
-        // ============ COMANDA CLIENTE ============
         let cliente = '';
         cliente += centrarTexto('MDK SHAWARMA', ancho) + '\n';
         cliente += centrarTexto('Maison du Kebab', ancho) + '\n';
@@ -581,7 +589,6 @@
 
         const textoCompleto = cocina + corte + cliente;
 
-        // ============ ENVIAR AL PUENTE MDK ============
         fetch('http://192.168.100.175:5001/imprimir', {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
