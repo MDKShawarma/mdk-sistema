@@ -134,7 +134,7 @@ def obtener_total_mercadopago_hoy():
         return None
 
 def es_empleado():
-    return request.remote_addr != '127.0.0.1'
+    return session.get('rol') == 'empleado'
 
 from init_db import inicializar_base_datos
 inicializar_base_datos()
