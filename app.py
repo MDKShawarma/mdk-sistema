@@ -426,7 +426,26 @@ def informe_borrar_dia(fecha):
     conn.close()
     print(f"OK: se borraron {borradas} ventas del dia {fecha}")
     return redirect(url_for('informe'))
-
+@app.route('/api/nuevo_cliente', methods=['POST'])
+@login_requerido_empleado
+def api_nuevo_cliente():
+    """Alta rapida de cliente desde la pantalla de ventas"""
+    nombre = request.form.get('nombre', '').strip()
+    telefono = request.form.get('telefono', '').strip()
+    if not nombre or not telefono:
+        return json.dumps({"ok": False, "error": "Faltan nombre o telefono"})
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM clientes WHERE telefono = ?", (telefono,))
+    existente = cursor.fetchone()
+    if existente:
+        conn.close()
+        return json.dumps({"ok": False, "error": "Ya existe un cliente con ese telefono", "id": existente[0]})
+    cursor.execute("INSERT INTO clientes (nombre, telefono, total_compras, cantidad_pedidos, puntos) VALUES (?, ?, 0, 0, 0)", (nombre, telefono))
+    nuevo_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return json.dumps({"ok": True, "id": nuevo_id, "nombre": nombre})
 @app.route('/clientes', methods=['GET', 'POST'])
 @login_requerido
 def clientes():
