@@ -49,12 +49,20 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
         }
+        .producto-card .stock-linea {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .producto-card .stock-linea strong { color: #f4a460; }
+        .producto-card .stock-linea strong.cero { color: #f44336; }
         .producto-card form {
             display: flex;
             gap: 8px;
             justify-content: center;
+            margin-top: 8px;
         }
         .producto-card input[type="number"] {
             width: 110px;
@@ -142,7 +150,7 @@
         </div>
         <div class="header-subtitle">Maison du Kebab</div>
     </div>
-    
+
     <div class="menu">
         {% if empleado %}
         <a href="/empleado">👨‍🍳 Menú Empleado</a>
@@ -164,22 +172,23 @@
         <a href="/clientes">👥 Clientes</a>
         {% endif %}
     </div>
-    
+
     <div class="content">
         <h1>📦 Productos</h1>
-        
+
         {% if not empleado %}
         <div style="text-align:center;">
             <button class="btn-agregar" onclick="abrirModal()">➕ Agregar Producto</button>
         </div>
         {% endif %}
-        
+
         <div class="productos-grid">
             {% for p in productos %}
             <div class="producto-card">
                 <h3>{{ p[1] }}</h3>
                 <div class="categoria">{{ p[2] }}</div>
                 <div class="precio-actual">${{ p[3] }}</div>
+                <div class="stock-linea">Stock: <strong class="{{ 'cero' if p[4] <= 0 else '' }}">{{ p[4] }}</strong></div>
                 {% if not empleado %}
                 <form method="POST" action="/productos">
                     <input type="hidden" name="producto_id" value="{{ p[0] }}">
@@ -187,11 +196,17 @@
                     <button type="submit">💾</button>
                 </form>
                 {% endif %}
+                <form method="POST" action="/productos">
+                    <input type="hidden" name="accion" value="reponer">
+                    <input type="hidden" name="producto_id" value="{{ p[0] }}">
+                    <input type="number" name="cantidad" value="10" min="1">
+                    <button type="submit" style="background:linear-gradient(135deg,#2196F3,#1565C0); color:white;">➕ Reponer</button>
+                </form>
             </div>
             {% endfor %}
         </div>
     </div>
-    
+
     {% if not empleado %}
     <div class="modal" id="modal-agregar">
         <div class="modal-contenido">
