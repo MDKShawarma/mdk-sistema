@@ -1,354 +1,154 @@
-# PROYECTO MDK SHAWARMA - SISTEMA DE GESTION
+# 🌯 MDK SHAWARMA - Sistema de Gestión
+**Última actualización: 09/10/2026**
 
-Ultima actualizacion: 26/09/2026
+Sistema completo de gestión para el local: ventas, stock, clientes, pagos online,
+puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 
-## DESCRIPCION
-
-Sistema web de gestion para MDK Shawarma (Maison du Kebab), negocio de comida arabe en Buenos Aires, Argentina.
-
-## URLs DEL SISTEMA
-
-- Sistema en DonWeb: https://sistema.mdk-shawarma.com
-- Pedido clientes: https://sistema.mdk-shawarma.com/pedido
-- Panel empleado: https://sistema.mdk-shawarma.com/empleado
-- Web publica: https://mdk-shawarma.com
-- GitHub: https://github.com/MDKShawarma/mdk-sistema
-
-## SERVIDOR DONWEB
-
-- IP: 149.50.154.101
-- Host: vps-6399034-x.dattaweb.com
-- Puerto SSH: 5028
-- Usuario: root
-- Sistema: Ubuntu 22.04
-- Nodo: OS4
-- Servicio systemd: mdk.service
-- Nginx configurado con SSL (Let's Encrypt)
-
-## CREDENCIALES
-
-- Dueno (Sergio): contrasena MDK2026 - acceso TOTAL
-- Empleado: sin contrasena en /empleado - Ventas, Productos, Stock, Gastos, Cierre de Caja
-- Cliente: sin contrasena en /pedido - solo hacer pedidos
-- MercadoPago Access Token: guardado en /var/www/mdk-sistema/.env
-
-## FUNCIONES QUE YA FUNCIONAN
-
-### Autenticacion y Roles
-- Login de dueno con contrasena MDK2026
-- Acceso de empleado sin contrasena
-- Separacion de roles (dueno vs empleado)
-- Empleado NO puede acceder al panel de dueno
-- Logout
-
-### Panel de Control (Dueno)
-- Ventas del dia
-- Pedidos del dia
-- Gasto diario estimado
-- Alertas de stock bajo
-- Total de productos
-- Total de clientes
-- Alertas de ingredientes bajos
-
-### Productos
-- Listar productos (29 cargados)
-- Editar precios
-- Ordenados por importancia
-
-### Stock
-- Listar ingredientes (23 cargados)
-- Sumar, restar, fijar stock
-- Reset total
-- Alertas de stock minimo
-
-### Ventas
-- Carrito de ventas
-- Multiples productos por venta
-- Notas por producto
-- Seleccion de cliente
-- Metodos de pago (efectivo, Mercadopago)
-- Numero de pedido correlativo
-- Descuento automatico de stock
-- Etiqueta "PAGADO ONLINE" para pagos por QR con MercadoPago
-
-### Gastos
-- Registrar gastos del dia
-- Categorias
-- Total del dia
-
-### Gastos Fijos
-- Listar, agregar, editar, eliminar
-
-### Contador
-- Ingresos del mes y de hoy
-- Gastos fijos y variables
-- Balance
-- IVA estimado 21%
-- IIBB estimado 3.5%
-- Ventas ultimos 7 dias
-
-### Informe
-- Ventas de hoy y ayer
-- Gasto diario
-- Historial de 14 dias
-- Productos mas vendidos por dia
-
-### Clientes
-- Listar clientes
-- Agregar cliente
-- Ver detalle e historial
-- Eliminar cliente
-- Sistema de puntos (1 punto cada $1.000)
-
-### Proveedores
-- Listar (Ezequiel, Sergio)
-- Agregar y eliminar
-
-### Chat con IA
-- Chat con Ollama + Mistral
-
-### Cierre de Caja
-- Boton "Cerrar Caja" en panel empleado
-- Formulario de cierre (efectivo + MercadoPago)
-- Calculo automatico de esperado segun ventas
-- Calculo de diferencias
-- Observaciones
-- Historial para dueno (ultimos 30 cierres)
-- Bloqueo obligatorio despues de las 22:30
-
-### Pedidos de Clientes (QR)
-- Pagina de pedidos sin login
-- Menu completo con precios
-- Carrito con cantidades
-- Personalizacion: Shawarma/Falafel (sin repollo, tomate, cebolla, salsa), Coca (Normal/Zero), Agua (Con/Sin gas), Smudis (Naranja/Frutilla, Pomelo, Manzana, Multifruta)
-- Formulario de cliente
-- Tipo de servicio (local/para llevar)
-- Metodo de pago: Efectivo o MercadoPago
-- Notas/sugerencias
-- Numero de pedido correlativo
-- Aviso de demora si hay 10+ pedidos pendientes
-- Registro automatico de cliente nuevo
-
-### Pago Online con MercadoPago
-- Cliente elige "MercadoPago" al hacer el pedido
-- Se guarda el pedido en tabla `pedidos_pendientes`
-- Se crea una preferencia de pago en MercadoPago
-- Se redirige al cliente a la pasarela de pago de MercadoPago
-- El cliente puede pagar con tarjeta, saldo o efectivo (Rapipago/Pago Facil)
-- Al confirmar el pago, MercadoPago redirige a /pago_exitoso
-- El sistema verifica el pago con la API de MercadoPago
-- Se registra la venta automaticamente
-- Se descuenta stock
-- Se suman puntos al cliente
-- Se muestra el numero de pedido al cliente
-
-### Alerta para Empleado
-- En la pantalla de ventas (/ventas), cada 10 segundos se consulta si hay pedidos nuevos pagados online
-- Si hay, suena un "ding" y aparece un cartel verde grande con:
-  - Numero de pedido
-  - Productos
-  - Total
-- El empleado toca "OK, VISTO" para cerrarlo
-- En la tabla de ventas, los pedidos pagados online aparecen con etiqueta verde "PAGADO ONLINE"
-
-### Impresion de Comandas (NUEVO - 26/09/2026)
-- Impresora: Xprinter XP58IIH BT (termica 58mm, Bluetooth, sin cortador)
-- Tablet: Xiaomi HyperOS
-- App puente: RawBT inkless print service + Server for RawBT
-- Al tocar "IMPRIMIR COMANDA" en la alerta, se envia por fetch al servidor local:
-  - URL: http://127.0.0.1:40213/print
-  - Metodo: POST con texto plano
-- Se imprime DUPLICADO:
-  - Copia COCINA (con notas y personalizaciones)
-  - Linea de corte (CORTAR AQUI)
-  - Copia CLIENTE (con precios y total)
-- Se marca el pedido como "impreso" en el servidor
-- Boton cambia a "IMPRESO" para no repetir
-- Limpieza de caracteres: sin emojis, sin acentos, solo ASCII
-
-### PWA (App instalable)
-- Manifest.json
-- Service Worker
-- Iconos 192x192 y 512x512
-- Instalable desde Chrome
-- Registro automatico
-
-## FUNCIONES PENDIENTES
-
-- Mejorar nitidez de impresion (cabezal sucio, papel, o densidad)
-- Sistema de puntos (canje de puntos por descuentos)
-- WhatsApp automatico
-- Integracion con PedidosYa
-- Marketing automatico (generacion de contenido con IA)
-- Prediccion de demanda
-- Alertas inteligentes
-
-## ESTRUCTURA DEL PROYECTO
-
-MDK_Sistema/
-- app.py (archivo principal Flask)
-- init_db.py (inicializacion de BD)
-- requirements.txt
-- mdk.db (base de datos SQLite)
-- .env (variables de entorno - Access Token de MercadoPago)
-- Procfile (configuracion de gunicorn)
-- crear_iconos.py
-- static/
-  - logo.png
-  - style.css
-  - manifest.json
-  - service-worker.js
-  - icon-192.png
-  - icon-512.png
-  - QR_MDK_Pedidos.png (QR actualizado a DonWeb)
-- templates/
-  - login.html
-  - inicio.html
-  - empleado.html
-  - productos.html
-  - stock.html
-  - ventas.html (con alerta de pedidos + impresion RawBT)
-  - gastos.html
-  - gastos_fijos.html
-  - contador.html
-  - informe.html
-  - clientes.html
-  - cliente_detalle.html (con puntos)
-  - proveedores.html
-  - chat.html
-  - cierre_caja.html
-  - pedido_cliente.html (con boton MercadoPago)
-  - pago_exitoso.html
-  - pago_fallido.html
-  - pago_pendiente.html
-
-## BASE DE DATOS - TABLAS
-
-- productos (29 cargados)
-- ventas (con columna impreso para control de impresion)
-- gastos
-- gastos_fijos (10 cargados)
-- clientes
-- movimientos_puntos
-- ingredientes (23 cargados)
-- proveedores (2 cargados)
-- cierres_caja
-- pedidos_pendientes (para pagos online)
-
-## ACCESO AL SERVIDOR
-
-Para conectarte por PuTTY:
-- Host: 149.50.154.101
-- Puerto: 5028
-- Usuario: root
-- Contrasena: (la que paso el tecnico de DonWeb)
-
-## DEPLOY Y GITHUB
-
-Para subir cambios:
-  cd Desktop\MDK_Sistema
-  git add .
-  git commit -m "Descripcion del cambio"
-  git push
-
-Despues, en PuTTY:
-  cd /var/www/mdk-sistema
-  git pull
-  systemctl restart mdk
-
-## SERVICIOS EN EL SERVIDOR
-
-- mdk.service (systemd): corre gunicorn con la app Flask
-- nginx: servidor web con proxy al puerto 5000
-- certbot: renueva el certificado SSL automaticamente cada 90 dias
-
-## CONFIGURACION DE IMPRESION
-
-### En la tablet (Xiaomi HyperOS)
-1. RawBT instalado
-2. Server for RawBT instalado
-3. Impresora Xprinter XP58IIH BT emparejada por Bluetooth
-4. Server for RawBT corriendo en puerto 40213
-5. Chrome abierto en https://sistema.mdk-shawarma.com/ventas
-
-### Flujo de impresion
-1. Entra un pedido pagado por MercadoPago
-2. Suena el ding en la tablet
-3. Aparece cartel verde con "IMPRIMIR COMANDA"
-4. El empleado toca el boton
-5. El navegador hace fetch a http://127.0.0.1:40213/print
-6. Server for RawBT recibe el texto y lo manda a la impresora
-7. Se imprimen las 2 comandas (cocina + cliente)
-
-## PROBLEMAS CONOCIDOS Y SOLUCIONES
-
-- La base de datos se borra si se cambia la estructura (init_db.py detecta y borra)
-- El service worker puede servir version vieja en el celular (solucion: cambiar CACHE_NAME)
-- MercadoPago no permite pagarse a uno mismo (usar cuenta de otra persona)
-- La impresion sale tenue (pendiente: limpiar cabezal o ajustar densidad)
-- HyperOS bloquea intent:// (solucion: usar Server for RawBT con fetch local)
-
-## PROXIMOS PASOS
-
-Inmediatos:
-1. Mejorar nitidez de impresion
-
-Corto plazo:
-1. Sistema de puntos (canje)
-2. Integracion con PedidosYa
-3. Marketing automatico
-
-Mediano plazo:
-1. Impresora con cortador automatico
-2. Prediccion de demanda
-3. Alertas inteligentes
-
-## NOTAS PARA LA IA (Deepy)
-
-Si estas leyendo esto porque perdiste el contexto:
-
-1. El dueno es Sergio, tiene un negocio de shawarma en Buenos Aires (MDK Shawarma)
-2. Sergio NO es tecnico, explicar todo paso a paso, sin tecnicismos
-3. El sistema esta funcionando en DonWeb (https://sistema.mdk-shawarma.com)
-4. La contrasena del dueno es MDK2026
-5. El empleado entra sin contrasena en /empleado
-6. Los clientes piden por QR en /pedido
-7. El sistema acepta pagos online con MercadoPago
-8. La impresion se hace desde una tablet Xiaomi con RawBT + Server for RawBT
-9. El codigo esta en GitHub y se sube con git push
-10. El servidor se actualiza con git pull + systemctl restart mdk
-11. Cuando dudes, preguntar antes de asumir
-
-## CONTACTO
-
-- Dueno: Sergio
-- Negocio: MDK Shawarma (Maison du Kebab)
-- Ubicacion: Buenos Aires, Argentina
-- Web: https://mdk-shawarma.com
+ URL: https://sistema.mdk-shawarma.com
+🔑 Login dueño: MDK2026
 
 ---
 
-Este archivo es la memoria del proyecto. Actualizarlo cada vez que se haga un cambio importante.
+## 🏗️ ARQUITECTURA
+
+| Capa | Detalle |
+|------|---------|
+| Lenguaje | Python + Flask |
+| Base de datos | SQLite (mdk.db) - BLINDADA |
+| Servidor | VPS DonWeb (149.50.154.101), puerto SSH 5028 |
+| Carpeta servidor | /var/www/mdk-sistema |
+| Servicio | systemctl restart mdk |
+| Carpeta local | C:\Users\w10\Desktop\MDK_Sistema |
+| Transporte | GitHub (git push / git pull) |
+| HTTPS | Let's Encrypt activo |
+
 ---
 
-## ACTUALIZACION 30/09/2026
+## 🔄 FLUJO DE TRABAJO DIARIO (CMD + PuTTY)
 
-### Blindaje de la base de datos
-- init_db.py ya NO borra la base de datos nunca mas
-- Si falta una columna, la agrega con ALTER TABLE
-- Ya no se pierden datos en los deploys
+1. Editar archivos en la compu (Bloc de Notas o el editor que prefieras)
+2. En CMD:
+   git add .
+   git commit -m "descripcion del cambio"
+   git push
+3. En PuTTY:
+   cd /var/www/mdk-sistema
+   git pull
+   systemctl restart mdk
+4. Probar en el navegador
 
-### Recuperacion de clientes
-- Se perdieron 332 clientes por un borrado accidental de la base
-- Se recuperaron 527 clientes desde contacts 2026-2.csv
-- Scripts: generar_json.py (local) e importar_clientes.py (servidor)
-- Archivo de datos: clientes_importar.json
-- Total actual: 535 clientes
+---
 
-### Backup
-- Se creo mdk.db.backup en el servidor como respaldo
+## ✅ FUNCIONES QUE YA FUNCIONAN
 
-### Pendiente
-- Impresora XP-V320N con cortador automatico (comprada, sin entregar)
-- Sistema de puntos (canje)
-- Mejorar nitidez de impresion
+### Ventas y local
+- Pantalla de ventas con carrito, personalización de productos (sin repollo, sin tomate, etc.)
+- Descuento automático de stock al vender
+- Comanda en 2 copias (COCINA + CLIENTE) con línea de corte
+- Impresión desde navegador (window.print) mientras llega la impresora nueva
+- Alerta sonora y visual de pedidos QR (verde = pagado, naranja = a cobrar)
+- Cierre de caja obligatorio para el empleado a las 22:30
+
+### Pagos online
+- Pedidos por QR desde el celular (PWA instalable)
+- Pago con MercadoPago integrado y verificado
+- Registro automático del pedido al aprobarse el pago
+- Etiqueta "PAGADO ONLINE" en el listado de ventas
+
+### Clientes y fidelidad
+- 534 clientes cargados (528 recuperados del JSON + nuevos)
+- Alta automática de clientes por teléfono (QR y ventas)
+- Historial de compras y de puntos por cliente
+- Puntos: 1 punto por cada $1.000 pagados
+- CANJE DE PUNTOS (instalado 08/10):
+  - 100 puntos = $1.000 de descuento
+  - Canje en bloques cerrados de 100 puntos
+  - Sin mínimo de compra
+  - El descuento nunca supera el total de la compra
+  - Se registra en el historial como "resta" con el motivo del canje
+  - Pendiente: prueba en vivo con una venta real
+
+### Gestión
+- Productos con precios editables y orden por importancia
+- Stock de ingredientes con mínimos y alertas
+- Gastos variables y gastos fijos (con edición)
+- Contador: balance del mes, IVA e IIBB estimados, ventas de la semana
+- Informe día a día con botón BORRAR DÍA (solo dueño, con confirmación)
+- Proveedores con datos de contacto
+- Chat con IA local (Ollama)
+
+---
+
+## 🛡️ BLINDAJE DE LA BASE DE DATOS (06/10/2026)
+
+- init_db.py YA NO BORRA la base de datos nunca más
+- Si falta una columna nueva, la agrega con ALTER TABLE y conserva todo
+- Verificación: grep "os.remove" /var/www/mdk-sistema/init_db.py
+  (debe mostrar NADA; si muestra algo, el blindaje se perdió)
+
+---
+
+## 👥 RECUPERACIÓN DE CLIENTES (06/10/2026)
+
+- El 28/09 la base se recreó sola (antes del blindaje) y quedaron 8 clientes
+- Se recuperaron 528 clientes desde clientes_importar.json
+- Script importar_clientes.py normaliza teléfonos (saca +54, 9, espacios)
+  para no duplicar clientes
+- Total actual: 534 clientes
+
+---
+
+## 🖨️ IMPRESIÓN - ESTADO ACTUAL
+
+| Etapa | Estado |
+|-------|--------|
+| RawBT (Android) | ABANDONADO: bloqueado por pantalla de licencia |
+| Thermer | ABANDONADO: no detectaba la impresora en la tablet |
+| Impresora nueva | XPrinter XP-V320N (LAN, corte automático) - COMPRADA, sin entregar |
+| Plan al llegar | Servidor de impresión local en la PC del local; la tablet/envío manda el texto por HTTP y sale impreso con corte automático |
+| Mientras tanto | Impresión de comanda desde el navegador (botón IMPRIMIR) |
+
+---
+
+## 🔑 DATOS IMPORTANTES
+
+- SSH: root@149.50.154.101 puerto 5028 (contraseña cambiada el 06/10/2026 desde el panel de DonWeb; está anotada en la agenda de Sergio)
+- Panel DonWeb: opción "Software y Accesos" para ver/cambiar la contraseña; NUNCA tocar los botones "Recrear" ni "Vaciar"
+- Backup DonWeb: Premium Diario (permite restaurar el servidor completo si hace falta)
+- MercadoPago: credenciales en el archivo .env del servidor (no subir a GitHub)
+- clients de respaldo: clientes_importar.json (528 clientes, también en GitHub)
+
+---
+
+## 📁 ARCHIVOS CLAVE
+
+| Archivo | Función |
+|---------|---------|
+| app.py | Todas las rutas del sistema |
+| init_db.py | Crea tablas y columnas sin borrar datos (blindado) |
+| importar_clientes.py | Recuperación de clientes desde JSON |
+| clientes_importar.json | Respaldo de 528 clientes |
+| templates/ | Pantallas HTML |
+| static/ | Logo, estilos y service-worker (PWA) |
+
+---
+
+## 📌 PENDIENTES (PRÓXIMOS PASOS)
+
+1. 🧪 Probar el canje de puntos con una venta real
+2. 🖨️ Configurar la XPrinter XP-V320N cuando llegue (servidor de impresión local)
+3. 📱 WhatsApp automático (confirmación de pedidos)
+4. 🛵 Integración con PedidosYa
+5. 📣 Marketing automático (redes)
+6. 💾 Backup diario automático de mdk.db dentro del servidor
+
+---
+
+## 📅 HISTORIAL RESUMIDO
+
+- Ago 2026: sistema base (productos, stock, ventas, gastos, contador, informes)
+- Sep 2026: QR + MercadoPago, PWA, HTTPS, alertas, comandas, puntos
+- 28/09/2026: incidente de base de datos recreada (se pierden clientes)
+- 06/10/2026: blindaje de init_db + recuperación de 528 clientes + contraseña SSH nueva
+- 08/10/2026: canje de puntos instalado
+- 09/10/2026: botón borrar día en Informe
