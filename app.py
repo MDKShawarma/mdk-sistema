@@ -85,7 +85,7 @@ def orden_importancia(nombre):
     else: return 9
 
 def es_empleado():
-    return request.remote_addr != '127.0.0.1'
+    return session.get('rol') != 'dueno'
 
 from init_db import inicializar_base_datos
 inicializar_base_datos()
@@ -187,12 +187,19 @@ def productos():
     conn = get_db()
     cursor = conn.cursor()
     if request.method == 'POST':
+        accion = request.form.get('accion')
         producto_id = request.form.get('producto_id')
-        nuevo_precio = request.form.get('precio')
-        if producto_id and nuevo_precio:
-            cursor.execute("UPDATE productos SET precio = ? WHERE id = ?", (float(nuevo_precio), int(producto_id)))
-            conn.commit()
-    cursor.execute("SELECT * FROM productos")
+        if accion == 'reponer':
+            cantidad = request.form.get('cantidad')
+            if producto_id and cantidad:
+                cursor.execute("UPDATE productos SET stock = stock + ? WHERE id = ?", (int(cantidad), int(producto_id)))
+                conn.commit()
+        else:
+            nuevo_precio = request.form.get('precio')
+            if producto_id and nuevo_precio:
+                cursor.execute("UPDATE productos SET precio = ? WHERE id = ?", (float(nuevo_precio), int(producto_id)))
+                conn.commit()
+    cursor.execute("SELECT id, nombre, categoria, precio, stock FROM productos")
     productos_raw = cursor.fetchall()
     productos = sorted(productos_raw, key=lambda p: (orden_importancia(p[1]), p[1]))
     conn.close()
@@ -237,9 +244,6 @@ def stock():
     conn.close()
     return render_template('stock.html', ingredientes=ingredientes, empleado=es_empleado())
 
-# ==========================================
-# VENTAS CON CANJE DE PUNTOS Y ORIGEN (MOSTRADOR / PEDIDOSYA)
-# ==========================================
 @app.route('/ventas', methods=['GET', 'POST'])
 @login_requerido_empleado
 def ventas():
@@ -266,7 +270,6 @@ def ventas():
                     conn.close()
                     return "Error: stock insuficiente para " + item['nombre'], 400
                 total_general += producto[1] * cantidad
-            # ---- CANJE DE PUNTOS (100 pts = $1000, bloques completos) ----
             descuento_aplicado = 0
             puntos_a_descontar = 0
             if canjear_puntos and cliente_id:
@@ -280,7 +283,6 @@ def ventas():
                         descuento_aplicado = bloques * 1000
                         puntos_a_descontar = bloques * 100
                         total_general = total_general - descuento_aplicado
-            # Factor para que las lineas de venta sumen el total pagado
             total_original = total_general + descuento_aplicado
             factor = (total_general / total_original) if (descuento_aplicado > 0 and total_original > 0) else 1.0
             cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
@@ -412,7 +414,6 @@ def informe():
         cursor.execute("SELECT p.nombre, SUM(v.cantidad) as cantidad, SUM(v.total) as total FROM ventas v JOIN productos p ON v.producto_id = p.id WHERE date(v.fecha) = ? GROUP BY p.id ORDER BY total DESC", (fecha,))
         productos = cursor.fetchall()
         historial.append({'fecha': fecha, 'total': total, 'pedidos': pedidos, 'productos': [{'nombre': p[0], 'cantidad': p[1], 'total': p[2]} for p in productos]})
-    # ---- REPORTE PEDIDOSYA ----
     cursor.execute("SELECT COALESCE(SUM(total), 0), COUNT(DISTINCT numero_pedido) FROM ventas WHERE tipo_origen = 'pedidosya' AND date(fecha) = date('now')")
     fila_py = cursor.fetchone()
     py_vendido = fila_py[0]
@@ -424,9 +425,6 @@ def informe():
     conn.close()
     return render_template('informe.html', ventas_hoy=ventas_hoy, ventas_ayer=ventas_ayer, gasto_diario=gasto_diario, historial=historial, py_vendido=py_vendido, py_pedidos=py_pedidos, py_comision=py_comision, py_neto=py_neto, py_historial=py_historial, py_comision_pct=int(COMISION_PEDIDOSYA * 100))
 
-# ==========================================
-# BORRAR UN DIA DEL INFORME (solo dueno)
-# ==========================================
 @app.route('/informe/borrar_dia/<fecha>', methods=['POST'])
 @login_requerido
 def informe_borrar_dia(fecha):
@@ -697,13 +695,9 @@ def nuevo_pedido():
     conn.close()
     return render_template('pedido_confirmado.html', nombre=nombre, numero_pedido=numero_pedido)
 
-# ==========================================
-# API - Pedidos nuevos (pantalla de ventas)
-# ==========================================
 @app.route('/api/pedidos_nuevos')
 @login_requerido_empleado
 def api_pedidos_nuevos():
-    """Devuelve pedidos nuevos (efectivo o pagados) de los últimos 5 min, no impresos"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -734,13 +728,9 @@ def api_pedidos_nuevos():
         pedidos_agrupados[num]['total'] += p['total']
     return json.dumps(list(pedidos_agrupados.values()))
 
-# ==========================================
-# API - Impresión de comandas
-# ==========================================
 @app.route('/api/pedidos_para_imprimir')
 @login_requerido_empleado
 def api_pedidos_para_imprimir():
-    """Devuelve pedidos no impresos agrupados por número de pedido"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -780,7 +770,6 @@ def api_pedidos_para_imprimir():
 @app.route('/api/marcar_impreso', methods=['POST'])
 @login_requerido_empleado
 def api_marcar_impreso():
-    """Marca los pedidos como impresos"""
     ids_json = request.form.get('ids_venta')
     if not ids_json:
         return "Faltan datos", 400
@@ -796,9 +785,6 @@ def api_marcar_impreso():
     conn.close()
     return json.dumps({"ok": True, "marcados": len(ids)})
 
-# ==========================================
-# PWA - Service Worker
-# ==========================================
 @app.route('/service-worker.js')
 def service_worker():
     return send_from_directory('static', 'service-worker.js')
