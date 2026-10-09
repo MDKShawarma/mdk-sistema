@@ -411,6 +411,22 @@ def informe():
     conn.close()
     return render_template('informe.html', ventas_hoy=ventas_hoy, ventas_ayer=ventas_ayer, gasto_diario=gasto_diario, historial=historial)
 
+# ==========================================
+# BORRAR UN DIA DEL INFORME (solo dueno)
+# ==========================================
+@app.route('/informe/borrar_dia/<fecha>', methods=['POST'])
+@login_requerido
+def informe_borrar_dia(fecha):
+    """Borra todas las ventas de un dia especifico (solo dueno)"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM ventas WHERE date(fecha) = ?", (fecha,))
+    borradas = cursor.rowcount
+    conn.commit()
+    conn.close()
+    print(f"OK: se borraron {borradas} ventas del dia {fecha}")
+    return redirect(url_for('informe'))
+
 @app.route('/clientes', methods=['GET', 'POST'])
 @login_requerido
 def clientes():
@@ -653,6 +669,7 @@ def nuevo_pedido():
 @app.route('/api/pedidos_nuevos')
 @login_requerido_empleado
 def api_pedidos_nuevos():
+    """Devuelve pedidos nuevos (efectivo o pagados) de los últimos 5 min, no impresos"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -689,6 +706,7 @@ def api_pedidos_nuevos():
 @app.route('/api/pedidos_para_imprimir')
 @login_requerido_empleado
 def api_pedidos_para_imprimir():
+    """Devuelve pedidos no impresos agrupados por número de pedido"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -728,6 +746,7 @@ def api_pedidos_para_imprimir():
 @app.route('/api/marcar_impreso', methods=['POST'])
 @login_requerido_empleado
 def api_marcar_impreso():
+    """Marca los pedidos como impresos"""
     ids_json = request.form.get('ids_venta')
     if not ids_json:
         return "Faltan datos", 400

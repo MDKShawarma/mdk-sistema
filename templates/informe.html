@@ -9,7 +9,7 @@
         .card-hoy { background: linear-gradient(135deg, #1a4d2e, #2d7a4a); }
         .card-ayer { background: linear-gradient(135deg, #1a3a5c, #2d5a8a); }
         .card-gasto { background: linear-gradient(135deg, #5c1a1a, #8a2d2d); }
-        
+
         .historial {
             background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
             border: 2px solid #333;
@@ -64,6 +64,21 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+        .btn-borrar-dia {
+            background: linear-gradient(135deg, #5c1a1a, #8a2d2d);
+            color: #fff;
+            border: 2px solid #d9534f;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-borrar-dia:hover {
+            background: linear-gradient(135deg, #d9534f, #8a2d2d);
+            box-shadow: 0 4px 15px rgba(217, 83, 79, 0.4);
+        }
         .producto-detalle {
             display: flex;
             justify-content: space-between;
@@ -91,7 +106,7 @@
         </div>
         <div class="header-subtitle">Maison du Kebab</div>
     </div>
-    
+
     <div class="menu">
         <a href="/">📊 Panel</a>
         <a href="/productos">📦 Productos</a>
@@ -105,30 +120,30 @@
         <a href="/chat">💬 Chat</a>
         <a href="/clientes">👥 Clientes</a>
     </div>
-    
+
     <div class="content">
         <h1>📈 Informe de Ventas</h1>
-        
+
         <div class="cards-grid">
             <div class="card card-hoy">
                 <span class="card-icon">💰</span>
                 <h3>Ventas Hoy</h3>
                 <p>${{ ventas_hoy }}</p>
             </div>
-            
+
             <div class="card card-ayer">
                 <span class="card-icon">📅</span>
                 <h3>Ventas Ayer</h3>
                 <p>${{ ventas_ayer }}</p>
             </div>
-            
+
             <div class="card card-gasto">
                 <span class="card-icon">🎯</span>
                 <h3>Gasto Diario</h3>
                 <p>${{ gasto_diario }}</p>
             </div>
         </div>
-        
+
         <div class="historial">
             <h2>📋 Historial Día a Día</h2>
             {% for dia in historial %}
@@ -137,6 +152,9 @@
                     <span class="dia-fecha">📅 {{ dia.fecha }}</span>
                     <span class="dia-pedidos">{{ dia.pedidos }} pedidos</span>
                     <span class="dia-total">${{ dia.total }}</span>
+                    <form method="POST" action="/informe/borrar_dia/{{ dia.fecha }}" style="display:inline;" onsubmit="return confirm('⚠️ ATENCIÓN: ¿Seguro que querés borrar TODAS las ventas del día {{ dia.fecha }}?\n\nEsta acción NO se puede deshacer.');">
+                        <button type="submit" class="btn-borrar-dia">🗑️ Borrar día</button>
+                    </form>
                 </div>
                 {% for prod in dia.productos %}
                 <div class="producto-detalle">
