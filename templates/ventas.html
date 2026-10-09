@@ -92,6 +92,9 @@ font-size: 13px; color: #ccc; user-select: none; transition: all 0.2s; font-weig
 .btn-confirmar { background: linear-gradient(135deg, #4CAF50, #2d7a4a); color: white; border: none; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
 .btn-confirmar:disabled { background: #333; color: #666; cursor: not-allowed; }
 select, .input-campo { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px; }
+.origen-btn { flex: 1; padding: 14px; border-radius: 12px; border: 2px solid #444; background: #1a1a1a; color: #888; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+.origen-btn.origen-activo { border-color: #f4a460; color: #f4a460; background: linear-gradient(135deg, #2a2a2a, #1e1e1e); box-shadow: 0 0 15px rgba(244, 164, 96, 0.3); }
+#btn-origen-pedidosya.origen-activo { border-color: #ff9800; color: #ff9800; box-shadow: 0 0 15px rgba(255, 152, 0, 0.4); }
 @media print {
 .header { display: none !important; }
 .content { display: none !important; }
@@ -212,6 +215,13 @@ Vuelva pronto 🙏
 <details style="background: #1e1e1e; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #f4a460;">
 <summary style="color: #f4a460; font-size: 20px; font-weight: bold; cursor: pointer;">➕ NUEVA VENTA (tocar para abrir)</summary>
 <div style="margin-top: 20px;">
+<div style="display: flex; gap: 10px; margin-bottom: 15px;">
+<button type="button" id="btn-origen-mostrador" class="origen-btn origen-activo" onclick="setOrigen('empleado')">🏪 MOSTRADOR</button>
+<button type="button" id="btn-origen-pedidosya" class="origen-btn" onclick="setOrigen('pedidosya')">🛵 PEDIDOSYA</button>
+</div>
+<div id="aviso-pedidosya" style="display:none; background:#1a1a1a; border:2px solid #ff9800; border-radius:10px; padding:12px; margin-bottom:15px; color:#ff9800; font-size:14px; font-weight:bold;">
+🛵 Pedido de PedidosYa: cobra PedidosYa y te deposita después de descontar la comisión (25%). No suma al cierre de caja de hoy.
+</div>
 <div class="productos-grid" id="productos-grid">
 {% for p in productos %}
 <div class="producto-btn" onclick="abrirPersonalizacion({{ p[0] }}, '{{ p[1] }}', {{ p[2] }})">
@@ -272,7 +282,9 @@ Vuelva pronto 🙏
 <td style="padding: 10px;">{{ v['cantidad'] }}</td>
 <td style="padding: 10px; color: #f4a460; font-weight: bold;">${{ "%.0f"|format(v['total']) }}</td>
 <td style="padding: 10px;">
-{% if v['metodo_pago'] == 'mercadopago' and 'ONLINE' in (v['notas'] or '') %}
+{% if v['metodo_pago'] == 'pedidosya' %}
+<span style="background: #ff9800; color: white; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold;">🛵 PEDIDOSYA</span>
+{% elif v['metodo_pago'] == 'mercadopago' and 'ONLINE' in (v['notas'] or '') %}
 <span style="background: #4CAF50; color: white; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold;">✅ PAGADO ONLINE</span>
 {% else %}
 {{ v['metodo_pago'] }}
@@ -323,6 +335,27 @@ let carrito = [];
 let productoActual = null;
 let personalizacionesActuales = [];
 let cantidadActual = 1;
+let origenActual = 'empleado';
+function setOrigen(origen) {
+origenActual = origen;
+const bM = document.getElementById('btn-origen-mostrador');
+const bP = document.getElementById('btn-origen-pedidosya');
+const selMetodo = document.getElementById('metodo_pago');
+const avisoPy = document.getElementById('aviso-pedidosya');
+if (origen === 'pedidosya') {
+bP.classList.add('origen-activo');
+bM.classList.remove('origen-activo');
+selMetodo.disabled = true;
+selMetodo.style.opacity = '0.4';
+avisoPy.style.display = 'block';
+} else {
+bM.classList.add('origen-activo');
+bP.classList.remove('origen-activo');
+selMetodo.disabled = false;
+selMetodo.style.opacity = '1';
+avisoPy.style.display = 'none';
+}
+}
 function getTipoPersonalizacion(nombre) {
 const n = nombre.toLowerCase();
 if (n.includes('shawarma') || n.includes('falafel')) {
@@ -402,9 +435,6 @@ return `<div class="carrito-item">
 totalSpan.textContent = '$' + total;
 }
 function eliminarItem(idx) { carrito.splice(idx, 1); renderizarCarrito(); }
-// ==========================================
-// ALTA RAPIDA DE CLIENTE (sin salir de ventas)
-// ==========================================
 function abrirModalCliente() {
 document.getElementById('nc-nombre').value = '';
 document.getElementById('nc-telefono').value = '';
@@ -462,14 +492,19 @@ errDiv.style.display = 'block';
 }
 function confirmarVenta() {
 if (carrito.length === 0) { alert('Agregá al menos un producto'); return; }
-const metodo = document.getElementById('metodo_pago').value;
-if (!metodo) { alert('Elegí el método de pago'); return; }
+let metodo = document.getElementById('metodo_pago').value;
+if (origenActual === 'pedidosya') {
+metodo = 'pedidosya';
+} else if (!metodo) {
+alert('Elegí el método de pago');
+return;
+}
 const cliente_id = document.getElementById('cliente_id').value;
 const canjear = document.getElementById('canjear_puntos').checked;
 const form = document.createElement('form');
 form.method = 'POST';
 form.action = '/ventas';
-const campos = { carrito: JSON.stringify(carrito), cliente_id: cliente_id, metodo_pago: metodo, canjear_puntos: canjear ? 'on' : '' };
+const campos = { carrito: JSON.stringify(carrito), cliente_id: cliente_id, metodo_pago: metodo, canjear_puntos: canjear ? 'on' : '', origen: origenActual };
 Object.keys(campos).forEach(key => {
 const input = document.createElement('input');
 input.type = 'hidden'; input.name = key; input.value = campos[key];
@@ -654,9 +689,6 @@ console.error('Error de red:', error);
 alert('No se pudo conectar al servidor de impresión. Asegurate de que la app "Server for RawBT" esté abierta y en la misma red.');
 });
 }
-// ==========================================
-// CANJE DE PUNTOS: mostrar puntos al elegir cliente
-// ==========================================
 document.getElementById('cliente_id').addEventListener('change', function() {
 const infoDiv = document.getElementById('info-puntos');
 const canjeInfo = document.getElementById('canje-info');

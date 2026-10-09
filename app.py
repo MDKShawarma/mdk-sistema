@@ -16,6 +16,7 @@ mp_sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
 app = Flask(__name__)
 app.secret_key = 'mdk_secret_key_2026'
 CONTRASENA = 'MDK2026'
+COMISION_PEDIDOSYA = 0.25
 
 def get_db():
     conn = sqlite3.connect('mdk.db', timeout=30)
@@ -237,7 +238,7 @@ def stock():
     return render_template('stock.html', ingredientes=ingredientes, empleado=es_empleado())
 
 # ==========================================
-# VENTAS CON CANJE DE PUNTOS
+# VENTAS CON CANJE DE PUNTOS Y ORIGEN (MOSTRADOR / PEDIDOSYA)
 # ==========================================
 @app.route('/ventas', methods=['GET', 'POST'])
 @login_requerido_empleado
@@ -250,6 +251,9 @@ def ventas():
         cliente_id = request.form.get('cliente_id')
         metodo_pago = request.form.get('metodo_pago')
         canjear_puntos = request.form.get('canjear_puntos') == 'on'
+        origen = request.form.get('origen', 'empleado')
+        if origen not in ('empleado', 'pedidosya'):
+            origen = 'empleado'
         if carrito_json and metodo_pago:
             carrito = json.loads(carrito_json)
             total_general = 0
@@ -291,7 +295,7 @@ def ventas():
                 notas_completas = notas
                 if descuento_aplicado > 0:
                     notas_completas += (" | " if notas_completas else "") + f"Descuento puntos: ${descuento_aplicado}"
-                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, 'empleado', numero_pedido))
+                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, origen, numero_pedido))
                 cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
             if cliente_id:
                 puntos_sumados = int(total_general / 1000)
@@ -408,8 +412,17 @@ def informe():
         cursor.execute("SELECT p.nombre, SUM(v.cantidad) as cantidad, SUM(v.total) as total FROM ventas v JOIN productos p ON v.producto_id = p.id WHERE date(v.fecha) = ? GROUP BY p.id ORDER BY total DESC", (fecha,))
         productos = cursor.fetchall()
         historial.append({'fecha': fecha, 'total': total, 'pedidos': pedidos, 'productos': [{'nombre': p[0], 'cantidad': p[1], 'total': p[2]} for p in productos]})
+    # ---- REPORTE PEDIDOSYA ----
+    cursor.execute("SELECT COALESCE(SUM(total), 0), COUNT(DISTINCT numero_pedido) FROM ventas WHERE tipo_origen = 'pedidosya' AND date(fecha) = date('now')")
+    fila_py = cursor.fetchone()
+    py_vendido = fila_py[0]
+    py_pedidos = fila_py[1]
+    py_comision = py_vendido * COMISION_PEDIDOSYA
+    py_neto = py_vendido - py_comision
+    cursor.execute("SELECT date(fecha) as dia, SUM(total) as total, COUNT(DISTINCT numero_pedido) as pedidos FROM ventas WHERE tipo_origen = 'pedidosya' AND date(fecha) >= date('now', '-14 days') GROUP BY date(fecha) ORDER BY dia DESC")
+    py_historial = cursor.fetchall()
     conn.close()
-    return render_template('informe.html', ventas_hoy=ventas_hoy, ventas_ayer=ventas_ayer, gasto_diario=gasto_diario, historial=historial)
+    return render_template('informe.html', ventas_hoy=ventas_hoy, ventas_ayer=ventas_ayer, gasto_diario=gasto_diario, historial=historial, py_vendido=py_vendido, py_pedidos=py_pedidos, py_comision=py_comision, py_neto=py_neto, py_historial=py_historial, py_comision_pct=int(COMISION_PEDIDOSYA * 100))
 
 # ==========================================
 # BORRAR UN DIA DEL INFORME (solo dueno)
@@ -426,6 +439,7 @@ def informe_borrar_dia(fecha):
     conn.close()
     print(f"OK: se borraron {borradas} ventas del dia {fecha}")
     return redirect(url_for('informe'))
+
 @app.route('/api/nuevo_cliente', methods=['POST'])
 @login_requerido_empleado
 def api_nuevo_cliente():
@@ -446,6 +460,7 @@ def api_nuevo_cliente():
     conn.commit()
     conn.close()
     return json.dumps({"ok": True, "id": nuevo_id, "nombre": nombre})
+
 @app.route('/clientes', methods=['GET', 'POST'])
 @login_requerido
 def clientes():

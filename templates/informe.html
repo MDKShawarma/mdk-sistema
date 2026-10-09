@@ -10,6 +10,67 @@
         .card-ayer { background: linear-gradient(135deg, #1a3a5c, #2d5a8a); }
         .card-gasto { background: linear-gradient(135deg, #5c1a1a, #8a2d2d); }
 
+        .seccion-pedidosya {
+            background: linear-gradient(135deg, #2a1a0a, #3a2a1a);
+            border: 2px solid #ff9800;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        .seccion-pedidosya h2 {
+            color: #ff9800;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .py-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .py-card {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #444;
+            border-radius: 15px;
+            padding: 18px;
+            text-align: center;
+        }
+        .py-card .valor {
+            font-size: 26px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        .py-card .etiqueta {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .py-vendido .valor { color: #ff9800; }
+        .py-comision .valor { color: #f44336; }
+        .py-neto { border-color: #4CAF50; }
+        .py-neto .valor { color: #4CAF50; }
+        .py-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .py-tabla th {
+            background: #ff9800;
+            color: #1a1a1a;
+            padding: 10px;
+            text-align: left;
+            font-size: 13px;
+        }
+        .py-tabla td {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            color: #ccc;
+            font-size: 14px;
+        }
+        .py-tabla td.neto { color: #4CAF50; font-weight: bold; }
+
         .historial {
             background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
             border: 2px solid #333;
@@ -142,6 +203,46 @@
                 <h3>Gasto Diario</h3>
                 <p>${{ gasto_diario }}</p>
             </div>
+        </div>
+
+        <div class="seccion-pedidosya">
+            <h2>🛵 PedidosYa (hoy)</h2>
+            <div class="py-cards">
+                <div class="py-card py-vendido">
+                    <div class="etiqueta">Vendido ({{ py_pedidos }} pedidos)</div>
+                    <div class="valor">${{ "%.0f"|format(py_vendido) }}</div>
+                </div>
+                <div class="py-card py-comision">
+                    <div class="etiqueta">Comisión ({{ py_comision_pct }}%)</div>
+                    <div class="valor">-${{ "%.0f"|format(py_comision) }}</div>
+                </div>
+                <div class="py-card py-neto">
+                    <div class="etiqueta">Te depositan</div>
+                    <div class="valor">${{ "%.0f"|format(py_neto) }}</div>
+                </div>
+            </div>
+            {% if py_historial %}
+            <table class="py-tabla">
+                <tr>
+                    <th>📅 Día</th>
+                    <th>🛵 Pedidos</th>
+                    <th>💰 Vendido</th>
+                    <th>📉 Comisión</th>
+                    <th>💵 Neto a depositar</th>
+                </tr>
+                {% for dia in py_historial %}
+                <tr>
+                    <td>{{ dia.dia }}</td>
+                    <td>{{ dia.pedidos }}</td>
+                    <td>${{ "%.0f"|format(dia.total) }}</td>
+                    <td style="color: #f44336;">-${{ "%.0f"|format(dia.total * py_comision_pct / 100) }}</td>
+                    <td class="neto">${{ "%.0f"|format(dia.total - (dia.total * py_comision_pct / 100)) }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p style="text-align:center; color:#888; padding:15px;">Todavía no hay pedidos de PedidosYa cargados</p>
+            {% endif %}
         </div>
 
         <div class="historial">
