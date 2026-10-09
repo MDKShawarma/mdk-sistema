@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, jsonify
 import sqlite3
 import json
 import subprocess
@@ -83,58 +83,8 @@ def orden_importancia(nombre):
     elif any(b in nombre_lower for b in ['agua', 'coca', 'smudis', 'cerveza', 'baileys', 'gin', 'vino']): return 8
     else: return 9
 
-def obtener_total_mercadopago_hoy():
-    """Consulta la API de MercadoPago y devuelve el total aprobado de hoy"""
-    try:
-        ahora = datetime.now()
-        inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
-        fin = ahora.replace(hour=23, minute=59, second=59, microsecond=999999)
-        
-        begin_date = inicio.strftime('%Y-%m-%dT%H:%M:%S.000-03:00')
-        end_date = fin.strftime('%Y-%m-%dT%H:%M:%S.999-03:00')
-        
-        total = 0
-        offset = 0
-        limit = 100
-        
-        while True:
-            filtros = {
-                "begin_date": begin_date,
-                "end_date": end_date,
-                "status": "approved",
-                "sort": "date_created",
-                "criteria": "desc",
-                "limit": limit,
-                "offset": offset
-            }
-            
-            resultado = mp_sdk.payment().search(filtros)
-            response = resultado.get("response", {})
-            pagos = response.get("results", [])
-            
-            if not pagos:
-                break
-            
-            for pago in pagos:
-                monto = pago.get("transaction_amount", 0) or 0
-                reembolsado = pago.get("transaction_amount_refunded", 0) or 0
-                total += (monto - reembolsado)
-            
-            if len(pagos) < limit:
-                break
-            
-            offset += limit
-            
-            if offset > 5000:
-                break
-        
-        return round(total, 2)
-    except Exception as e:
-        print(f"Error consultando MercadoPago: {e}")
-        return None
-
 def es_empleado():
-    return session.get('rol') == 'empleado'
+    return request.remote_addr != '127.0.0.1'
 
 from init_db import inicializar_base_datos
 inicializar_base_datos()
@@ -173,22 +123,10 @@ def cierre_caja():
     es_dueno = (session.get('rol') == 'dueno')
     cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
     cierre_existente = cursor.fetchone()
-    
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now') AND metodo_pago = 'efectivo'")
     efectivo_esperado = cursor.fetchone()[0]
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now') AND metodo_pago = 'mercadopago'")
-    mercadopago_sistema = cursor.fetchone()[0]
-    
-    mercadopago_real = None
-    error_mp = None
-    if not cierre_existente:
-        mercadopago_real = obtener_total_mercadopago_hoy()
-        if mercadopago_real is None:
-            error_mp = "No se pudo conectar con MercadoPago. Usá el valor del sistema."
-            mercadopago_real = mercadopago_sistema
-    
-    mercadopago_esperado = mercadopago_real if mercadopago_real is not None else mercadopago_sistema
-    
+    mercadopago_esperado = cursor.fetchone()[0]
     if request.method == 'POST' and not cierre_existente:
         try:
             efectivo_contado = float(request.form.get('efectivo_contado', 0) or 0)
@@ -201,21 +139,12 @@ def cierre_caja():
             cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
             cierre_existente = cursor.fetchone()
         except: pass
-    
     historial = []
     if es_dueno:
         cursor.execute("SELECT * FROM cierres_caja ORDER BY fecha DESC LIMIT 30")
         historial = cursor.fetchall()
     conn.close()
-    return render_template('cierre_caja.html',
-                         cierre_existente=cierre_existente,
-                         efectivo_esperado=efectivo_esperado,
-                         mercadopago_esperado=mercadopago_esperado,
-                         mercadopago_sistema=mercadopago_sistema,
-                         mercadopago_real=mercadopago_real,
-                         error_mp=error_mp,
-                         historial=historial,
-                         es_dueno=es_dueno)
+    return render_template('cierre_caja.html', cierre_existente=cierre_existente, efectivo_esperado=efectivo_esperado, mercadopago_esperado=mercadopago_esperado, historial=historial, es_dueno=es_dueno)
 
 @app.route('/logout')
 def logout():
@@ -307,6 +236,9 @@ def stock():
     conn.close()
     return render_template('stock.html', ingredientes=ingredientes, empleado=es_empleado())
 
+# ==========================================
+# VENTAS CON CANJE DE PUNTOS
+# ==========================================
 @app.route('/ventas', methods=['GET', 'POST'])
 @login_requerido_empleado
 def ventas():
@@ -317,6 +249,7 @@ def ventas():
         carrito_json = request.form.get('carrito')
         cliente_id = request.form.get('cliente_id')
         metodo_pago = request.form.get('metodo_pago')
+        canjear_puntos = request.form.get('canjear_puntos') == 'on'
         if carrito_json and metodo_pago:
             carrito = json.loads(carrito_json)
             total_general = 0
@@ -329,6 +262,23 @@ def ventas():
                     conn.close()
                     return "Error: stock insuficiente para " + item['nombre'], 400
                 total_general += producto[1] * cantidad
+            # ---- CANJE DE PUNTOS (100 pts = $1000, bloques completos) ----
+            descuento_aplicado = 0
+            puntos_a_descontar = 0
+            if canjear_puntos and cliente_id:
+                cursor.execute("SELECT puntos FROM clientes WHERE id = ?", (int(cliente_id),))
+                fila = cursor.fetchone()
+                if fila and fila[0] >= 100:
+                    bloques_disponibles = fila[0] // 100
+                    bloques_por_compra = int(total_general) // 1000
+                    bloques = min(bloques_disponibles, bloques_por_compra)
+                    if bloques > 0:
+                        descuento_aplicado = bloques * 1000
+                        puntos_a_descontar = bloques * 100
+                        total_general = total_general - descuento_aplicado
+            # Factor para que las lineas de venta sumen el total pagado
+            total_original = total_general + descuento_aplicado
+            factor = (total_general / total_original) if (descuento_aplicado > 0 and total_original > 0) else 1.0
             cursor.execute("SELECT COALESCE(MAX(numero_pedido), 0) + 1 FROM ventas")
             numero_pedido = cursor.fetchone()[0]
             for item in carrito:
@@ -337,23 +287,30 @@ def ventas():
                 notas = item.get('notas', '')
                 cursor.execute("SELECT nombre, precio FROM productos WHERE id = ?", (producto_id,))
                 producto = cursor.fetchone()
-                total_item = producto[1] * cantidad
-                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas, cliente_id if cliente_id else None, 'empleado', numero_pedido))
+                total_item = round(producto[1] * cantidad * factor, 2)
+                notas_completas = notas
+                if descuento_aplicado > 0:
+                    notas_completas += (" | " if notas_completas else "") + f"Descuento puntos: ${descuento_aplicado}"
+                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, 'empleado', numero_pedido))
                 cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
             if cliente_id:
                 puntos_sumados = int(total_general / 1000)
-                cursor.execute('UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?', (total_general, puntos_sumados, int(cliente_id)))
+                if puntos_a_descontar > 0:
+                    cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? - ? WHERE id = ?''', (total_general, puntos_sumados, puntos_a_descontar, int(cliente_id)))
+                    cursor.execute('''INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo) VALUES (?, ?, 'resta', ?)''', (int(cliente_id), -puntos_a_descontar, f'Canje de puntos: ${descuento_aplicado} de descuento'))
+                else:
+                    cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, int(cliente_id)))
                 if puntos_sumados > 0:
                     cursor.execute('''INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo) VALUES (?, ?, 'suma', 'Compra en local')''', (int(cliente_id), puntos_sumados))
             conn.commit()
-            comanda = {'pedido_id': numero_pedido, 'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'productos_comanda': carrito, 'total': total_general, 'metodo_pago': metodo_pago}
+            comanda = {'pedido_id': numero_pedido, 'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'productos_comanda': carrito, 'total': total_general, 'descuento': descuento_aplicado, 'metodo_pago': metodo_pago}
     cursor.execute('''SELECT v.id, p.nombre, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha, c.nombre as cliente_nombre FROM ventas v JOIN productos p ON v.producto_id = p.id LEFT JOIN clientes c ON v.cliente_id = c.id WHERE date(v.fecha) = date('now') ORDER BY v.fecha DESC''')
     ventas = cursor.fetchall()
     cursor.execute("SELECT id, nombre, precio FROM productos WHERE stock > 0")
     productos_raw = cursor.fetchall()
     productos_ordenados = sorted(productos_raw, key=lambda p: (orden_importancia(p[1]), p[1]))
     productos = [(p[0], p[1], p[2], get_emoji(p[1])) for p in productos_ordenados]
-    cursor.execute("SELECT id, nombre FROM clientes ORDER BY nombre")
+    cursor.execute("SELECT id, nombre, puntos FROM clientes ORDER BY nombre")
     clientes = cursor.fetchall()
     conn.close()
     return render_template('ventas.html', ventas=ventas, productos=productos, clientes=clientes, comanda=comanda, empleado=es_empleado())
@@ -696,17 +653,16 @@ def nuevo_pedido():
 @app.route('/api/pedidos_nuevos')
 @login_requerido_empleado
 def api_pedidos_nuevos():
-    """Devuelve pedidos nuevos (efectivo o pagados) de los últimos 5 min, no impresos"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT v.numero_pedido, p.nombre as producto, v.cantidad, v.total, v.fecha, v.metodo_pago, v.notas
-        FROM ventas v
-        JOIN productos p ON v.producto_id = p.id
-        WHERE v.tipo_origen = 'qr'
-          AND v.impreso = 0
-          AND v.fecha >= datetime('now', '-5 minutes', 'localtime')
-        ORDER BY v.id DESC
+    SELECT v.numero_pedido, p.nombre as producto, v.cantidad, v.total, v.fecha, v.metodo_pago, v.notas
+    FROM ventas v
+    JOIN productos p ON v.producto_id = p.id
+    WHERE v.tipo_origen = 'qr'
+    AND v.impreso = 0
+    AND v.fecha >= datetime('now', '-5 minutes', 'localtime')
+    ORDER BY v.id DESC
     """)
     pedidos = cursor.fetchall()
     conn.close()
@@ -727,32 +683,21 @@ def api_pedidos_nuevos():
         pedidos_agrupados[num]['total'] += p['total']
     return json.dumps(list(pedidos_agrupados.values()))
 
-
 # ==========================================
 # API - Impresión de comandas
 # ==========================================
 @app.route('/api/pedidos_para_imprimir')
 @login_requerido_empleado
 def api_pedidos_para_imprimir():
-    """Devuelve pedidos no impresos agrupados por número de pedido"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT 
-            v.id,
-            v.numero_pedido,
-            v.cantidad,
-            v.total,
-            v.metodo_pago,
-            v.notas,
-            v.fecha,
-            p.nombre as producto,
-            c.nombre as cliente
-        FROM ventas v
-        JOIN productos p ON v.producto_id = p.id
-        LEFT JOIN clientes c ON v.cliente_id = c.id
-        WHERE v.impreso = 0
-        ORDER BY v.numero_pedido, v.id
+    SELECT v.id, v.numero_pedido, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha, p.nombre as producto, c.nombre as cliente
+    FROM ventas v
+    JOIN productos p ON v.producto_id = p.id
+    LEFT JOIN clientes c ON v.cliente_id = c.id
+    WHERE v.impreso = 0
+    ORDER BY v.numero_pedido, v.id
     """)
     filas = cursor.fetchall()
     conn.close()
@@ -780,11 +725,9 @@ def api_pedidos_para_imprimir():
         pedidos[num]['total'] += f['total']
     return json.dumps(list(pedidos.values()))
 
-
 @app.route('/api/marcar_impreso', methods=['POST'])
 @login_requerido_empleado
 def api_marcar_impreso():
-    """Marca los pedidos como impresos"""
     ids_json = request.form.get('ids_venta')
     if not ids_json:
         return "Faltan datos", 400
@@ -799,7 +742,6 @@ def api_marcar_impreso():
     conn.commit()
     conn.close()
     return json.dumps({"ok": True, "marcados": len(ids)})
-
 
 # ==========================================
 # PWA - Service Worker
