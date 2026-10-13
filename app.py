@@ -66,7 +66,7 @@ def get_emoji(nombre):
     nombre_lower = nombre.lower()
     if 'bolsa de panes' in nombre_lower: return '🥖'
     if 'pan individual' in nombre_lower: return '🫓'
-    emojis = {'shawarma': '🌯','falafel': '🧆','fatay': '🥟','humus': '🫘','kebbe': '🥩','papas': '🍟','helado': '🍨','deditos': '🍡','baklava': '🍯','coca': '🥤','smudis': '🥤','agua': '💧','cerveza': '🍺','baileys': '🥃','gin': '🍸','vino': '🍷','pan': '🫓'}
+    emojis = {'shawarma': '🌯','falafel': '','fatay': '🥟','humus': '🫘','kebbe': '','papas': '🍟','helado': '🍨','deditos': '','baklava': '🍯','coca': '🥤','smudis': '','agua': '💧','cerveza': '🍺','baileys': '','gin': '🍸','vino': '🍷','pan': '🫓'}
     for clave, emoji in emojis.items():
         if clave in nombre_lower: return emoji
     return '🍽️'
@@ -298,7 +298,17 @@ def ventas():
                 if descuento_aplicado > 0:
                     notas_completas += (" | " if notas_completas else "") + f"Descuento puntos: ${descuento_aplicado}"
                 cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, origen, numero_pedido))
-                cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
+                
+                # 🧠 NUEVA LÓGICA DE ESCANDALLO: Si tiene receta, descuenta ingredientes. Si no, descuenta producto.
+                cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
+                receta = cursor.fetchall()
+                if receta:
+                    for ing_id, cantidad_ing in receta:
+                        total_a_descontar = cantidad_ing * cantidad
+                        cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual - ? WHERE id = ?", (total_a_descontar, ing_id))
+                else:
+                    cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
+
             if cliente_id:
                 puntos_sumados = int(total_general / 1000)
                 if puntos_a_descontar > 0:
@@ -428,7 +438,6 @@ def informe():
 @app.route('/informe/borrar_dia/<fecha>', methods=['POST'])
 @login_requerido
 def informe_borrar_dia(fecha):
-    """Borra todas las ventas de un dia especifico (solo dueno)"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM ventas WHERE date(fecha) = ?", (fecha,))
@@ -441,7 +450,6 @@ def informe_borrar_dia(fecha):
 @app.route('/api/nuevo_cliente', methods=['POST'])
 @login_requerido_empleado
 def api_nuevo_cliente():
-    """Alta rapida de cliente desde la pantalla de ventas"""
     nombre = request.form.get('nombre', '').strip()
     telefono = request.form.get('telefono', '').strip()
     if not nombre or not telefono:
@@ -631,7 +639,17 @@ def pago_exitoso():
         notas_completas = f"Pago: mercadopago (ONLINE) | Pago ID: {payment_id}"
         if item.get('notas'): notas_completas += f" | {item['notas']}"
         cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, 'mercadopago', ?, ?, 'qr', ?, 0)''', (producto_id, cantidad, total_item, notas_completas, cliente_id, numero_pedido))
-        cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
+        
+        # 🧠 NUEVA LÓGICA DE ESCANDALLO
+        cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
+        receta = cursor.fetchall()
+        if receta:
+            for ing_id, cantidad_ing in receta:
+                total_a_descontar = cantidad_ing * cantidad
+                cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual - ? WHERE id = ?", (total_a_descontar, ing_id))
+        else:
+            cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
+
     puntos_sumados = int(total_general / 1000)
     cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, cliente_id))
     if puntos_sumados > 0:
@@ -686,7 +704,17 @@ def nuevo_pedido():
         if item.get('notas'): notas_completas += f" | {item['notas']}"
         if notas: notas_completas += f" | Sugerencia: {notas}"
         cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id, 'qr', numero_pedido))
-        cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
+        
+        # 🧠 NUEVA LÓGICA DE ESCANDALLO
+        cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
+        receta = cursor.fetchall()
+        if receta:
+            for ing_id, cantidad_ing in receta:
+                total_a_descontar = cantidad_ing * cantidad
+                cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual - ? WHERE id = ?", (total_a_descontar, ing_id))
+        else:
+            cursor.execute('UPDATE productos SET stock = stock - ? WHERE id = ?', (cantidad, producto_id))
+
     puntos_sumados = int(total_general / 1000)
     cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, cliente_id))
     if puntos_sumados > 0:
