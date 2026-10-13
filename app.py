@@ -482,7 +482,37 @@ def clientes():
     clientes = cursor.fetchall()
     conn.close()
     return render_template('clientes.html', clientes=clientes)
-
+@app.route('/eliminar_venta/<int:venta_id>', methods=['POST'])
+@login_requerido  # Solo el dueño puede eliminar ventas por seguridad
+def eliminar_venta(venta_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # 1. Obtener los datos de la venta para revertir el stock
+    cursor.execute("SELECT producto_id, cantidad FROM ventas WHERE id = ?", (venta_id,))
+    venta = cursor.fetchone()
+    
+    if venta:
+        producto_id = venta['producto_id']
+        cantidad = venta['cantidad']
+        
+        # 2. Revertir el escandallo (devolver ingredientes al stock)
+        cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
+        receta = cursor.fetchall()
+        if receta:
+            for ing_id, cantidad_ing in receta:
+                total_a_reponer = cantidad_ing * cantidad
+                cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual + ? WHERE id = ?", (total_a_reponer, ing_id))
+        else:
+            # Si no tiene receta, repone el producto terminado
+            cursor.execute("UPDATE productos SET stock = stock + ? WHERE id = ?", (cantidad, producto_id))
+        
+        # 3. Eliminar el registro de la venta
+        cursor.execute("DELETE FROM ventas WHERE id = ?", (venta_id,))
+        conn.commit()
+        
+    conn.close()
+    return redirect(url_for('ventas'))
 @app.route('/eliminar_cliente/<int:cliente_id>', methods=['POST'])
 @login_requerido
 def eliminar_cliente(cliente_id):
