@@ -152,3 +152,42 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - 06/10/2026: blindaje de init_db + recuperación de 528 clientes + contraseña SSH nueva
 - 08/10/2026: canje de puntos instalado
 - 09/10/2026: botón borrar día en Informe
+
+---
+
+## ACTUALIZACIÓN 21/10/2026
+
+### Impresora instalada
+- La XPrinter XP-V320N ya está en el negocio (conectada por USB a la compu)
+- Driver instalado en Windows, aparece como "XP-80C" o "XP-80 (copy 1)"
+
+### Puente de impresión (puente_impresion.py)
+- Corre en la compu del negocio, escucha en http://192.168.100.175:5001/imprimir
+- La tablet le manda el texto de la comanda por HTTP
+- El puente la reenvía a la impresora por USB en modo RAW
+- Loguea cada impresión y errores
+
+### Autoarranque del puente
+- IMPRIMIR_SIEMPRE.bat: loop infinito, si el puente se cae lo reinicia solo
+- INICIAR_OCULTO.vbs: lanza el .bat sin mostrar la ventana de CMD
+- Los dos son portables (usan %~dp0 y la ruta del script)
+- Para dejarlo corriendo: doble clic en INICIAR_OCULTO.vbs
+
+### Fix importante en app.py
+- es_empleado() antes usaba request.remote_addr (siempre daba True)
+- Ahora usa session.get('rol') == 'empleado' (funciona bien)
+
+### Fix en ventas.html
+- Menú condicional: dueño ve 11 items, empleado ve 5 (Ventas, Productos, Stock, Gastos, Cierre de Caja)
+- Botón "Volver al Panel" ahora va a "/" (antes iba a /empleado)
+
+### Fix en service-worker.js
+- Antes cacheaba "/pedido" y rompía la navegación (al tocar "Menú Empleado" te llevaba a /pedido)
+- Ahora: no cachea HTML, solo assets estáticos (/static/)
+- CACHE_NAME subió a mdk-pwa-v2 (fuerza la limpieza del caché viejo)
+- Estrategia: red primero para navegación, caché solo para assets
+
+### Notas para la próxima sesión
+- Probar la tablet con el menú del empleado (debería andar ahora)
+- Probar un pedido real desde el QR (ver si imprime automáticamente)
+- Si el navegador bloquea HTTPS→HTTP, revisar si hace falta proxy o excepción
