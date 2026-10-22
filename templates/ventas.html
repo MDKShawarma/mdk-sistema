@@ -260,7 +260,7 @@ Vuelva pronto 🙏
 <select id="metodo_pago">
 <option value="">-- Método de pago --</option>
 <option value="efectivo">💵 Efectivo</option>
-<option value="mercadopago">📱 MercadoPago</option>
+<option value="mercadopago">📱 Transferencia (MercadoPago)</option>
 </select>
 <button class="btn-confirmar" onclick="confirmarVenta()">✅ CONFIRMAR VENTA</button>
 </div>
@@ -661,15 +661,24 @@ cliente += centrarTexto('Metodo: ' + limpiar(pedido.metodo_pago), ancho) + '\n';
 cliente += guion + '\n';
 cliente += centrarTexto('Gracias por su compra!', ancho) + '\n';
 cliente += centrarTexto('Vuelva pronto', ancho) + '\n';
+
+// ALIAS DE TRANSFERENCIA
+if (pedido.metodo_pago && pedido.metodo_pago.toLowerCase().includes('mercado')) {
+    cliente += guion + '\n';
+    cliente += centrarTexto('TRANSFERENCIAS MP:', ancho) + '\n';
+    cliente += centrarTexto('Alias: comida.arabe.mp', ancho) + '\n';
+    cliente += guion + '\n';
+}
+
 const textoCompleto = cocina + corte + cliente;
-fetch('http://127.0.0.1:40213/print', {
+fetch('http://192.168.100.175:5001/imprimir', {
 method: 'POST',
 headers: { 'Content-Type': 'text/plain' },
 body: textoCompleto
 })
 .then(response => {
 if (response.ok) {
-console.log('Pedido enviado a imprimir vía servidor local');
+console.log('Pedido enviado al puente MDK');
 fetch('/api/marcar_impreso', {
 method: 'POST',
 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -686,13 +695,13 @@ btn.disabled = true;
 }
 });
 } else {
-console.error('Error del servidor RawBT:', response.statusText);
-alert('Error al comunicarse con el servidor de impresión.');
+console.error('Error del puente:', response.statusText);
+alert('Error al comunicarse con el puente de impresión.');
 }
 })
 .catch(error => {
 console.error('Error de red:', error);
-alert('No se pudo conectar al servidor de impresión. Asegurate de que la app "Server for RawBT" esté abierta y en la misma red.');
+alert('No se pudo conectar al puente de impresión. Verificá que el puente MDK esté corriendo en la compu del negocio.');
 });
 }
 document.getElementById('cliente_id').addEventListener('change', function() {
@@ -725,7 +734,7 @@ setInterval(consultarPedidos, 10000);
 setTimeout(consultarPedidos, 2000);
 document.addEventListener('click', () => {
 try {
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const audioContext = (window.AudioContext || window.webkitAudioContext)();
 audioContext.resume();
 } catch(e) {}
 }, { once: true });
