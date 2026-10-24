@@ -232,4 +232,31 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 > 2. Crear un archivo `IMPRIMIR_SIEMPRE.bat` con el código BAT que te paso.
 > 3. Ambos archivos deben ir en la carpeta `MDK_Sistema` en el Escritorio.
 > 4. Hacer doble clic en `INICIAR_OCULTO.vbs` y probar en el navegador que `http://192.168.100.175:5001` diga 'Puente MDK activo'.
-> Por favor, sé muy claro porque no soy técnico."
+> Por favor, sé muy claro porque no soy técnico." 
+---
+
+## 💡 IDEAS PARA DESPUÉS DEL ARRANQUE (Octubre 2026)
+
+### 1. Botón "Hacer Pedido" en la web (COMPLETADO)
+- Se agregó el botón en el menú de la web pública de DonWeb.
+- Apunta a `https://sistema.mdk-shawarma.com/pedido`.
+
+### 2. Pedido Programado (Para más tarde)
+- **Cómo funciona:** En la pantalla de pedido por QR, si el cliente elige MercadoPago, se le muestra un campo opcional para elegir la hora de retiro.
+- **Advertencia:** Debe llevar un cartel que diga: *"⚠️ IMPORTANTE: El horario solicitado es una preferencia, no una garantía. Si hay mucha demanda en ese momento, tu pedido puede demorar unos minutos más."*
+- **Validación:** Solo se confirma el pedido cuando el pago de MercadoPago está aprobado.
+
+### 3. Cálculo de Demora Automático (Inteligencia de Cola)
+- **Cómo funciona:** El sistema calcula el tiempo estimado de espera basándose en:
+  1. Cantidad de pedidos en cola en ese momento.
+  2. Tiempo estándar de preparación por producto (dato que dará el empleado que corta y arma los shawarmas).
+  3. Capacidad de la cocina.
+- **Qué ve el cliente:** Al confirmar el pedido, aparece un cartel con el tiempo estimado (ej: "⏳ Demora estimada: 20 minutos").
+- **Pendiente:** Preguntar al empleado cuánto tarda en armar un shawarma (en minutos) para configurar la base del cálculo.
+
+### 4. Mapa de Calor de Delivery
+- Guardar el barrio/dirección que escribe el cliente en los pedidos.
+- Mostrar un gráfico de los barrios con más pedidos para optimizar zonas de delivery.
+
+### 5. Pedido con GPS y Cajas Térmicas con GPS
+- (Ya anotado en la sección de ideas a futuro).
