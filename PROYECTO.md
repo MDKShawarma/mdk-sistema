@@ -211,3 +211,25 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 
 ### 📦 Cajas térmicas con GPS
 - Investigar etiquetas GPS (AirTag, Samsung SmartTag, etc.) para las cajas de delivery. Costo estimado: $20.000 ARS. Permite seguimiento en tiempo real desde el sistema.
+---
+
+## 🛠️ PLAN PARA LA SEMANA QUE VIENE (PENDIENTE)
+
+### Configurar el puente de impresión en la compu del negocio
+- **Problema:** La carpeta del proyecto no está en el Escritorio de la compu del negocio. Hay que crearla y copiar los archivos.
+- **Solución segura:** Usar el asistente **Qwen** (que ya está abierto en la compu del negocio) para que nos guíe paso a paso. **No abrir DeepSeek en la compu del negocio** para evitar suspensiones de cuenta.
+- **Pasos:**
+  1. Crear la carpeta `MDK_Sistema` en el Escritorio de la compu del negocio.
+  2. Copiar `puente_impresion.py` (ya está en el negocio, en el Escritorio).
+  3. Crear `INICIAR_OCULTO.vbs` e `IMPRIMIR_SIEMPRE.bat` usando Qwen (pedirle que genere el código y guardarlo).
+  4. Hacer doble clic en `INICIAR_OCULTO.vbs`.
+  5. Probar en el navegador que `http://192.168.100.175:5001` diga "Puente MDK activo".
+  6. Hacer una venta de prueba con "Transferencia (MercadoPago)" y ver si imprime el alias `comida.arabe.mp`.
+
+### Prompt para Qwen (copiar y pegar allá):
+> "Hola Qwen. Soy Sergio, dueño de MDK Shawarma. Necesito tu ayuda para configurar un puente de impresión local en esta computadora. Te paso los pasos que me dio mi otro asistente para que me guíes paso a paso:
+> 1. Crear un archivo `INICIAR_OCULTO.vbs` con el código VBS que te paso.
+> 2. Crear un archivo `IMPRIMIR_SIEMPRE.bat` con el código BAT que te paso.
+> 3. Ambos archivos deben ir en la carpeta `MDK_Sistema` en el Escritorio.
+> 4. Hacer doble clic en `INICIAR_OCULTO.vbs` y probar en el navegador que `http://192.168.100.175:5001` diga 'Puente MDK activo'.
+> Por favor, sé muy claro porque no soy técnico."
