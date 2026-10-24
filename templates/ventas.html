@@ -598,16 +598,25 @@ console.error('Error:', err);
 alert('Error al obtener el pedido');
 });
 }
-function centrarTexto(txt, ancho) {
+function generarYEnviarARawBT(pedido) {
+// 1. Definimos los comandos ESC/POS
+const ESC = '\x1b';
+const GS = '\x1d';
+const INIT = ESC + '@';                  // Inicializar impresora
+const CENTER = ESC + 'a\x01';            // Centrar texto
+const LEFT = ESC + 'a\x00';              // Alinear a la izquierda
+const BOLD_ON = ESC + 'E\x01';           // Negrita ON
+const BOLD_OFF = ESC + 'E\x00';          // Negrita OFF
+const DOUBLE_ON = GS + '!\x11';          // Doble alto y ancho
+const DOUBLE_OFF = GS + '!\x00';         // Tamaño normal
+const CUT = GS + 'V\x42\x00';            // Cortar papel
+const ancho = 24; // Ancho para letra doble (48 caracteres normales / 2)
+function centrarTexto(txt) {
 txt = String(txt).substring(0, ancho);
 const esp = ancho - txt.length;
 const izq = Math.floor(esp / 2);
 return ' '.repeat(izq) + txt + ' '.repeat(esp - izq);
 }
-function generarYEnviarARawBT(pedido) {
-const ancho = 32;
-const linea = '================================';
-const guion = '--------------------------------';
 function limpiar(txt) {
 return String(txt)
 .normalize('NFD')
@@ -615,62 +624,70 @@ return String(txt)
 .replace(/[^\x20-\x7E\n]/g, '')
 .trim();
 }
+// ============ SELLO DE PAGO ============
 let sello = '';
-sello += centrarTexto('******************************', ancho) + '\n';
+sello += DOUBLE_ON + CENTER; // Letra grande para el sello
+sello += '****************\n';
 if (pedido.pagado) {
-sello += centrarTexto('*        P A G A D O       *', ancho) + '\n';
+sello += '*    PAGADO    *\n';
 } else {
-sello += centrarTexto('*      A  C O B R A R      *', ancho) + '\n';
+sello += '*  A COBRAR    *\n';
 }
-sello += centrarTexto('******************************', ancho) + '\n';
-let cocina = '';
-cocina += centrarTexto('MDK SHAWARMA', ancho) + '\n';
-cocina += centrarTexto('Maison du Kebab', ancho) + '\n';
+sello += '****************\n';
+sello += DOUBLE_OFF + LEFT; // Volver a letra normal
+// ============ COMANDA COCINA ============
+let cocina = INIT;
+cocina += DOUBLE_ON + CENTER; // Letra grande para el encabezado
+cocina += 'MDK SHAWARMA\n';
+cocina += 'Cocina\n';
+cocina += DOUBLE_OFF + LEFT; // Volver a normal
 cocina += sello;
-cocina += linea + '\n';
-cocina += centrarTexto('*** COCINA ***', ancho) + '\n';
-cocina += linea + '\n';
-cocina += centrarTexto('PEDIDO N ' + pedido.numero_pedido, ancho) + '\n';
-cocina += centrarTexto(limpiar(pedido.fecha), ancho) + '\n';
-cocina += guion + '\n';
+cocina += '================================\n';
+cocina += CENTER + 'PEDIDO N ' + pedido.numero_pedido + '\n';
+cocina += limpiar(pedido.fecha) + '\n';
+cocina += LEFT + '--------------------------------\n';
 pedido.items.forEach(function(item) {
-cocina += limpiar(item.cantidad + 'x ' + item.producto) + '\n';
+// Los productos en letra grande
+cocina += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
 if (item.notas) {
-cocina += '   > ' + limpiar(item.notas) + '\n';
+cocina += '  > ' + limpiar(item.notas) + '\n';
 }
 });
-cocina += guion + '\n';
-cocina += centrarTexto('Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago), ancho) + '\n';
-const corte = guion + '\n' + centrarTexto('CORTAR AQUI', ancho) + '\n' + guion + '\n';
-let cliente = '';
-cliente += centrarTexto('MDK SHAWARMA', ancho) + '\n';
-cliente += centrarTexto('Maison du Kebab', ancho) + '\n';
+cocina += '--------------------------------\n';
+cocina += LEFT + 'Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago) + '\n';
+cocina += CUT; // Cortar aquí
+// ============ COMANDA CLIENTE ============
+let cliente = INIT;
+cliente += DOUBLE_ON + CENTER; // Letra grande para el encabezado
+cliente += 'MDK SHAWARMA\n';
+cliente += 'Cliente\n';
+cliente += DOUBLE_OFF + LEFT; // Volver a normal
 cliente += sello;
-cliente += linea + '\n';
-cliente += centrarTexto('*** CLIENTE ***', ancho) + '\n';
-cliente += linea + '\n';
-cliente += centrarTexto('PEDIDO N ' + pedido.numero_pedido, ancho) + '\n';
-cliente += centrarTexto(limpiar(pedido.fecha), ancho) + '\n';
-cliente += guion + '\n';
+cliente += '================================\n';
+cliente += CENTER + 'PEDIDO N ' + pedido.numero_pedido + '\n';
+cliente += limpiar(pedido.fecha) + '\n';
+cliente += LEFT + '--------------------------------\n';
 pedido.items.forEach(function(item) {
-cliente += limpiar(item.cantidad + 'x ' + item.producto) + '\n';
+// Los productos en letra grande
+cliente += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
 });
-cliente += guion + '\n';
-cliente += centrarTexto('TOTAL: $' + Math.round(pedido.total), ancho) + '\n';
-cliente += centrarTexto('Metodo: ' + limpiar(pedido.metodo_pago), ancho) + '\n';
-cliente += guion + '\n';
-cliente += centrarTexto('Gracias por su compra!', ancho) + '\n';
-cliente += centrarTexto('Vuelva pronto', ancho) + '\n';
-
-// ALIAS DE TRANSFERENCIA
+cliente += '--------------------------------\n';
+// TOTAL en letra grande y negrita
+cliente += DOUBLE_ON + BOLD_ON + 'TOTAL: $' + Math.round(pedido.total) + '\n' + BOLD_OFF + DOUBLE_OFF;
+cliente += 'Metodo: ' + limpiar(pedido.metodo_pago) + '\n';
+// ALIAS DE TRANSFERENCIA (si aplica)
 if (pedido.metodo_pago && pedido.metodo_pago.toLowerCase().includes('mercado')) {
-    cliente += guion + '\n';
-    cliente += centrarTexto('TRANSFERENCIAS MP:', ancho) + '\n';
-    cliente += centrarTexto('Alias: comida.arabe.mp', ancho) + '\n';
-    cliente += guion + '\n';
+cliente += '--------------------------------\n';
+cliente += DOUBLE_ON + CENTER + 'TRANSFERIR A:\n' + DOUBLE_OFF + LEFT;
+cliente += CENTER + 'Alias: comida.arabe.mp\n';
 }
-
-const textoCompleto = cocina + corte + cliente;
+cliente += '--------------------------------\n';
+cliente += CENTER + 'Gracias por su compra!\n';
+cliente += CENTER + 'Vuelva pronto\n';
+cliente += CUT; // Cortar aquí
+// Enviamos TODO JUNTO (cocina + cliente) para que el puente lo procese de una vez
+const textoCompleto = cocina + cliente;
+// Enviamos al puente MDK en la compu del negocio
 fetch('http://192.168.100.175:5001/imprimir', {
 method: 'POST',
 headers: { 'Content-Type': 'text/plain' },
@@ -695,13 +712,12 @@ btn.disabled = true;
 }
 });
 } else {
-console.error('Error del puente:', response.statusText);
-alert('Error al comunicarse con el puente de impresión.');
+throw new Error('Error del puente: ' + response.status);
 }
 })
 .catch(error => {
-console.error('Error de red:', error);
-alert('No se pudo conectar al puente de impresión. Verificá que el puente MDK esté corriendo en la compu del negocio.');
+console.error('Error:', error);
+alert('No se pudo imprimir. Verificá que el puente MDK esté corriendo en la compu del negocio.');
 });
 }
 document.getElementById('cliente_id').addEventListener('change', function() {
