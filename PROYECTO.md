@@ -190,4 +190,24 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 ### Notas para la próxima sesión
 - Probar la tablet con el menú del empleado (debería andar ahora)
 - Probar un pedido real desde el QR (ver si imprime automáticamente)
-- Si el navegador bloquea HTTPS→HTTP, revisar si hace falta proxy o excepción
+- Si el navegador bloquea HTTPS→HTTP, revisar si hace falta proxy o excepción 
+---
+
+## 💡 IDEAS A FUTURO (Investigación)
+
+### 🚁 Delivery con Drones
+- **Idea:** Que el cliente pase coordenadas GPS por WhatsApp, el dron salga del techo del negocio y entregue el pedido directo.
+- **Estado (Octubre 2026):** No viable en Buenos Aires.
+- **Por qué:**
+  - Regulación ANAC: El espacio aéreo de CABA es controlado. Prohibido volar sobre multitudes. Solo hay pruebas piloto, no uso comercial masivo.
+  - Logística: El GPS del celular falla en edificios altos. Los drones actuales cargan hasta 2.5 kg (un pedido familiar de shawarma pesa más). El viento (Pampero) y los cables/árboles son un riesgo.
+  - Operativa: El cliente tendría que ir a un punto abierto y seguro (plaza/estacionamiento) para recibir, no a la puerta de su casa.
+- **Alternativas viables a corto plazo:**
+  - Pedido con GPS: Agregar un botón en el sistema web para que el cliente capture su ubicación exacta (en vez de escribir la dirección).
+  - Cajas térmicas con GPS: Ponerle un AirTag a la caja para que el cliente vea en tiempo real dónde está su moto de reparto.
+
+### 📱 Pedido con GPS
+- Implementar en el template `pedido_cliente.html` un botón de "Usar mi ubicación actual" (API de Geolocalización de HTML5) para que el empleado/repartidor vea el mapa exacto sin buscar la dirección a mano.
+
+### 📦 Cajas térmicas con GPS
+- Investigar etiquetas GPS (AirTag, Samsung SmartTag, etc.) para las cajas de delivery. Costo estimado: $20.000 ARS. Permite seguimiento en tiempo real desde el sistema.
