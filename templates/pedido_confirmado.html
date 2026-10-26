@@ -41,6 +41,15 @@
             text-transform: uppercase;
             letter-spacing: 2px;
         }
+        .demora {
+            font-size: 20px;
+            color: #ff9800;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 152, 0, 0.1);
+            border-radius: 10px;
+        }
         a {
             color: #f4a460;
             text-decoration: none;
@@ -63,7 +72,18 @@
         <p class="mensaje">Tu pedido fue enviado a la cocina</p>
         <div class="label-pedido">Número de Pedido</div>
         <div class="numero">N° {{ numero_pedido }}</div>
-        <p class="mensaje">🔔 Aguardá a ser llamado</p>
+        
+        {% if demora and demora > 0 %}
+        <div class="demora">
+            ⏳ Demora estimada: ~{{ demora }} minutos
+        </div>
+        {% else %}
+        <div class="demora">
+            ⏳ Tu pedido está en preparación
+        </div>
+        {% endif %}
+
+        <p class="mensaje" style="margin-top: 20px;">🔔 Aguardá a ser llamado</p>
     </div>
     <a href="/pedido">← Hacer otro pedido</a>
 </body>

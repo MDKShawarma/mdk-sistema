@@ -749,9 +749,22 @@ def nuevo_pedido():
     cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, cliente_id))
     if puntos_sumados > 0:
         cursor.execute('''INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo) VALUES (?, ?, 'suma', 'Pedido por QR')''', (cliente_id, puntos_sumados))
-    conn.commit()
+        conn.commit()
+
+    # Calcular demora estimada
+    cursor.execute("""
+        SELECT COUNT(*) FROM ventas 
+        WHERE date(fecha) = date('now') 
+        AND tipo_origen = 'qr' 
+        AND impreso = 0
+    """)
+    pedidos_en_cola = cursor.fetchone()[0]
+    
+    # 7 minutos por pedido en cola (el tiempo que dijo el empleado)
+    demora_minutos = pedidos_en_cola * 7
+
     conn.close()
-    return render_template('pedido_confirmado.html', nombre=nombre, numero_pedido=numero_pedido)
+    return render_template('pedido_confirmado.html', nombre=nombre, numero_pedido=numero_pedido, demora=demora_minutos)
 
 @app.route('/api/pedidos_nuevos')
 @login_requerido_empleado
