@@ -294,7 +294,10 @@ def ventas():
                 cursor.execute("SELECT nombre, precio FROM productos WHERE id = ?", (producto_id,))
                 producto = cursor.fetchone()
                 total_item = round(producto[1] * cantidad * factor, 2)
-                notas_completas = notas
+                                # Tomar las notas del producto (personalizaciones)
+                notas_completas = item.get('notas', '')
+                
+                # Si hay descuento de puntos, agregarlo
                 if descuento_aplicado > 0:
                     notas_completas += (" | " if notas_completas else "") + f"Descuento puntos: ${descuento_aplicado}"
                 cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, origen, numero_pedido))
