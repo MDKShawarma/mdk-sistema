@@ -647,13 +647,14 @@ cocina += CENTER + 'PEDIDO N ' + pedido.numero_pedido + '\n';
 cocina += limpiar(pedido.fecha) + '\n';
 cocina += LEFT + '--------------------------------\n';
 pedido.items.forEach(function(item) {
-// Los productos en letra grande
-cocina += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
-if (item.notas) {
-cocina += '  > ' + limpiar(item.notas) + '\n';
-}
-});
-cocina += '--------------------------------\n';
+    // El producto en letra doble
+    cocina += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
+    
+    // Las notas también en letra doble, pero sin el "  > " para que entre mejor
+    if (item.notas) {
+        cocina += DOUBLE_ON + limpiar(item.notas) + '\n' + DOUBLE_OFF;
+    }
+});cocina += '--------------------------------\n';
 cocina += LEFT + 'Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago) + '\n';
 cocina += CUT; // Cortar aquí
 // ============ COMANDA CLIENTE ============
@@ -668,10 +669,11 @@ cliente += CENTER + 'PEDIDO N ' + pedido.numero_pedido + '\n';
 cliente += limpiar(pedido.fecha) + '\n';
 cliente += LEFT + '--------------------------------\n';
 pedido.items.forEach(function(item) {
-// Los productos en letra grande
-cliente += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
-});
-cliente += '--------------------------------\n';
+    cliente += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
+    if (item.notas) {
+        cliente += DOUBLE_ON + limpiar(item.notas) + '\n' + DOUBLE_OFF;
+    }
+});cliente += '--------------------------------\n';
 // TOTAL en letra grande y negrita
 cliente += DOUBLE_ON + BOLD_ON + 'TOTAL: $' + Math.round(pedido.total) + '\n' + BOLD_OFF + DOUBLE_OFF;
 cliente += 'Metodo: ' + limpiar(pedido.metodo_pago) + '\n';
