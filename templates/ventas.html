@@ -205,7 +205,7 @@ Vuelva pronto 🙏
 </div>
 </div>
 <div style="text-align: center; padding: 10px;">
-<button class="btn-imprimir" style="display:none;" style="max-width: 400px;">🖨️ IMPRIMIR (navegador)</button>
+<button class="btn-imprimir" onclick="imprimirPedido({{ comanda.pedido_id }})" style="max-width: 400px; background: #4CAF50; color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 10px;">🖨️ IMPRIMIR COMANDA</button>
 <button class="btn-cerrar" onclick="document.getElementById('comanda-container').style.display='none'" style="max-width: 400px;">CERRAR</button>
 </div>
 </div>
@@ -598,19 +598,24 @@ console.error('Error:', err);
 alert('Error al obtener el pedido');
 });
 }
+function centrarTexto(txt, ancho) {
+txt = String(txt).substring(0, ancho);
+const esp = ancho - txt.length;
+const izq = Math.floor(esp / 2);
+return ' '.repeat(izq) + txt + ' '.repeat(esp - izq);
+}
 function generarYEnviarARawBT(pedido) {
-// 1. Definimos los comandos ESC/POS
 const ESC = '\x1b';
 const GS = '\x1d';
-const INIT = ESC + '@';                  // Inicializar impresora
-const CENTER = ESC + 'a\x01';            // Centrar texto
-const LEFT = ESC + 'a\x00';              // Alinear a la izquierda
-const BOLD_ON = ESC + 'E\x01';           // Negrita ON
-const BOLD_OFF = ESC + 'E\x00';          // Negrita OFF
-const DOUBLE_ON = GS + '!\x11';          // Doble alto y ancho
-const DOUBLE_OFF = GS + '!\x00';         // Tamaño normal
-const CUT = GS + 'V\x42\x00';            // Cortar papel
-const ancho = 24; // Ancho para letra doble (48 caracteres normales / 2)
+const INIT = ESC + '@';
+const CENTER = ESC + 'a\x01';
+const LEFT = ESC + 'a\x00';
+const BOLD_ON = ESC + 'E\x01';
+const BOLD_OFF = ESC + 'E\x00';
+const DOUBLE_ON = GS + '!\x11';
+const DOUBLE_OFF = GS + '!\x00';
+const CUT = GS + 'V\x42\x00';
+const ancho = 24;
 function centrarTexto(txt) {
 txt = String(txt).substring(0, ancho);
 const esp = ancho - txt.length;
@@ -624,9 +629,8 @@ return String(txt)
 .replace(/[^\x20-\x7E\n]/g, '')
 .trim();
 }
-// ============ SELLO DE PAGO ============
 let sello = '';
-sello += DOUBLE_ON + CENTER; // Letra grande para el sello
+sello += DOUBLE_ON + CENTER;
 sello += '****************\n';
 if (pedido.pagado) {
 sello += '*    PAGADO    *\n';
@@ -634,50 +638,45 @@ sello += '*    PAGADO    *\n';
 sello += '*  A COBRAR    *\n';
 }
 sello += '****************\n';
-sello += DOUBLE_OFF + LEFT; // Volver a letra normal
-// ============ COMANDA COCINA ============
+sello += DOUBLE_OFF + LEFT;
 let cocina = INIT;
-cocina += DOUBLE_ON + CENTER; // Letra grande para el encabezado
+cocina += DOUBLE_ON + CENTER;
 cocina += 'MDK SHAWARMA\n';
 cocina += 'Cocina\n';
-cocina += DOUBLE_OFF + LEFT; // Volver a normal
+cocina += DOUBLE_OFF + LEFT;
 cocina += sello;
 cocina += '================================\n';
 cocina += CENTER + 'PEDIDO N ' + pedido.numero_pedido + '\n';
 cocina += limpiar(pedido.fecha) + '\n';
 cocina += LEFT + '--------------------------------\n';
 pedido.items.forEach(function(item) {
-    // El producto en letra doble
-    cocina += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
-    
-    // Las notas también en letra doble, pero sin el "  > " para que entre mejor
-    if (item.notas) {
-        cocina += DOUBLE_ON + limpiar(item.notas) + '\n' + DOUBLE_OFF;
-    }
-});cocina += '--------------------------------\n';
+cocina += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
+if (item.notas) {
+cocina += DOUBLE_ON + limpiar(item.notas) + '\n' + DOUBLE_OFF;
+}
+});
+cocina += '--------------------------------\n';
 cocina += LEFT + 'Total: $' + Math.round(pedido.total) + ' | ' + limpiar(pedido.metodo_pago) + '\n';
-cocina += CUT; // Cortar aquí
-// ============ COMANDA CLIENTE ============
+cocina += CUT;
 let cliente = INIT;
-cliente += DOUBLE_ON + CENTER; // Letra grande para el encabezado
+cliente += DOUBLE_ON + CENTER;
 cliente += 'MDK SHAWARMA\n';
 cliente += 'Cliente\n';
-cliente += DOUBLE_OFF + LEFT; // Volver a normal
+cliente += DOUBLE_OFF + LEFT;
 cliente += sello;
 cliente += '================================\n';
 cliente += CENTER + 'PEDIDO N ' + pedido.numero_pedido + '\n';
 cliente += limpiar(pedido.fecha) + '\n';
 cliente += LEFT + '--------------------------------\n';
 pedido.items.forEach(function(item) {
-    cliente += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
-    if (item.notas) {
-        cliente += DOUBLE_ON + limpiar(item.notas) + '\n' + DOUBLE_OFF;
-    }
-});cliente += '--------------------------------\n';
-// TOTAL en letra grande y negrita
+cliente += DOUBLE_ON + limpiar(item.cantidad + 'x ' + item.producto) + '\n' + DOUBLE_OFF;
+if (item.notas) {
+cliente += DOUBLE_ON + limpiar(item.notas) + '\n' + DOUBLE_OFF;
+}
+});
+cliente += '--------------------------------\n';
 cliente += DOUBLE_ON + BOLD_ON + 'TOTAL: $' + Math.round(pedido.total) + '\n' + BOLD_OFF + DOUBLE_OFF;
 cliente += 'Metodo: ' + limpiar(pedido.metodo_pago) + '\n';
-// ALIAS DE TRANSFERENCIA (si aplica)
 if (pedido.metodo_pago && pedido.metodo_pago.toLowerCase().includes('mercado')) {
 cliente += '--------------------------------\n';
 cliente += DOUBLE_ON + CENTER + 'TRANSFERIR A:\n' + DOUBLE_OFF + LEFT;
@@ -686,10 +685,8 @@ cliente += CENTER + 'Alias: comida.arabe.mp\n';
 cliente += '--------------------------------\n';
 cliente += CENTER + 'Gracias por su compra!\n';
 cliente += CENTER + 'Vuelva pronto\n';
-cliente += CUT; // Cortar aquí
-// Enviamos TODO JUNTO (cocina + cliente) para que el puente lo procese de una vez
+cliente += CUT;
 const textoCompleto = cocina + cliente;
-// Enviamos al puente MDK en la compu del negocio
 fetch('http://192.168.100.175:5001/imprimir', {
 method: 'POST',
 headers: { 'Content-Type': 'text/plain' },
