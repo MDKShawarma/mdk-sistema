@@ -95,7 +95,7 @@ def verificar_cierre_obligatorio():
     rutas_empleado = ['/empleado', '/ventas', '/productos', '/stock', '/gastos']
     if request.path in rutas_empleado and session.get('rol') == 'empleado':
         ahora = datetime.now()
-        if (ahora.hour * 60 + ahora.minute) >= (22 * 60 + 30):
+        if (ahora.hour * 60 + ahora.minute) >= (99 * 60 + 30):
             conn = get_db()
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM cierres_caja WHERE fecha = date('now')")
