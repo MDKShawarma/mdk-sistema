@@ -1,3 +1,5 @@
+"Hola Deepy, soy Sergio de MDK Shawarma. Acá te paso mi archivo PROYECTO.md para que retomes el contexto. [Pegás el texto acá]"
+
 # 🌯 MDK SHAWARMA - Sistema de Gestión
 **Última actualización: 09/10/2026**
 
@@ -260,3 +262,65 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 
 ### 5. Pedido con GPS y Cajas Térmicas con GPS
 - (Ya anotado en la sección de ideas a futuro).
+
+---
+
+## ACTUALIZACIÓN 26/10/2026
+
+### Cálculo de demora automático (IMPLEMENTADO)
+- El sistema calcula la demora estimada en base a los pedidos en cola.
+- Fórmula actual: 1 pedido en cola = 7 minutos.
+- Se muestra al cliente en la pantalla de confirmación: "⏳ Demora estimada: ~X minutos".
+- Funciona en `/nuevo_pedido` (pedidos por QR).
+
+### Mejora pendiente para el cálculo de demora
+- **Problema:** El cálculo actual no tiene en cuenta los productos del carrito (ej: papas fritas tardan más).
+- **Solución propuesta:** Sumar los tiempos de preparación de cada producto en lugar de usar un tiempo fijo por pedido.
+- **Tiempos acordados con Sergio:**
+  - Shawarma / Falafel / Fatay / Kebbe: 7 minutos.
+  - Papas fritas / Nuggets: 6 minutos.
+  - Bebidas: 0 minutos.
+  - Postres: 1 minuto.
+- **Ejemplo:** 1 shawarma + 1 papas = 13 minutos de demora.
+- **Estado:** Pendiente de programar.
+
+---
+
+## ACTUALIZACIÓN 27/10/2026
+
+### Impresión térmica (XPrinter XP-V320N)
+- El ticket se imprime con el puente local (`puente_impresion.py`).
+- **Letra grande:** Se implementó el modo "Doble Alto y Doble Ancho" de ESC/POS para que los clientes mayores lean fácilmente.
+- **Corte automático:** Funciona perfecto. Separa la comanda de COCINA de la de CLIENTE.
+- **Ancho del ticket:** Se ajustó a 24 caracteres por línea (por la letra doble) para que no se corte nada.
+
+### Fix en guardado de notas (Personalizaciones)
+- **Problema:** Las opciones ("Sin repollo", "Sin tomate", etc.) no se guardaban ni se imprimían en las ventas del local.
+- **Solución:** Se modificó `app.py` (función `ventas`) para que tome `item['notas']` del carrito. Ahora las notas se guardan en la base de datos y salen en el ticket.
+
+### Redes y conexión (IMPORTANTE)
+- La compu del negocio ahora está en la red `home` (IP: `192.168.0.192`).
+- Cuando vaya al negocio, la red es `Shawarma` (IP esperada: `192.168.100.175`).
+- **El `ventas.html` sigue apuntando a `192.168.100.175`**. Cuando esté en el negocio, va a funcionar directo.
+- **Para probar en casa:** Si se necesita probar desde la red `home`, hay que cambiar la IP en el código a `192.168.0.192` (y acordarse de volverla a cambiar al ir al negocio).
+
+---
+
+## ACTUALIZACIÓN 28/10/2026
+
+### ¡IMPRESORA FUNCIONANDO AL 100% EN EL NEGOCIO! 🎉
+- El ticket ahora sale perfecto: letra grande, legible y con las notas (ej: "Sin repollo") bien visibles.
+- El corte automático funciona (separa la comanda de COCINA de la de CLIENTE).
+- Se eliminó el botón de "imprimir pantalla" (window.print) para que nunca más salga el ticket feo con los botones del sistema.
+
+### El gran problema de hoy: El nombre de la impresora
+- Windows creó varias copias de la impresora con nombres raros (XP-80, XP-80 copy 1, etc.).
+- El puente de Python estaba buscando "XP-80C", pero el nombre real que funcionaba era **"MDK Ticket"**.
+- **Solución:** Se cambió el archivo `puente_impresion.py` para que busque `NOMBRE_IMPRESORA = "MDK Ticket"`.
+- ⚠️ **IMPORTANTE PARA EL FUTURO:** Si alguien toca las impresoras en Windows y le cambia el nombre, el puente va a dejar de funcionar. El nombre debe ser siempre `"MDK Ticket"`.
+
+### Estado actual del sistema
+- Red del negocio: `Shawarma` (IP de la compu: `192.168.100.175`).
+- Puente corriendo en la compu del negocio (ventana negra abierta).
+- Sistema web apuntando a la IP correcta.
+- **TODO LISTO PARA EMPEZAR A TRABAJAR DE VERDAD.**
