@@ -54,13 +54,26 @@ def limpiar_respuesta(texto):
 
 def preguntar_deepseek(pregunta):
     try:
-        prompt = f"Respondé en español. Escribí solo la respuesta final, sin repetir sílabas ni palabras. Pregunta: {pregunta}"
-        resultado = subprocess.run(['ollama', 'run', 'mistral', prompt], capture_output=True, text=True, encoding='utf-8', errors='ignore', timeout=180)
-        respuesta = resultado.stdout.strip()
-        respuesta = limpiar_respuesta(respuesta)
-        return respuesta[:800]
+        import urllib.request
+        
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "llama3-8b-8192",
+            "messages": [{"role": "user", "content": pregunta}],
+            "temperature": 0.7
+        }
+        req = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers=headers)
+        
+        with urllib.request.urlopen(req, timeout=30) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            respuesta = result['choices'][0]['message']['content']
+            return limpiar_respuesta(respuesta)[:800]
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error de conexion con la IA: {str(e)}"
 
 def get_emoji(nombre):
     nombre_lower = nombre.lower()
