@@ -66,7 +66,7 @@ def get_emoji(nombre):
     nombre_lower = nombre.lower()
     if 'bolsa de panes' in nombre_lower: return '🥖'
     if 'pan individual' in nombre_lower: return '🫓'
-    emojis = {'shawarma': '🌯','falafel': '','fatay': '🥟','humus': '🫘','kebbe': '','papas': '🍟','helado': '🍨','deditos': '','baklava': '🍯','coca': '🥤','smudis': '','agua': '💧','cerveza': '🍺','baileys': '','gin': '🍸','vino': '🍷','pan': '🫓'}
+    emojis = {'shawarma': '🌯','falafel': '🧆','fatay': '🥟','humus': '🫘','kebbe': '🥩','papas': '🍟','helado': '🍨','deditos': '🍡','baklava': '🍯','coca': '🥤','smudis': '🥤','agua': '💧','cerveza': '🍺','baileys': '🥃','gin': '🍸','vino': '🍷','pan': '🫓'}
     for clave, emoji in emojis.items():
         if clave in nombre_lower: return emoji
     return '🍽️'
@@ -128,6 +128,7 @@ def cierre_caja():
     efectivo_esperado = cursor.fetchone()[0]
     cursor.execute("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE date(fecha) = date('now') AND metodo_pago = 'mercadopago'")
     mercadopago_esperado = cursor.fetchone()[0]
+    
     if request.method == 'POST' and not cierre_existente:
         try:
             efectivo_contado = float(request.form.get('efectivo_contado', 0) or 0)
@@ -140,12 +141,13 @@ def cierre_caja():
             cursor.execute("SELECT * FROM cierres_caja WHERE fecha = date('now')")
             cierre_existente = cursor.fetchone()
         except: pass
+        
     historial = []
     if es_dueno:
         cursor.execute("SELECT * FROM cierres_caja ORDER BY fecha DESC LIMIT 30")
         historial = cursor.fetchall()
     conn.close()
-    return render_template('cierre_caja.html', cierre_existente=cierre_existente, efectivo_esperado=efectivo_esperado, mercadopago_esperado=mercadopago_esperado, historial=historial, es_dueno=es_dueno)
+    return render_template('cierre_caja.html', cierre_existente=cierre_existente, efectivo_esperado=efectivo_esperado, mercadopago_esperado=mercadopago_esperado, historial=historial, es_dueno=es_dueno, empleado=es_empleado())
 
 @app.route('/logout')
 def logout():
@@ -290,11 +292,11 @@ def ventas():
             for item in carrito:
                 producto_id = int(item['id'])
                 cantidad = int(item['cantidad'])
-                notas = item.get('notas', '')
                 cursor.execute("SELECT nombre, precio FROM productos WHERE id = ?", (producto_id,))
                 producto = cursor.fetchone()
                 total_item = round(producto[1] * cantidad * factor, 2)
-                                # Tomar las notas del producto (personalizaciones)
+                
+                # Tomar las notas del producto (personalizaciones)
                 notas_completas = item.get('notas', '')
                 
                 # Si hay descuento de puntos, agregarlo
@@ -302,7 +304,7 @@ def ventas():
                     notas_completas += (" | " if notas_completas else "") + f"Descuento puntos: ${descuento_aplicado}"
                 cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, origen, numero_pedido))
                 
-                # 🧠 NUEVA LÓGICA DE ESCANDALLO: Si tiene receta, descuenta ingredientes. Si no, descuenta producto.
+                # 🧠 NUEVA LÓGICA DE ESCANDALLO
                 cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
                 receta = cursor.fetchall()
                 if receta:
@@ -485,21 +487,17 @@ def clientes():
     clientes = cursor.fetchall()
     conn.close()
     return render_template('clientes.html', clientes=clientes)
+
 @app.route('/eliminar_venta/<int:venta_id>', methods=['POST'])
-@login_requerido  # Solo el dueño puede eliminar ventas por seguridad
+@login_requerido
 def eliminar_venta(venta_id):
     conn = get_db()
     cursor = conn.cursor()
-    
-    # 1. Obtener los datos de la venta para revertir el stock
     cursor.execute("SELECT producto_id, cantidad FROM ventas WHERE id = ?", (venta_id,))
     venta = cursor.fetchone()
-    
     if venta:
         producto_id = venta['producto_id']
         cantidad = venta['cantidad']
-        
-        # 2. Revertir el escandallo (devolver ingredientes al stock)
         cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
         receta = cursor.fetchall()
         if receta:
@@ -507,15 +505,12 @@ def eliminar_venta(venta_id):
                 total_a_reponer = cantidad_ing * cantidad
                 cursor.execute("UPDATE ingredientes SET stock_actual = stock_actual + ? WHERE id = ?", (total_a_reponer, ing_id))
         else:
-            # Si no tiene receta, repone el producto terminado
             cursor.execute("UPDATE productos SET stock = stock + ? WHERE id = ?", (cantidad, producto_id))
-        
-        # 3. Eliminar el registro de la venta
         cursor.execute("DELETE FROM ventas WHERE id = ?", (venta_id,))
         conn.commit()
-        
     conn.close()
     return redirect(url_for('ventas'))
+
 @app.route('/eliminar_cliente/<int:cliente_id>', methods=['POST'])
 @login_requerido
 def eliminar_cliente(cliente_id):
@@ -673,7 +668,6 @@ def pago_exitoso():
         if item.get('notas'): notas_completas += f" | {item['notas']}"
         cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, 'mercadopago', ?, ?, 'qr', ?, 0)''', (producto_id, cantidad, total_item, notas_completas, cliente_id, numero_pedido))
         
-        # 🧠 NUEVA LÓGICA DE ESCANDALLO
         cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
         receta = cursor.fetchall()
         if receta:
@@ -738,7 +732,6 @@ def nuevo_pedido():
         if notas: notas_completas += f" | Sugerencia: {notas}"
         cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id, 'qr', numero_pedido))
         
-        # 🧠 NUEVA LÓGICA DE ESCANDALLO
         cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
         receta = cursor.fetchall()
         if receta:
@@ -752,7 +745,8 @@ def nuevo_pedido():
     cursor.execute('''UPDATE clientes SET total_compras = total_compras + ?, cantidad_pedidos = cantidad_pedidos + 1, puntos = puntos + ? WHERE id = ?''', (total_general, puntos_sumados, cliente_id))
     if puntos_sumados > 0:
         cursor.execute('''INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo) VALUES (?, ?, 'suma', 'Pedido por QR')''', (cliente_id, puntos_sumados))
-        conn.commit()
+    
+    conn.commit()
 
     # Calcular demora estimada
     cursor.execute("""
