@@ -355,3 +355,28 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 
 ### Permisos y Seguridad (Confirmado)
 - **Modificación de productos:** Queda restringido únicamente al dueño (con contraseña). Los empleados solo pueden ver la lista de productos y precios, pero no modificarlos ni agregar nuevos. Esto evita errores humanos o fraudes.
+
+---
+
+## ACTUALIZACIÓN 29/10/2026 (MÓDULO DE MARKETING IA)
+
+### Nuevo: Departamento de Marketing IA
+- Se creó la pantalla `/marketing` en el sistema (visible en el menú superior solo para el dueño).
+- **Función:** La IA analiza cuál fue el producto más vendido del día y redacta un posteo atractivo para Instagram con emojis, llamado a la acción (WhatsApp) y hashtags.
+- **Botón:** "📋 Copiar Texto" para pegarlo directo en la app de Instagram.
+
+### Tecnología utilizada (Groq)
+- Se descartó usar Ollama local (el servidor DonWeb no tiene recursos suficientes).
+- Se conectó con la API de **Groq** (IA en la nube, ultrarrápida y gratuita).
+- Modelo utilizado: `openai/gpt-oss-20b`.
+- **Seguridad:** La clave de Groq (`GROQ_API_KEY`) se guarda en el archivo `.env` del servidor, NUNCA en el código de GitHub.
+
+### Fix aplicado para el error 403 (Forbidden)
+- **Problema:** Groq bloqueaba la petición porque el modelo anterior fue retirado y el sistema no enviaba los headers de seguridad.
+- **Solución:** Se actualizó el modelo a `openai/gpt-oss-20b` y se agregaron headers (`User-Agent`, `Accept`, `Accept-Language`) para simular un navegador real y evitar el bloqueo.
+
+### Nota para el futuro
+- El módulo está diseñado para escalar. Próximos pasos posibles:
+  - Generar posteos para WhatsApp.
+  - Generar promociones basadas en el stock bajo.
+  - Generar imágenes (requiere API externa o instalar Stable Diffusion).
