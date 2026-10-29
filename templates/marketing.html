@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing IA - MDK Shawarma</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .marketing-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .card-ia {
+            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            border: 2px solid #4CAF50; /* Verde para diferenciarlo */
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+        }
+        .card-ia h2 { color: #4CAF50; margin-bottom: 10px; font-size: 28px; }
+        .card-ia p { color: #ccc; margin-bottom: 25px; font-size: 16px; }
+        .btn-generar {
+            background: linear-gradient(135deg, #4CAF50, #2d7a4a);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-generar:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4); }
+        
+        .resultado-box {
+            background: #1a1a1a;
+            border: 2px solid #f4a460; /* Naranja MDK */
+            border-radius: 15px;
+            padding: 25px;
+            text-align: left;
+            position: relative;
+        }
+        .resultado-box h3 { color: #f4a460; margin-bottom: 15px; font-size: 20px; }
+        .texto-posteo {
+            color: #fff;
+            font-size: 16px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: Arial, sans-serif;
+            border-left: 4px solid #4CAF50;
+        }
+        .btn-copiar {
+            background: #f4a460;
+            color: #1a1a1a;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            float: right;
+            transition: all 0.2s;
+        }
+        .btn-copiar:hover { background: #e68900; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-logo">
+            <img src="/static/logo.png" alt="MDK Logo">
+            <h2>MDK SHAWARMA</h2>
+        </div>
+        <div class="header-subtitle">Maison du Kebab</div>
+    </div>
+
+    <div class="menu">
+        <a href="/">📊 Panel</a>
+        <a href="/productos">📦 Productos</a>
+        <a href="/stock">🔄 Stock</a>
+        <a href="/ventas">💰 Ventas</a>
+        <a href="/gastos">💸 Gastos</a>
+        <a href="/gastos_fijos">📋 Fijos</a>
+        <a href="/contador">🧾 Contador</a>
+        <a href="/informe">📈 Informe</a>
+        <a href="/proveedores">📞 Proveedores</a>
+        <a href="/clientes">👥 Clientes</a>
+        <a href="/marketing" style="color: #4CAF50; font-weight: bold; border-bottom: 2px solid #4CAF50;">📣 Marketing IA</a>
+    </div>
+
+    <div class="content marketing-container">
+        <div class="card-ia">
+            <h2>📣 Departamento de Marketing IA</h2>
+            <p>La Inteligencia Artificial va a analizar cuál fue el producto más vendido hoy y va a redactar un posteo perfecto para tu Instagram. Listo para copiar y pegar.</p>
+            
+            <form method="POST">
+                <button type="submit" class="btn-generar">✨ Generar Posteo para Instagram</button>
+            </form>
+        </div>
+
+        {% if posteo %}
+        <div class="resultado-box">
+            <h3>✅ Tu posteo está listo:</h3>
+            <div class="texto-posteo" id="texto-posteo">{{ posteo }}</div>
+            <button class="btn-copiar" onclick="copiarTexto()">📋 Copiar Texto</button>
+            <div style="clear: both;"></div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function copiarTexto() {
+            const texto = document.getElementById('texto-posteo').innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                const btn = document.querySelector('.btn-copiar');
+                btn.innerText = '✅ ¡Copiado!';
+                btn.style.background = '#4CAF50';
+                btn.style.color = 'white';
+                setTimeout(() => {
+                    btn.innerText = '📋 Copiar Texto';
+                    btn.style.background = '#f4a460';
+                    btn.style.color = '#1a1a1a';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

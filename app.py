@@ -856,6 +856,35 @@ def api_marcar_impreso():
 @app.route('/service-worker.js')
 def service_worker():
     return send_from_directory('static', 'service-worker.js')
+@app.route('/marketing', methods=['GET', 'POST'])
+@login_requerido
+def marketing():
+    posteo = None
+    if request.method == 'POST':
+        # Buscamos el producto más vendido de hoy para darle contexto a la IA
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT p.nombre 
+            FROM ventas v 
+            JOIN productos p ON v.producto_id = p.id 
+            WHERE date(v.fecha) = date('now') 
+            GROUP BY p.id 
+            ORDER BY SUM(v.cantidad) DESC 
+            LIMIT 1
+        """)
+        top_producto = cursor.fetchone()
+        conn.close()
+        
+        # Si no hubo ventas hoy, usamos el Shawarma como default
+        producto_estrella = top_producto[0] if top_producto else "Shawarma"
+        
+        # El prompt para la IA
+        prompt = f"Actuá como community manager de 'MDK Shawarma', un local de take away de comida árabe en Ingeniero Maschwitz. El producto más vendido hoy fue: {producto_estrella}. Escribí un posteo corto para Instagram (máximo 3 oraciones). Usá emojis, invitá a pedir por WhatsApp y agregá 5 hashtags. Sé muy persuasivo y usá un tono amigable."
+        
+        posteo = preguntar_deepseek(prompt)
+        
+    return render_template('marketing.html', posteo=posteo)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
