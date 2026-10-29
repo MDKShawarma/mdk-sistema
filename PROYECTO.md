@@ -338,3 +338,20 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - **Problema:** En la función `nuevo_pedido`, el `conn.commit()` (que guarda los datos) estaba dentro de un bloque `if` de los puntos. Si un cliente pedía y no sumaba puntos, el pedido no se guardaba en la base de datos (aunque al cliente le aparecía confirmado).
 - **Solución:** Se movió el `conn.commit()` afuera de esa condición para que **todos** los pedidos se guarden siempre.
 - **Fix de indentación:** Se corrigió un error de espacios en la función `cierre_caja` que impedía que el sistema levante correctamente.
+
+---
+
+## ACTUALIZACIÓN 29/10/2026
+
+### Inicio automático del puente (Compu del negocio)
+- Se creó el archivo `IMPRIMIR_SIEMPRE.bat` en el Escritorio del negocio.
+- Se creó el archivo `INICIAR_OCULTO.vbs` para que el empleado no tenga que usar CMD.
+- El empleado solo hace doble clic en `INICIAR_OCULTO.vbs` y el puente arranca invisible en segundo plano.
+- El archivo `puente_impresion.py` se dejó en el Escritorio junto a estos dos archivos.
+
+### Arreglos en la pantalla de Ventas (`ventas.html`)
+- **Botón Volver al Panel:** Ahora el botón tiene lógica condicional. Si es dueño, va al Panel Principal (`/`). Si es empleado, va directo a su Panel (`/empleado`).
+- **Menú de empleado:** Se agregó el botón "👨‍🍳 Menú Empleado" en la barra de navegación superior para que la empleada pueda volver rápido a su panel de opciones.
+
+### Permisos y Seguridad (Confirmado)
+- **Modificación de productos:** Queda restringido únicamente al dueño (con contraseña). Los empleados solo pueden ver la lista de productos y precios, pero no modificarlos ni agregar nuevos. Esto evita errores humanos o fraudes.
