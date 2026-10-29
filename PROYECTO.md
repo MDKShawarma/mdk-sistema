@@ -324,3 +324,17 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - Puente corriendo en la compu del negocio (ventana negra abierta).
 - Sistema web apuntando a la IP correcta.
 - **TODO LISTO PARA EMPEZAR A TRABAJAR DE VERDAD.**
+
+---
+
+## ACTUALIZACIÓN 28/10/2026 (CIERRE DE CAJA Y PEDIDOS QR)
+
+### Cierre de Caja simplificado
+- **Se quitó el horario límite de las 22:30:** Ahora la empleada puede hacer el cierre cuando terminen, sin apuros.
+- **Campo de MercadoPago oculto:** La empleada ya no tiene que anotar lo que hay en MercadoPago. Solo anota el efectivo contado y el sistema hace el resto automáticamente.
+- **Menú de empleado:** Se verificó que al entrar como empleado (sin contraseña), la pantalla solo muestra su menú y el formulario simplificado de cierre.
+
+### Fix crítico en `app.py` (Pedidos por QR)
+- **Problema:** En la función `nuevo_pedido`, el `conn.commit()` (que guarda los datos) estaba dentro de un bloque `if` de los puntos. Si un cliente pedía y no sumaba puntos, el pedido no se guardaba en la base de datos (aunque al cliente le aparecía confirmado).
+- **Solución:** Se movió el `conn.commit()` afuera de esa condición para que **todos** los pedidos se guarden siempre.
+- **Fix de indentación:** Se corrigió un error de espacios en la función `cierre_caja` que impedía que el sistema levante correctamente.
