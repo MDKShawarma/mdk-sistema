@@ -97,6 +97,7 @@ select, .input-campo { width: 100%; padding: 12px; background: #1a1a1a; color: w
 #btn-origen-pedidosya.origen-activo { border-color: #ff9800; color: #ff9800; box-shadow: 0 0 15px rgba(255, 152, 0, 0.4); }
 @media print {
 .header { display: none !important; }
+.menu { display: none !important; }
 .content { display: none !important; }
 .comanda-container {
 display: block !important; position: static !important;
@@ -134,6 +135,30 @@ page-break-inside: avoid !important;
 </div>
 <div class="header-subtitle">Ventas</div>
 </div>
+
+<div class="menu">
+{% if empleado %}
+<a href="/empleado">👨‍🍳 Menú Empleado</a>
+<a href="/ventas">💰 Ventas</a>
+<a href="/productos">📦 Productos</a>
+<a href="/stock">🔄 Stock</a>
+<a href="/gastos">💸 Gastos</a>
+<a href="/cierre_caja">🔒 Cierre de Caja</a>
+{% else %}
+<a href="/">📊 Panel</a>
+<a href="/productos">📦 Productos</a>
+<a href="/stock">🔄 Stock</a>
+<a href="/ventas">💰 Ventas</a>
+<a href="/gastos">💸 Gastos</a>
+<a href="/gastos_fijos">📋 Fijos</a>
+<a href="/contador">🧾 Contador</a>
+<a href="/informe">📈 Informe</a>
+<a href="/proveedores">📞 Proveedores</a>
+<a href="/chat">💬 Chat</a>
+<a href="/clientes">👥 Clientes</a>
+{% endif %}
+</div>
+
 {% if comanda %}
 <div class="comanda-container" id="comanda-container">
 <div class="comanda">
@@ -304,7 +329,7 @@ Vuelva pronto 🙏
 <p style="text-align: center; color: #888; margin-top: 40px;">No hay ventas hoy</p>
 {% endif %}
 <div style="text-align: center; margin-top: 30px;">
-<a href="/" style="background: linear-gradient(135deg, #555, #333); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold;">
+<a href="{% if empleado %}/empleado{% else %}/{% endif %}" style="background: linear-gradient(135deg, #555, #333); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold;">
 ← Volver al Panel
 </a>
 </div>
@@ -597,12 +622,6 @@ generarYEnviarARawBT(pedido);
 console.error('Error:', err);
 alert('Error al obtener el pedido');
 });
-}
-function centrarTexto(txt, ancho) {
-txt = String(txt).substring(0, ancho);
-const esp = ancho - txt.length;
-const izq = Math.floor(esp / 2);
-return ' '.repeat(izq) + txt + ' '.repeat(esp - izq);
 }
 function generarYEnviarARawBT(pedido) {
 const ESC = '\x1b';
