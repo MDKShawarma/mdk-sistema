@@ -287,7 +287,12 @@ def ventas():
                 if not producto or producto[2] < cantidad:
                     conn.close()
                     return "Error: stock insuficiente para " + item['nombre'], 400
-                total_general += producto[1] * cantidad
+                
+                if origen == 'pedidosya':
+                    total_general += (producto[1] * 1.2785) * cantidad
+                else:
+                    total_general += producto[1] * cantidad
+            
             descuento_aplicado = 0
             puntos_a_descontar = 0
             if canjear_puntos and cliente_id:
@@ -310,17 +315,21 @@ def ventas():
                 cantidad = int(item['cantidad'])
                 cursor.execute("SELECT nombre, precio FROM productos WHERE id = ?", (producto_id,))
                 producto = cursor.fetchone()
-                total_item = round(producto[1] * cantidad * factor, 2)
                 
-                # Tomar las notas del producto (personalizaciones)
+                if origen == 'pedidosya':
+                    precio_unitario = round(producto[1] * 1.2785, 2)
+                    item['precio'] = precio_unitario
+                else:
+                    precio_unitario = producto[1]
+
+                total_item = round(precio_unitario * cantidad * factor, 2)
+                
                 notas_completas = item.get('notas', '')
-                
-                # Si hay descuento de puntos, agregarlo
                 if descuento_aplicado > 0:
                     notas_completas += (" | " if notas_completas else "") + f"Descuento puntos: ${descuento_aplicado}"
+                
                 cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, origen, numero_pedido))
                 
-                # 🧠 NUEVA LÓGICA DE ESCANDALLO
                 cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
                 receta = cursor.fetchall()
                 if receta:
@@ -764,7 +773,6 @@ def nuevo_pedido():
     
     conn.commit()
 
-    # Calcular demora estimada
     cursor.execute("""
         SELECT COUNT(*) FROM ventas 
         WHERE date(fecha) = date('now') 
@@ -772,10 +780,7 @@ def nuevo_pedido():
         AND impreso = 0
     """)
     pedidos_en_cola = cursor.fetchone()[0]
-    
-    # 7 minutos por pedido en cola (el tiempo que dijo el empleado)
     demora_minutos = pedidos_en_cola * 7
-
     conn.close()
     return render_template('pedido_confirmado.html', nombre=nombre, numero_pedido=numero_pedido, demora=demora_minutos)
 
@@ -872,12 +877,12 @@ def api_marcar_impreso():
 @app.route('/service-worker.js')
 def service_worker():
     return send_from_directory('static', 'service-worker.js')
+
 @app.route('/marketing', methods=['GET', 'POST'])
 @login_requerido
 def marketing():
     posteo = None
     if request.method == 'POST':
-        # Buscamos el producto más vendido de hoy para darle contexto a la IA
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute("""
@@ -892,12 +897,8 @@ def marketing():
         top_producto = cursor.fetchone()
         conn.close()
         
-        # Si no hubo ventas hoy, usamos el Shawarma como default
         producto_estrella = top_producto[0] if top_producto else "Shawarma"
-        
-        # El prompt para la IA
         prompt = f"Actuá como community manager de 'MDK Shawarma', un local de take away de comida árabe en Ingeniero Maschwitz. El producto más vendido hoy fue: {producto_estrella}. Escribí un posteo corto para Instagram (máximo 3 oraciones). Usá emojis, invitá a pedir por WhatsApp y agregá 5 hashtags. Sé muy persuasivo y usá un tono amigable."
-        
         posteo = preguntar_deepseek(prompt)
         
     return render_template('marketing.html', posteo=posteo)
