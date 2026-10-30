@@ -393,3 +393,31 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 
 ### Nuevo módulo de Marketing IA
 - (Ya documentado en la actualización anterior, pero ahora está linkeado en el menú superior para dueños).
+
+---
+
+## ACTUALIZACIÓN 30/10/2026 (SESIÓN TARDE)
+
+### ✅ Lo que se hizo
+- **Botón "📣 Marketing IA" agregado a todas las pantallas del menú dueño** (11 archivos modificados con script Python `agregar_marketing.py`).
+- **Hora del ticket corregida:** timezone del servidor cambiada a `America/Argentina/Buenos_Aires` (`timedatectl set-timezone`). Antes mostraba UTC (3 hs menos).
+- **`.env` protegido:** se agregó a `.gitignore` y se sacó del tracking (`git rm --cached .env`). Ya no se sube por error.
+
+### ⚠️ Incidentes y resolución
+- **`app.py` se cortó** al pegarse completo desde el chat → borró 313 líneas → sitio caído (error 500).
+- **Restaurado en la compu** con `git reset --hard HEAD~1` + `git push -f` → volvió a `6a4089e`.
+- **El servidor quedó en el commit roto (`d219b43`)** → error 500 al entrar a `/`.
+- **Restaurado en el servidor** con `git checkout 6a4089e -- app.py` + `systemctl restart mdk` → sitio online (302 a `/pedido`).
+
+### 📌 Pendientes para la próxima
+1. **Nombre del cliente en el ticket impreso:** aparece en la comanda en pantalla (bloque cliente) pero NO en el bloque cocina. Falta unificar.
+2. **Alinear `main` del servidor con `origin/main`:** el servidor está 1 commit adelante (`d219b43` roto). Hacer `git reset --hard 6a4089e` en el servidor.
+3. **Verificar impresión física** del ticket con nombre + hora correcta (cuando Sergio esté en el negocio).
+
+### 🛑 Reglas aprendidas
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema. Editar línea por línea con `Ctrl+F`.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Antes de tocar el servidor: `git --no-pager status` y `git --no-pager log --oneline -3`.
+- ✅ Si `git status` abre el visor `less`, usar `git --no-pager status` o apretar `q` para salir.
+
+---
