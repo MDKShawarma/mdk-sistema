@@ -377,7 +377,6 @@ function setOrigen(origen) {
     const selMetodo = document.getElementById('metodo_pago');
     const avisoPy = document.getElementById('aviso-pedidosya');
     
-    // Actualizar los precios visuales de los botones
     {% for p in productos %}
         let precioBase_{{ p[0] }} = {{ p[2] }};
         let precioMostrar_{{ p[0] }} = (origen === 'pedidosya') ? Math.round(precioBase_{{ p[0] }} * MULT_PEDIDOSYA) : precioBase_{{ p[0] }};
@@ -398,7 +397,6 @@ function setOrigen(origen) {
         avisoPy.style.display = 'none';
     }
     
-    // Vaciar carrito para no mezclar precios
     if (carrito.length > 0) {
         carrito = [];
         renderizarCarrito();
@@ -474,7 +472,7 @@ function agregarAlCarrito() {
         carrito.push({
             id: productoActual.id, 
             nombre: productoActual.nombre, 
-            precio: productoActual.precioFinal, // Guardamos el precio final (con aumento si es PedidosYa)
+            precio: productoActual.precioFinal,
             cantidad: cantidadActual, 
             notas: personalizacionesActuales.join(', ')
         });
@@ -710,6 +708,9 @@ function generarYEnviarARawBT(pedido) {
     cocina += sello;
     cocina += '================================\n';
     cocina += CENTER + 'PEDIDO N ' + pedido.numero_pedido + '\n';
+    if (pedido.cliente && pedido.cliente !== 'Sin cliente') {
+        cocina += CENTER + 'Cliente: ' + limpiar(pedido.cliente) + '\n';
+    }
     cocina += limpiar(pedido.fecha) + '\n';
     cocina += LEFT + '--------------------------------\n';
     
@@ -732,6 +733,9 @@ function generarYEnviarARawBT(pedido) {
     cliente += sello;
     cliente += '================================\n';
     cliente += CENTER + 'PEDIDO N ' + pedido.numero_pedido + '\n';
+    if (pedido.cliente && pedido.cliente !== 'Sin cliente') {
+        cliente += CENTER + 'Cliente: ' + limpiar(pedido.cliente) + '\n';
+    }
     cliente += limpiar(pedido.fecha) + '\n';
     cliente += LEFT + '--------------------------------\n';
     
