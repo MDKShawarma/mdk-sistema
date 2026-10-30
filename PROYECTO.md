@@ -380,3 +380,16 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
   - Generar posteos para WhatsApp.
   - Generar promociones basadas en el stock bajo.
   - Generar imágenes (requiere API externa o instalar Stable Diffusion).
+
+---
+
+## ACTUALIZACIÓN 30/10/2026 (INTEGRACIÓN PEDIDOSYA)
+
+### Aumento automático en PedidosYa
+- Se implementó la lógica para que los precios de PedidosYa (que tienen un 27.85% de aumento respecto al mostrador) se apliquen automáticamente.
+- **En la pantalla (`ventas.html`):** Cuando el empleado toca el botón "🛵 PEDIDOSYA", todos los precios de los productos cambian al instante en la pantalla. Si vuelve a "MOSTRADOR", vuelven a la normalidad.
+- **En el servidor (`app.py`):** El sistema calcula el total multiplicando el precio base por 1.2785 cuando el origen es `pedidosya`, tanto para el ticket como para la base de datos.
+- **Aclaración:** Los pedidos de PedidosYa no suman al cierre de caja físico (se cobran por la app), pero sí quedan registrados en el informe para calcular la comisión y las ganancias reales.
+
+### Nuevo módulo de Marketing IA
+- (Ya documentado en la actualización anterior, pero ahora está linkeado en el menú superior para dueños).
