@@ -421,3 +421,32 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - ✅ Si `git status` abre el visor `less`, usar `git --no-pager status` o apretar `q` para salir.
 
 ---
+
+## ACTUALIZACIÓN 02/11/2026 (NOMBRE EN TICKET + FIX RECETAS)
+
+### ✅ Lo que se hizo
+- **Nombre del cliente en los 2 tickets** (COCINA y CLIENTE):
+  - En `app.py`: se agregó `nombre_cliente` antes del `conn.commit()` de la función `ventas()`, y se incluyó `'cliente': nombre_cliente` en el diccionario `comanda`.
+  - En `ventas.html`: se agregó el bloque `{% if comanda.cliente and comanda.cliente != 'Sin cliente' %}` en los dos bloques de comanda (cocina y cliente), justo debajo del número de pedido.
+  - **Resultado:** los dos tickets muestran el nombre correctamente. ✅
+
+### ⚠️ Incidente: error 500 al confirmar venta
+- **Causa:** la tabla `recetas` no existía en `mdk.db` del servidor (`sqlite3.OperationalError: no such table: recetas`).
+- **Motivo:** `init_db.py` nunca definió `CREATE TABLE recetas`, y en algún momento se perdió del `mdk.db`.
+- **Solución:** se creó la tabla `recetas` manualmente con Python desde PuTTY (script de una línea). Confirmado con `SELECT name FROM sqlite_master`.
+- **Importante:** la tabla quedó **vacía** (sin ingredientes cargados). Las ventas funcionan porque el código tiene un `else` que descuenta stock del producto directo. **Pendiente:** cargar las recetas reales.
+
+### 📌 Pendientes
+1. **Cargar la tabla `recetas`** con los ingredientes reales de cada producto (para que descuente stock de ingredientes automáticamente al vender).
+2. **Agregar `CREATE TABLE recetas` a `init_db.py`** para que no vuelva a perderse en el futuro.
+3. **Probar impresión física** en el negocio con nombre + hora correcta.
+4. **Verificar el estado del servidor** con `git --no-pager status` (debería estar limpio, sin commits locales adelante).
+
+### 🛑 Reglas (siguen vigentes, actualizadas)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema. Editar línea por línea con `Ctrl+F`.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Antes de tocar el servidor: `git --no-pager status` y `git --no-pager log --oneline -3`.
+- ✅ Si `git status` abre el visor `less`, usar `git --no-pager status` o apretar `q` para salir.
+- ✅ **Antes de modificar `app.py`**, verificar sintaxis con: `python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+
+---
