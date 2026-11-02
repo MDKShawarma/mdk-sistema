@@ -372,7 +372,7 @@ def ventas():
             comanda = {'pedido_id': numero_pedido, 'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'productos_comanda': carrito, 'total': total_general, 'descuento': descuento_aplicado, 'metodo_pago': metodo_pago, 'cliente': nombre_cliente}
     cursor.execute('''SELECT v.id, p.nombre, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha, c.nombre as cliente_nombre FROM ventas v JOIN productos p ON v.producto_id = p.id LEFT JOIN clientes c ON v.cliente_id = c.id WHERE date(v.fecha) = date('now') ORDER BY v.fecha DESC''')
     ventas = cursor.fetchall()
-    cursor.execute("SELECT id, nombre, precio FROM productos WHERE stock > 0")
+    cursor.execute("SELECT id, nombre, precio FROM productos")
     productos_raw = cursor.fetchall()
     productos_ordenados = sorted(productos_raw, key=lambda p: (orden_importancia(p[1]), p[1]))
     productos = [(p[0], p[1], p[2], get_emoji(p[1])) for p in productos_ordenados]
