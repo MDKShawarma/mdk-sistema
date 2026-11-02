@@ -922,6 +922,50 @@ def marketing():
         posteo = preguntar_deepseek(prompt)
         
     return render_template('marketing.html', posteo=posteo)
+@app.route('/recetas', methods=['GET', 'POST'])
+@login_requerido
+def recetas():
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    if request.method == 'POST':
+        producto_id = request.form.get('producto_id')
+        ingrediente_id = request.form.get('ingrediente_id')
+        cantidad = request.form.get('cantidad')
+        if producto_id and ingrediente_id and cantidad:
+            cursor.execute("DELETE FROM recetas WHERE producto_id = ? AND ingrediente_id = ?", (producto_id, ingrediente_id))
+            cursor.execute("INSERT INTO recetas (producto_id, ingrediente_id, cantidad) VALUES (?, ?, ?)", (producto_id, ingrediente_id, float(cantidad)))
+            conn.commit()
+    
+    cursor.execute("SELECT id, nombre FROM productos WHERE categoria = 'Comidas' ORDER BY nombre")
+    productos = cursor.fetchall()
+    
+    cursor.execute("SELECT id, nombre, unidad FROM ingredientes ORDER BY nombre")
+    ingredientes = cursor.fetchall()
+    
+    cursor.execute('''
+        SELECT p.nombre as producto, i.nombre as ingrediente, r.cantidad, i.unidad, r.id
+        FROM recetas r
+        JOIN productos p ON r.producto_id = p.id
+        JOIN ingredientes i ON r.ingrediente_id = i.id
+        ORDER BY p.nombre, i.nombre
+    ''')
+    recetas_armadas = cursor.fetchall()
+    
+    conn.close()
+    return render_template('recetas.html', productos=productos, ingredientes=ingredientes, recetas=recetas_armadas)
+
+
+@app.route('/eliminar_receta/<int:receta_id>', methods=['POST'])
+@login_requerido
+def eliminar_receta(receta_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM recetas WHERE id = ?", (receta_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('recetas'))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
