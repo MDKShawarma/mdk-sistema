@@ -937,14 +937,17 @@ def recetas():
             cursor.execute("INSERT INTO recetas (producto_id, ingrediente_id, cantidad) VALUES (?, ?, ?)", (producto_id, ingrediente_id, float(cantidad)))
             conn.commit()
     
-    cursor.execute("SELECT id, nombre FROM productos WHERE categoria = 'Comidas' ORDER BY nombre")
+    # Traemos todos los productos (sin importar la categoría, para que no falle)
+    cursor.execute("SELECT id, nombre FROM productos ORDER BY nombre")
     productos = cursor.fetchall()
     
+    # Traemos todos los ingredientes
     cursor.execute("SELECT id, nombre, unidad FROM ingredientes ORDER BY nombre")
     ingredientes = cursor.fetchall()
     
+    # Traemos las recetas con sus IDs para poder modificarlas
     cursor.execute('''
-        SELECT p.nombre as producto, i.nombre as ingrediente, r.cantidad, i.unidad, r.id
+        SELECT p.nombre as producto, i.nombre as ingrediente, r.cantidad, i.unidad, r.id, r.producto_id, r.ingrediente_id
         FROM recetas r
         JOIN productos p ON r.producto_id = p.id
         JOIN ingredientes i ON r.ingrediente_id = i.id
@@ -954,7 +957,6 @@ def recetas():
     
     conn.close()
     return render_template('recetas.html', productos=productos, ingredientes=ingredientes, recetas=recetas_armadas)
-
 
 @app.route('/eliminar_receta/<int:receta_id>', methods=['POST'])
 @login_requerido
