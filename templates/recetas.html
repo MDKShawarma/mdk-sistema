@@ -62,23 +62,14 @@
         <div class="card-receta">
             <h3 id="titulo-formulario">➕ Agregar Ingrediente a un Producto</h3>
             <form method="POST" class="form-receta" id="form-receta">
-                <select name="producto_id" id="select-producto" required>
-                    <option value="">Producto...</option>
-                    {% for p in productos %}
-                    <option value="{{ p[0] }}">{{ p[1] }}</option>
-                    {% endfor %}
-                </select>
-                <select name="ingrediente_id" id="select-ingrediente" required>
-                    <option value="">Ingrediente...</option>
-                    {% for i in ingredientes %}
-                    <option value="{{ i[0] }}">{{ i[1] }} ({{ i[2] }})</option>
-                    {% endfor %}
-                </select>
-                <input type="number" step="0.001" name="cantidad" id="input-cantidad" placeholder="Cantidad (ej: 0.2)" required>
+                <input type="text" name="nombre_producto" placeholder="Producto (ej: Shawarma)" required style="width: 180px;">
+                <input type="text" name="nombre_ingrediente" placeholder="Ingrediente (ej: Carne)" required style="width: 180px;">
+                <input type="number" step="0.001" name="cantidad" placeholder="Cantidad (ej: 0.2)" required style="width: 150px;">
+                <input type="text" name="unidad" placeholder="Unidad (kg, gr, u)" value="kg" required style="width: 120px;">
                 <button type="submit" class="btn-guardar" id="btn-guardar">💾 Guardar</button>
                 <button type="button" class="btn-limpiar" onclick="limpiarFormulario()">❌ Limpiar</button>
             </form>
-            <p style="color: #888; font-size: 12px; margin-top: 10px;">* La cantidad se mide en la unidad del ingrediente (kg, unidades, litros, etc).</p>
+            <p style="color: #888; font-size: 12px; margin-top: 10px;">* La cantidad se mide en la unidad del ingrediente (kg, unidades, litros, etc). Si el producto o ingrediente no existe, se crea automáticamente.</p>
         </div>
 
         <div class="card-receta">
@@ -99,7 +90,7 @@
                         <td>{{ r[1] }}</td>
                         <td>{{ r[2] }} {{ r[3] }}</td>
                         <td>
-                            <button type="button" class="btn-accion btn-modificar" onclick="prepararModificar('{{ r[5] }}', '{{ r[6] }}', '{{ r[2] }}')">✏️ Modificar</button>
+                            <button type="button" class="btn-accion btn-modificar" onclick="prepararModificar('{{ r[0] }}', '{{ r[1] }}', '{{ r[2] }}', '{{ r[3] }}')">✏️ Modificar</button>
                             <form method="POST" action="/eliminar_receta/{{ r[4] }}" style="display:inline;">
                                 <button type="submit" class="btn-accion btn-eliminar" onclick="return confirm('¿Eliminar este ingrediente de la receta?')">🗑️ Eliminar</button>
                             </form>
@@ -118,10 +109,11 @@
     </div>
 
     <script>
-        function prepararModificar(prodId, ingId, cant) {
-            document.getElementById('select-producto').value = prodId;
-            document.getElementById('select-ingrediente').value = ingId;
-            document.getElementById('input-cantidad').value = cant;
+        function prepararModificar(prodNombre, ingNombre, cant, unidad) {
+            document.querySelector('[name="nombre_producto"]').value = prodNombre;
+            document.querySelector('[name="nombre_ingrediente"]').value = ingNombre;
+            document.querySelector('[name="cantidad"]').value = cant;
+            document.querySelector('[name="unidad"]').value = unidad;
             
             document.getElementById('titulo-formulario').innerText = '✏️ Modificar Ingrediente';
             document.getElementById('btn-guardar').innerText = '💾 Guardar Cambios';

@@ -929,25 +929,38 @@ def recetas():
     cursor = conn.cursor()
     
     if request.method == 'POST':
-        producto_id = request.form.get('producto_id')
-        ingrediente_id = request.form.get('ingrediente_id')
+        nombre_prod = request.form.get('nombre_producto', '').strip()
+        nombre_ing = request.form.get('nombre_ingrediente', '').strip()
         cantidad = request.form.get('cantidad')
-        if producto_id and ingrediente_id and cantidad:
-            cursor.execute("DELETE FROM recetas WHERE producto_id = ? AND ingrediente_id = ?", (producto_id, ingrediente_id))
-            cursor.execute("INSERT INTO recetas (producto_id, ingrediente_id, cantidad) VALUES (?, ?, ?)", (producto_id, ingrediente_id, float(cantidad)))
+        unidad = request.form.get('unidad', 'kg').strip()
+        
+        if nombre_prod and nombre_ing and cantidad:
+            # 1. Buscar o crear el Producto
+            cursor.execute("SELECT id FROM productos WHERE LOWER(nombre) = LOWER(?)", (nombre_prod,))
+            prod = cursor.fetchone()
+            if prod:
+                prod_id = prod[0]
+            else:
+                cursor.execute("INSERT INTO productos (nombre, categoria, precio, stock, stock_minimo) VALUES (?, 'Comidas', 0, 0, 0)", (nombre_prod,))
+                prod_id = cursor.lastrowid
+
+            # 2. Buscar o crear el Ingrediente
+            cursor.execute("SELECT id FROM ingredientes WHERE LOWER(nombre) = LOWER(?)", (nombre_ing,))
+            ing = cursor.fetchone()
+            if ing:
+                ing_id = ing[0]
+            else:
+                cursor.execute("INSERT INTO ingredientes (nombre, categoria, stock_actual, unidad, stock_minimo) VALUES (?, 'General', 0, ?, 0)", (nombre_ing, unidad))
+                ing_id = cursor.lastrowid
+
+            # 3. Guardar la receta
+            cursor.execute("DELETE FROM recetas WHERE producto_id = ? AND ingrediente_id = ?", (prod_id, ing_id))
+            cursor.execute("INSERT INTO recetas (producto_id, ingrediente_id, cantidad) VALUES (?, ?, ?)", (prod_id, ing_id, float(cantidad)))
             conn.commit()
     
-    # Traemos todos los productos (sin importar la categoría, para que no falle)
-    cursor.execute("SELECT id, nombre FROM productos ORDER BY nombre")
-    productos = cursor.fetchall()
-    
-    # Traemos todos los ingredientes
-    cursor.execute("SELECT id, nombre, unidad FROM ingredientes ORDER BY nombre")
-    ingredientes = cursor.fetchall()
-    
-    # Traemos las recetas con sus IDs para poder modificarlas
+    # Traemos las recetas armadas para mostrarlas en la tabla
     cursor.execute('''
-        SELECT p.nombre as producto, i.nombre as ingrediente, r.cantidad, i.unidad, r.id, r.producto_id, r.ingrediente_id
+        SELECT p.nombre as producto, i.nombre as ingrediente, r.cantidad, i.unidad, r.id
         FROM recetas r
         JOIN productos p ON r.producto_id = p.id
         JOIN ingredientes i ON r.ingrediente_id = i.id
@@ -956,7 +969,7 @@ def recetas():
     recetas_armadas = cursor.fetchall()
     
     conn.close()
-    return render_template('recetas.html', productos=productos, ingredientes=ingredientes, recetas=recetas_armadas)
+    return render_template('recetas.html', recetas=recetas_armadas)
 
 @app.route('/eliminar_receta/<int:receta_id>', methods=['POST'])
 @login_requerido
@@ -967,7 +980,6 @@ def eliminar_receta(receta_id):
     conn.commit()
     conn.close()
     return redirect(url_for('recetas'))
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
