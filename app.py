@@ -349,7 +349,13 @@ def ventas():
                 if puntos_sumados > 0:
                     cursor.execute('''INSERT INTO movimientos_puntos (cliente_id, puntos, tipo, motivo) VALUES (?, ?, 'suma', 'Compra en local')''', (int(cliente_id), puntos_sumados))
             conn.commit()
-            comanda = {'pedido_id': numero_pedido, 'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'productos_comanda': carrito, 'total': total_general, 'descuento': descuento_aplicado, 'metodo_pago': metodo_pago}
+            nombre_cliente = "Sin cliente"
+            if cliente_id:
+                cursor.execute("SELECT nombre FROM clientes WHERE id = ?", (int(cliente_id),))
+                fila_cli = cursor.fetchone()
+                if fila_cli:
+                    nombre_cliente = fila_cli[0]
+            comanda = {'pedido_id': numero_pedido, 'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'productos_comanda': carrito, 'total': total_general, 'descuento': descuento_aplicado, 'metodo_pago': metodo_pago, 'cliente': nombre_cliente}
     cursor.execute('''SELECT v.id, p.nombre, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha, c.nombre as cliente_nombre FROM ventas v JOIN productos p ON v.producto_id = p.id LEFT JOIN clientes c ON v.cliente_id = c.id WHERE date(v.fecha) = date('now') ORDER BY v.fecha DESC''')
     ventas = cursor.fetchall()
     cursor.execute("SELECT id, nombre, precio FROM productos WHERE stock > 0")
