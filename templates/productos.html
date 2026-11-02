@@ -177,9 +177,12 @@
     <div class="content">
         <h1>📦 Productos</h1>
 
-        {% if not empleado %}
-        <div style="text-align:center;">
-            <button class="btn-agregar" onclick="abrirModal()">➕ Agregar Producto</button>
+                {% if not empleado %}
+        <div style="text-align:center; display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
+            <button class="btn-agregar" onclick="abrirModal()" style="margin-bottom: 0;">➕ Agregar Producto</button>
+            <form method="POST" action="/resetear_stock" onsubmit="return confirm('⚠️ ¿Estás seguro de que querés poner TODO el stock en 0? (Productos e Ingredientes)');">
+                <button type="submit" class="btn-agregar" style="margin-bottom: 0; background: linear-gradient(135deg, #f44336, #b71c1c);">🧹 Resetear Todo a 0</button>
+            </form>
         </div>
         {% endif %}
 

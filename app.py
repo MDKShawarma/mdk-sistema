@@ -222,7 +222,21 @@ def productos():
     productos = sorted(productos_raw, key=lambda p: (orden_importancia(p[1]), p[1]))
     conn.close()
     return render_template('productos.html', productos=productos, empleado=es_empleado())
-
+@app.route('/resetear_stock', methods=['POST'])
+@login_requerido
+def resetear_stock():
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Ponemos en 0 el stock de los productos (elaborados y revendidos)
+    cursor.execute("UPDATE productos SET stock = 0")
+    
+    # Ponemos en 0 el stock de los ingredientes
+    cursor.execute("UPDATE ingredientes SET stock_actual = 0")
+    
+    conn.commit()
+    conn.close()
+    return redirect(url_for('productos'))
 @app.route('/agregar_producto', methods=['POST'])
 @login_requerido
 def agregar_producto():
