@@ -170,6 +170,9 @@ page-break-inside: avoid !important;
 <div class="linea"></div>
 <div style="text-align: center; font-size: 14px;">PEDIDO</div>
 <div class="numero-pedido">N° {{ comanda.pedido_id }}</div>
+{% if comanda.cliente and comanda.cliente != 'Sin cliente' %}
+<div style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333;">Cliente: {{ comanda.cliente }}</div>
+{% endif %}
 <div class="linea"></div>
 {% for item in comanda.productos_comanda %}
 <div class="fila">
@@ -199,6 +202,9 @@ Total: ${{ "%.0f"|format(comanda.total) }} | {{ comanda.metodo_pago }}
 <div class="linea"></div>
 <div style="text-align: center; font-size: 14px;">PEDIDO</div>
 <div class="numero-pedido">N° {{ comanda.pedido_id }}</div>
+{% if comanda.cliente and comanda.cliente != 'Sin cliente' %}
+<div style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333;">Cliente: {{ comanda.cliente }}</div>
+{% endif %}
 <div class="linea"></div>
 {% for item in comanda.productos_comanda %}
 <div class="fila">
