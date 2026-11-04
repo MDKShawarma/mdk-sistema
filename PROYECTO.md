@@ -450,3 +450,37 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - ✅ **Antes de modificar `app.py`**, verificar sintaxis con: `python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
 
 ---
+
+## ACTUALIZACIÓN 03/11/2026 y 04/11/2026 (STOCK DE BEBIDAS + CAÍDA DONWEB)
+
+### ✅ 03/11/2026 - Carga de stock de bebidas
+- **Se cargaron 47 productos de bebidas** (gaseosas, jugos, cervezas, vinos, aperitivos) con stock real.
+- **Se eliminaron 14 productos viejos duplicados** (GASEOSA - Coca Cola, AGUA - Con gas, CERVEZA - Andes IPA, etc.).
+- **Los nombres definitivos son:** COCA COLA, COCA 0, Sprite, Sprite Zero, Fanta, Agua, Soda, Jugo Naranja/Frutilla, Jugo Banana/Anana Frutilla, Jugo Manzana, Jugo Pomelo, Grolsch Rubia/IPA, Andes IPA/Roja/Negra/Rubia, Quilmes Cero/Stout, Heineken Cero/Rubia, Baileys, Fernet Lata, Gin Tonic, Gancia Lata, Rosé, Anís Botella, Vino Amalaya, Vino Barrel, Vino Nina, Vino Dadá Rosé (Lata), Lata Dada, etc.
+
+### ⚠️ 03/11/2026 - Caída del nodo OS4 de DonWeb
+- **DonWeb tuvo una incidencia en el nodo OS4** (donde está alojado el servidor) que dejó el sistema inaccesible por varias horas.
+- **El panel de DonWeb también estaba caído** ("cluster no disponible"), no se podía reiniciar ni tocar el firewall.
+- **Se abrió un ticket en DonWeb** y confirmaron que el servicio se estaba restableciendo.
+- **Los datos quedaron intactos** (verificado con `SELECT COUNT(*) FROM productos WHERE categoria LIKE '%Bebida%'` → 47).
+
+### ✅ 04/11/2026 - Carga de stock de comidas/postres
+- **Bolsa panes:** 32 unidades
+- **KEBBE:** 22 unidades
+- **Deditos Nuez:** 16 unidades (nuevo)
+- **Deditos Pistacho:** 14 unidades (nuevo)
+- **Eliminados:** DEDITOS (genérico) y Pan individual (no se usaban).
+
+### 📌 Pendientes
+1. **Cargar las recetas** (Sergio las pasa por escrito y se cargan con un comando).
+2. **Cargar más stock de comidas/postres** (shawarma, falafel, etc.).
+3. **Verificar la impresora** en el negocio (cuando Sergio esté allí).
+4. **Actualizar el `PROYECTO.md`** con lo de hoy (esto mismo).
+
+### 🛑 Reglas (siguen vigentes)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema. Editar línea por línea con `Ctrl+F`.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Antes de tocar el servidor: `git --no-pager status` y `git --no-pager log --oneline -3`.
+- ✅ Si `git status` abre el visor `less`, usar `git --no-pager status` o apretar `q` para salir.
+- ✅ **Antes de modificar `app.py`**, verificar sintaxis con: `python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+- ✅ **Para cargar stock o datos masivos**, usar scripts de Python en PuTTY (no editar la base a mano).
