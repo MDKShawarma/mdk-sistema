@@ -484,3 +484,53 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - ✅ Si `git status` abre el visor `less`, usar `git --no-pager status` o apretar `q` para salir.
 - ✅ **Antes de modificar `app.py`**, verificar sintaxis con: `python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
 - ✅ **Para cargar stock o datos masivos**, usar scripts de Python en PuTTY (no editar la base a mano).
+
+---
+
+## ACTUALIZACIÓN 04/11/2026 (RECETAS + PRECIOS + LIMPIEZA)
+
+### ✅ Recetas cargadas (escandallo)
+- **Shawarma:** Pan pita (1 u), Bola de lomo (0.2 kg), Repollo (0.08 kg), Tomate (0.06 kg), Cebolla (0.06 kg)
+- **Falafel:** Pan pita (1 u), Croquetas de garbanzo (4 u), Repollo (0.08 kg), Tomate (0.06 kg), Cebolla (0.06 kg)
+- **Humus:** Garbanzos (0.2 kg), Limón (0.06 kg), Ajo en polvo (0.002 kg), Sal (0.002 kg), Garam masala (0.00015 kg), Aceite de oliva (0.01 L), Agua (0.01 L)
+- **Papas fritas (combo):** Papas (0.2 kg)
+- **Papas fritas (individual):** Papas (0.4 kg)
+
+### ✅ Precios cargados (todos los productos)
+- **Bebidas:** Agua $3500, COCA COLA $4000, COCA 0 $4000, Sprite $4000, Sprite Zero $4000, Fanta $4000, Soda $3500, Jugos $4500
+- **Cervezas:** todas $5000 (Grolsch, Andes, Quilmes, Heineken, Imperial, Patagonia, Michelob, Stella, Corona, Amstel, Artesanal Pampa, Salta Cautiva)
+- **Aperitivos y vinos:** Baileys $6500, Fernet Lata $5000, Gin Tonic $6000, Spritz $6000, Gancia Lata $5000, Rosé $6000, Anís Botella $2000, Vino Amalaya $8000, Vino Barrel $16000, Vino Nina $8000, Vino Dadá Rosé (Lata) $6000, Lata Dada $6000
+- **Postres:** Deditos Nuez $2000, Deditos Pistacho $2000
+- **Papas:** combo $8000, individual $8000
+
+### ✅ Stock de comidas (configuración)
+- **Shawarma y Falafel:** stock 9999 (no controlan stock propio, se descuenta por ingredientes)
+- **Resto de comidas:** stock 0 (se carga manualmente por unidad/pote)
+- **Bolsa panes:** 32
+- **KEBBE:** 22 (se cargó pero quedó en 0, Sergio lo carga manualmente)
+- **Deditos Nuez:** 16
+- **Deditos Pistacho:** 14
+
+### ✅ Limpieza de ingredientes
+- **Eliminados 14 ingredientes viejos** que no se usaban en recetas: Carne picada, Harina, Aceite freidora, Aceite cocina, Vinagre, Comino, Aji molido, Chimichurri, Queso crema, Pasta de mani, Morron, Papas congeladas, Kebbes, Postres.
+- **Eliminado duplicado:** `Limon` (sin tilde) — quedó solo `Limón`.
+- **Ingredientes actuales:** 15 (Pan pita, Bola de lomo, Repollo, Tomate, Cebolla, Garbanzos, Limón, Ajo en polvo, Sal, Garam masala, Aceite de oliva, Perejil, Papas, Croquetas de garbanzo, Agua).
+
+### ✅ Prueba de descuento automático
+- Se vendió 1 shawarma de prueba y **los 5 ingredientes se descontaron correctamente** (Bola de lomo -0.2 kg, Pan pita -1 u, Cebolla -0.06 kg, Repollo -0.08 kg, Tomate -0.06 kg).
+
+### 📌 Pendientes
+1. **Cargar stock real de ingredientes** (carne, pan, verduras, etc.) cuando Sergio esté en el negocio.
+2. **Cargar stock de comidas** (Humus, Fatay, Kebbe, combos, etc.) manualmente desde Productos.
+3. **Cargar receta de Fatay** (Sergio la pasa por escrito).
+4. **Probar la impresora** en el negocio.
+5. **Verificar que el descuento de ingredientes funcione** con ventas reales.
+
+### 🛑 Reglas (siguen vigentes)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema. Editar línea por línea con `Ctrl+F`.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Antes de tocar el servidor: `git --no-pager status` y `git --no-pager log --oneline -3`.
+- ✅ Si `git status` abre el visor `less`, usar `git --no-pager status` o apretar `q` para salir.
+- ✅ **Antes de modificar `app.py`**, verificar sintaxis con: `python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+- ✅ **Para cargar stockG o datos masivos**, usar scripts de Python en PuTTY (no editar la base a mano).
+- ✅ **Para scripts largos en PuTTY**, usar `cat > /tmp/script.py << 'EOF' ... EOF` y después `python3 /tmp/script.py` (evita errores de pegado).
