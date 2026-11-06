@@ -534,3 +534,107 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - ✅ **Antes de modificar `app.py`**, verificar sintaxis con: `python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
 - ✅ **Para cargar stockG o datos masivos**, usar scripts de Python en PuTTY (no editar la base a mano).
 - ✅ **Para scripts largos en PuTTY**, usar `cat > /tmp/script.py << 'EOF' ... EOF` y después `python3 /tmp/script.py` (evita errores de pegado).
+
+---
+
+## ACTUALIZACIÓN 06/11/2026 (MIGRACIÓN A RACKNERD)
+
+### ✅ Migración completada (servidor nuevo)
+- **Servidor nuevo:** RackNerd (2 GB RAM, 2 vCPU, 35 GB SSD, Ubuntu 24.04).
+- **IP nueva:** `198.44.125.27`
+- **SSH:** puerto 22, usuario `root`
+- **Panel de control:** https://ctrl.racknerd.com (usuario: `vmuser382085`)
+- **Costo:** $35.99 USD/año (precio de renovación se mantiene).
+- **Motivo:** DonWeb tuvo múltiples caídas del nodo OS4 que dejaron el sistema inaccesible por horas/días.
+
+### ✅ Pasos realizados en el servidor nuevo
+1. Instalación de Python 3, Nginx, Git, SQLite, Certbot.
+2. Clonado del proyecto desde GitHub (`/var/www/mdk-sistema`).
+3. Copia de la base de datos (`mdk.db`, 104 KB) desde DonWeb.
+4. Entorno virtual + dependencias (Flask, gunicorn, mercadopago, python-dotenv).
+5. Archivo `.env` con las claves (MercadoPago + Groq).
+6. Servicio `mdk` en systemd (`/etc/systemd/system/mdk.service`).
+7. Nginx como proxy inverso (puerto 80 → 5000).
+8. Certificado SSL con Let's Encrypt (Certbot).
+9. DNS cambiado en DonWeb: registro A de `sistema.mdk-shawarma.com` → `198.44.125.27`.
+10. Propagación DNS global verificada en whatsmydns.net.
+
+### ✅ Estado actual (06/11/2026)
+- **Sitio:** https://sistema.mdk-shawarma.com funciona al 100% en RackNerd.
+- **SSL:** Certificado válido hasta 03/02/2027 (renovación automática configurada).
+- **Sistema:** `active (running)` en el servidor nuevo.
+- **Base de datos:** intacta (productos, precios, recetas, stock).
+
+### 📌 Pendientes
+1. **Probar el sistema completo** desde el navegador (ventas, stock, recetas).
+2. **Probar la impresora** en el negocio (el puente sigue funcionando, pero ahora le pega al servidor nuevo).
+3. **Decidir qué hacer con DonWeb:**
+   - Dar de baja solo el VPS (mantener el hosting web si se usa).
+   - O migrar la web de negocio a RackNerd.
+   - O transferir el dominio a otro registrador.
+4. **Actualizar el `PROYECTO.md`** con lo de hoy (esto mismo).
+5. **Backup automático** de `mdk.db` en el servidor nuevo (pendiente de configurar).
+
+### 🛑 Reglas (siguen vigentes)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema. Editar línea por línea con `Ctrl+F`.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Antes de tocar el servidor: `git --no-pager status` y `git --no-pager log --oneline -3`.
+- ✅ Si `git status` abre el visor `less`, usar `git --no-pager status` o apretar `q` para salir.
+- ✅ **Antes de modificar `app.py`**, verificar sintaxis con: `python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+- ✅ **Para cargar stock o datos masivos**, usar scripts de Python en PuTTY (no editar la base a mano).
+- ✅ **Para scripts largos en PuTTY**, usar `cat > /tmp/script.py << 'EOF' ... EOF` y después `python3 /tmp/script.py` (evita errores de pegado).
+- ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
+- ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028, root) — pendiente de baja.
+
+---
+
+## ACTUALIZACIÓN 06/11/2026 (PRECIOS PEDIDOSYA DIFERENCIADOS)
+
+### ✅ Problema detectado
+- Los precios de **PedidosYa** son distintos a los del **mostrador** (por la comisión de la plataforma).
+- Antes el sistema **calculaba** el precio de PedidosYa con `precio × 1.2785`, pero no coincidía exacto con los precios reales de PedidosYa ($18.000 vs $17.899).
+- **Riesgo:** la caja diaria daba diferencias de $100-$300 por pedido.
+
+### ✅ Solución implementada
+- **Columna nueva `precio_pedidosya`** en la tabla `productos`.
+- **Precios de PedidosYa cargados** (23 productos):
+  - shawarma $18.000, FALAFEL $14.500, HUMUS $9.000, PAPAS FRITAS $9.000, FATAY $5.000, KEBBE $13.500
+  - Agua $5.000, COCA COLA $5.000, COCA 0 $5.000, Sprite $5.000, Sprite Zero $5.000, Fanta $5.000, Soda $5.000
+  - Deditos Nuez $3.000, Deditos Pistacho $3.000
+  - Combo shawarma + papas $24.500, Combo kebbe + papas $19.500, Combo falafel + papas $19.500, Combo fatay + papas $11.000, 4 fatay + papas $27.000, Combo humus + papas $14.000
+  - Baklava royal (2) + baileys $12.000, 2 baklava pistacho + baileys $12.000
+- **`app.py`:** el cálculo de PedidosYa ahora usa `producto[2] if producto[2] > 0 else round(producto[1] * 1.2785, 2)` (si hay precio PedidosYa cargado, lo usa; si no, calcula con el 27.85%).
+- **`ventas.html`:** se reemplazó `MULT_PEDIDOSYA = 1.2785` por un objeto `PRECIOS_PEDIDOSYA` con los precios fijos. El JS usa ese objeto en la vista previa.
+- **`productos.html`:** ahora muestra **2 campos editables** por producto:
+  - Precio mostrador (el original)
+  - Precio PedidosYa (borde naranja, nuevo)
+  - Se guardan juntos con el botón 💾.
+
+### ✅ Resultado
+- En la pantalla de Ventas, al tocar **🏪 MOSTRADOR** → shawarma $14.000.
+- Al tocar **🛵 PEDIDOSYA** → shawarma $18.000 (exacto, no $17.899).
+- Ambos precios editables desde **📦 Productos**.
+
+### 📌 Pendientes
+1. **Probar una venta completa** por mostrador y por PedidosYa (confirmar que la caja da bien).
+2. **Productos sin precio PedidosYa** (cervezas, vinos, aperitivos, jugos, algunos combos viejos) → siguen calculando con 27.85%. Se venden solo en el local, no por PedidosYa.
+3. **Configurar backup automático** de `mdk.db` en RackNerd (pendiente).
+4. **Decidir qué hacer con DonWeb** (baja del VPS, migrar la web de negocio, o transferir dominio).
+
+### 🛑 Reglas nuevas (aprendidas hoy)
+- ✅ **NUNCA pisar los precios del mostrador con los de PedidosYa.** Son dos listas separadas.
+- ✅ **Los precios del mostrador** van en la columna `precio`.
+- ✅ **Los precios de PedidosYa** van en la columna `precio_pedidosya`.
+- ✅ **Cuando se cambia un precio de PedidosYa**, hacerlo desde **📦 Productos** (campo naranja).
+- ✅ **Si un producto no tiene precio de PedidosYa cargado**, el sistema calcula con 27.85% (fallback).
+
+### 🛑 Reglas (siguen vigentes)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema. Editar línea por línea con `Ctrl+F`.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Antes de tocar el servidor: `git --no-pager status` y `git --no-pager log --oneline -3`.
+- ✅ Si `git status` abre el visor `less`, usar `git --no-pager status` o apretar `q` para salir.
+- ✅ **Antes de modificar `app.py`**, verificar sintaxis con: `python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+- ✅ **Para cargar stock o datos masivos**, usar scripts de Python en PuTTY (no editar la base a mano).
+- ✅ **Para scripts largos en PuTTY**, usar `cat > /tmp/script.py << 'EOF' ... EOF` y después `python3 /tmp/script.py`.
+- ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
+- ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028, root) — pendiente de baja.
