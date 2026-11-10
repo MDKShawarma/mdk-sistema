@@ -638,3 +638,19 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - ✅ **Para scripts largos en PuTTY**, usar `cat > /tmp/script.py << 'EOF' ... EOF` y después `python3 /tmp/script.py`.
 - ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
 - ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028, root) — pendiente de baja.
+
+---
+
+## 🚨 ALERTA CRÍTICA: MIGRACIÓN DE DONWEB A RACKNERD (PENDIENTE)
+
+**El sistema YA está en RackNerd, pero DonWeb sigue cobrando y teniendo el control de:**
+1. **Dominio `mdk-shawarma.com`:** Hay que transferirlo o cambiar los Nameservers a RackNerd (o a Cloudflare para mejor gestión).
+2. **Correo electrónico:** Si se usa el correo con el dominio, hay que migrarlo antes de dar de baja DonWeb.
+3. **Página web del negocio:** Si está alojada en DonWeb, hay que mover los archivos al servidor nuevo (RackNerd) o a otro hosting.
+4. **VPS viejo (`149.50.154.101`):** Dar de baja el servicio para que no sigan facturando.
+5. **Ticket de reclamo:** Se abrió un ticket por el mal servicio, ver si hay respuesta o crédito a favor.
+
+**Estado actual del dominio:**
+- Registrador: DonWeb.
+- DNS: Apunta a RackNerd (`198.44.125.27`) para el subdominio `sistema`.
+- Pendiente: Decidir si se transfiere el dominio completo a Namecheap/Cloudflare o se queda en DonWeb solo como registrador.
