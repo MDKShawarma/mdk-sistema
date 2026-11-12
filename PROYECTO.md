@@ -696,3 +696,44 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
 - ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028) — pendiente de baja.
 - ✅ **DNS:** Cloudflare (`rene.ns.cloudflare.com` / `saanvi.ns.cloudflare.com`).
+
+---
+
+## ACTUALIZACIÓN 12/11/2026 (TARDE - SIMPLIFICACIÓN DE CERVEZAS Y PEDIDOS)
+
+### ✅ Simplificación de Cervezas (definitiva)
+- Se **eliminaron todas las marcas específicas** de cervezas de la base de datos (Amstel, Andes, Corona, Grolsch, Heineken, Imperial, Michelob, Patagonia, Quilmes, Salta Cautiva, Stella).
+- También se eliminaron los productos genéricos viejos que estaban en "Oculto".
+- **Stock sumado:** Las cervezas que tenían stock (Quilmes Cero 4, Heineken Cero 2, Michelob 1) se sumaron al stock de **Cerveza Rubia**.
+- **Stock final de cervezas:**
+  - Cerveza Rubia: 47
+  - Cerveza IPA: 18
+  - Cerveza Roja: 21
+  - Cerveza Negra: 7
+- **Botón "Reponer":** Se agregó el botón a las 4 cervezas nuevas (por categoría y por nombre).
+
+### ✅ Orden de la pantalla de Pedidos (`/pedido`)
+- Se modificó `app.py` para que la ruta `/pedido` use la misma lógica de grupos que la pantalla de ventas (COMIDA, GASEOSAS, JUGOS, CERVEZAS, POSTRES, VINOS, VARIOS).
+- Se modificó `pedido_cliente.html` para que muestre los títulos de los grupos y aplique la prioridad en COMIDA (shawarma → falafel → fatay → humus → kebbe → papas → resto → combos → pan/X mayor/adicional).
+- **Resultado:** la pantalla del cliente ahora coincide exactamente con la de ventas en orden y precios.
+
+### 🛑 Estado del stock de cervezas
+- **Rubia:** 47 (incluye las Cero y Michelob que se sumaron).
+- **IPA:** 18.
+- **Roja:** 21.
+- **Negra:** 7.
+- **Cero y Michelob:** ya no existen como productos separados (se unificaron en Rubia).
+
+### 📌 Pendientes
+1. **Configurar el correo gratis en Cloudflare** (para los mails `@mdk-shawarma.com`).
+2. **Dar de baja el VPS viejo de DonWeb** para que no sigan cobrando.
+3. **Ver si DonWeb respondió al ticket** de reclamo.
+4. **Integración con PedidosYa** (esperando credenciales por mail).
+
+### 🛑 Reglas (siguen vigentes)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Verificar sintaxis antes de reiniciar: `python3 -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+- ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
+- ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028) — pendiente de baja.
+- ✅ **DNS:** Cloudflare (`rene.ns.cloudflare.com` / `saanvi.ns.cloudflare.com`).
