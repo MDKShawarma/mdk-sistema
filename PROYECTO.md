@@ -654,3 +654,45 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - Registrador: DonWeb.
 - DNS: Apunta a RackNerd (`198.44.125.27`) para el subdominio `sistema`.
 - Pendiente: Decidir si se transfiere el dominio completo a Namecheap/Cloudflare o se queda en DonWeb solo como registrador.
+
+---
+
+## ACTUALIZACIÓN 12/11/2026 (CLOUDFLARE + ORDEN DE VENTAS)
+
+### ✅ Migración del DNS a Cloudflare
+- **Nameservers cambiados en DonWeb** a los de Cloudflare (`rene.ns.cloudflare.com` y `saanvi.ns.cloudflare.com`).
+- **Cloudflare está activo** y protegiendo el dominio `mdk-shawarma.com`.
+- **Registro `sistema`** apuntando a RackNerd (`198.44.125.27`) con proxy en "Solo DNS".
+- **Registros de correo** (MX, TXT, DKIM) preservados y en "Solo DNS".
+- **DNSSEC:** desactivado por defecto en DonWeb, sin riesgos.
+- **El dominio sigue registrado en DonWeb** hasta abril de 2027 (no se pagó transferencia, solo se cambió el DNS).
+
+### ✅ Cambios en la pantalla de Ventas (para el empleado)
+- **Cervezas unificadas:** se ocultaron las marcas específicas (Andes, Corona, etc.) y se crearon 4 productos genéricos a $5000: **Cerveza Rubia, Cerveza IPA, Cerveza Roja, Cerveza Negra**.
+- **Cervezas sin alcohol:** se mantienen individuales (Quilmes Cero, Heineken Cero).
+- **Orden por grupos:** los productos se agrupan en COMIDA, GASEOSAS, JUGOS, CERVEZAS, POSTRES, VINOS, VARIOS.
+- **Prioridad en COMIDA:** shawarma → FALAFEL → FATAY → HUMUS → KEBBE → PAPAS FRITAS → resto → combos → pan/X mayor/adicional.
+- **"Adicional de pan"** creado a $600 (al final de COMIDA).
+- **"X mayor" inteligente:** al tocar X mayor, se abre un menú para elegir el producto real, la cantidad y el precio total mayorista. El sistema descuenta el stock del producto elegido y deja la nota "Venta por Mayor".
+
+### ✅ Carga de stock real (12/11/2026)
+- **Bebidas:** Agua 9, Soda 6, COCA COLA 18, COCA 0 8, Sprite 0, Sprite Zero 6, Fanta 3, Jugos (5, 9, 6, 1).
+- **Cervezas:** Rubia 4, IPA 0, Roja 3, Negra 7, Quilmes Cero 4, Heineken Cero 2.
+- **Comidas:** FATAY 34, KEBBE 20, Bolsa panes 32, Deditos Nuez 14, Deditos Pistacho 13.
+- **Ingredientes:** Carne (Bola de lomo) 6 kg, Limón 2 kg, Repollo 1 kg, Queso crema 12 kg, Aceite de freidora 20 L, Aceite de oliva 1 L, Ajo en polvo 0.5 kg, Perejil 0.1 kg.
+- **Tomate y Cebolla:** en 0 (Sergio los carga cuando sepa cuánto es "medio cajón").
+- **Harina y Vinagre:** en 0 (no hay).
+
+### 📌 Pendientes
+1. **Configurar el correo gratis en Cloudflare** (para que los mails `@mdk-shawarma.com` lleguen a Gmail).
+2. **Dar de baja el VPS viejo de DonWeb** (`149.50.154.101`) para que no sigan cobrando.
+3. **Ver si DonWeb respondió al ticket** de reclamo por el mal servicio.
+4. **Integración con PedidosYa** (esperando que envíen las credenciales por mail).
+
+### 🛑 Reglas (siguen vigentes)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Verificar sintaxis antes de reiniciar: `python3 -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+- ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
+- ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028) — pendiente de baja.
+- ✅ **DNS:** Cloudflare (`rene.ns.cloudflare.com` / `saanvi.ns.cloudflare.com`).
