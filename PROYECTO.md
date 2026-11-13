@@ -737,3 +737,56 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
 - ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028) — pendiente de baja.
 - ✅ **DNS:** Cloudflare (`rene.ns.cloudflare.com` / `saanvi.ns.cloudflare.com`).
+
+
+## 📌 IDEAS A FUTURO (ANOTADAS 12/11/2026)
+
+### 🤖 Asistente de Menú para Clientes (Web de Pedidos)
+- **Idea:** Agregar un botón flotante en la pantalla `/pedido` que diga "🤖 Consultar el Menú".
+- **Función:** El cliente escribe una pregunta (ej: "¿Qué tiene el combo shawarma?") y la IA le responde al instante usando los datos reales del menú (precios, stock, ingredientes).
+- **Tecnología:** Usar la misma API de Groq que ya tenemos (es rapidísima), pero con un prompt de sistema que le pase el menú actual.
+- **Estado:** Pendiente para después de la integración con PedidosYa y la configuración del correo en Cloudflare.
+
+### 🧠 Modelo NVIDIA Nemotron (Análisis de Negocio)
+- **Idea:** Usar el modelo gratuito de NVIDIA (`build.nvidia.com/nvidia/nemotron-3-ultra-550b-a55b`) para hacer análisis profundos del negocio desde el Chat.
+- **Función:** Preguntarle cosas como *"Analizá mis ventas del mes y decime qué plato promocionar"* o *"Generá un plan de marketing semanal basado en el historial"*.
+- **Tecnología:** API de NVIDIA (gratuita hasta 40 pedidos por minuto).
+- **Estado:** Pendiente. No es urgente. Se puede explorar cuando el sistema esté consolidado.
+
+---
+
+## ACTUALIZACIÓN 13/11/2026 (CIERRES, AVISO MEDIANOCHE E IDEAS)
+
+### ✅ Arreglos en Cierre de Caja
+- **Se eliminó el cierre mal cargado del 13/11:** La empleada puso $140.000 en efectivo cuando el sistema esperaba $0 (era un error de tipeo).
+- **Se eliminó el cierre erróneo del 06/11:** Tenía $250.000 en efectivo cuando el sistema esperaba $17.500 (error de tipeo viejo).
+- **Se cargó correctamente el cierre del 12/11:** $14.000 en efectivo y $50.000 en MercadoPago.
+- **Horario de cierre:** Se confirmó que NO hay horario límite (la condición es a las 99:30, que nunca se cumple). La empleada puede hacer el cierre cuando termine el turno.
+
+### ✅ Nuevo botón "🔒 Cierre de Caja" en el menú
+- Se agregó el botón al menú de dueño en **13 archivos HTML** (chat, contador, cierre_caja, inicio, marketing, proveedores, gastos_fijos, clientes, gastos, recetas, stock, informe, productos).
+
+### ✅ Aviso de medianoche en Ventas
+- Se agregó un **cartel rojo de advertencia** en la pantalla de ventas (`ventas.html`).
+- **Cuándo aparece:** Solo entre las **00:00 y las 06:00 hs** (después de la medianoche).
+- **Qué dice:** *"⚠️ ATENCIÓN: Ya pasó la medianoche. Las próximas ventas se registrarán con la fecha del día siguiente. Si estás cerrando el turno de ayer, hacé el Cierre de Caja ahora."*
+- **Para qué sirve:** Evita que la empleada cargue ventas de un turno con la fecha del día siguiente y descuadre la caja.
+
+### 📌 Ideas a futuro (anotadas)
+1. **Asistente de Menú para Clientes (Web de Pedidos):** Botón flotante en `/pedido` que diga "🤖 Consultar el Menú". El cliente escribe una pregunta y la IA (Groq) le responde con los datos reales del menú.
+2. **Modelo NVIDIA Nemotron (Análisis de Negocio):** Usar el modelo gratuito de NVIDIA (`build.nvidia.com/nvidia/nemotron-3-ultra-550b-a55b`) para hacer análisis profundos del negocio desde el Chat (ej: "Analizá mis ventas del mes y decime qué plato promocionar").
+
+### 📌 Pendientes
+1. **Configurar el correo gratis en Cloudflare** (para los mails `@mdk-shawarma.com`).
+2. **Dar de baja el VPS viejo de DonWeb** para que no sigan cobrando.
+3. **Ver si DonWeb respondió al ticket** de reclamo.
+4. **Integración con PedidosYa** (esperando credenciales por mail).
+
+### 🛑 Reglas (siguen vigentes)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Verificar sintaxis antes de reiniciar: `python3 -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+- ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
+- ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028) — pendiente de baja.
+- ✅ **DNS:** Cloudflare (`rene.ns.cloudflare.com` / `saanvi.ns.cloudflare.com`).
+
