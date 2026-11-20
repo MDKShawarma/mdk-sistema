@@ -790,3 +790,38 @@ puntos de fidelidad, informes y contabilidad. Funciona 24/7 en DonWeb.
 - ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028) — pendiente de baja.
 - ✅ **DNS:** Cloudflare (`rene.ns.cloudflare.com` / `saanvi.ns.cloudflare.com`).
 
+---
+
+## ACTUALIZACIÓN 20/11/2026 (ZONA HORARIA, CIERRES Y VENTAS)
+
+### ✅ Arreglos en las fechas y horarios
+- **Hora del servidor:** Se configuró la zona horaria a `America/Argentina/Buenos_Aires`. El día ya no se corta a las 21:00 hs, sino a las 00:00 hs reales.
+- **Ventas de la madrugada:** Se movieron **106 ventas** que se registraron antes del mediodía al día anterior. (Como el local no abre a la mañana, esas ventas pertenecían al turno de la noche anterior que se cobró tarde).
+- **Día 16/11 (fantasma):** Se eliminó el día 16 que había quedado por error y sus ventas se pasaron al día 15.
+
+### ✅ Arreglos en el Cierre de Caja
+- **MercadoPago automático:** La empleada ahora solo carga el Efectivo. El sistema asume que el MercadoPago se cobró solo (porque entra directo a la cuenta bancaria), por lo que las diferencias ya no van a saltar en negativo.
+- **Botón "Resetear Todo a 0":** Se arregló el código para que el botón deje en **9999** los productos de venta libre (shawarma, falafel, combos, papas, postres) y ponga en **0** el resto (bebidas e ingredientes).
+
+### ✅ Arreglos en Ventas y Precios
+- **Teléfono del cliente opcional:** Ahora se puede guardar un cliente solo con el nombre. El sistema ya no frena la venta si no se ingresa el teléfono.
+- **Eliminación del 27.85% de PedidosYa:** Se eliminó el multiplicador automático. Ahora el sistema usa exactamente los precios cargados en la columna `precio_pedidosya` (si no hay precio cargado, usa el precio de mostrador).
+- **Informe con desglose real:** El Informe ahora muestra el desglose (Efectivo, MercadoPago, PedidosYa, Mixto) calculado desde las ventas reales, y no desde lo que se cargó (o no) en el cierre de caja.
+
+### ✅ Stock y Base de Datos
+- Se reseteó todo el stock y se cargó el stock real contado por Sergio (bebidas, ingredientes, carne, pan).
+- Se ajustaron las cervezas por color (Rubia 13, IPA 13, Roja 8, Negra 8).
+- Se generó un **PDF con el historial completo de ventas** y se descargó en la compu de Sergio.
+
+### 📌 Pendientes (para los próximos días)
+1. **Instalar NSSM:** Configurar el puente de la impresora como un "Servicio de Windows" para que arranque solo al prender la compu del negocio.
+2. **Herramienta de Gestión de Reputación:** Crear una pantalla en el sistema para evaluar los comentarios de Google/PedidosYa con IA (evaluar si son legales o solo opiniones).
+3. **Integración con PedidosYa:** Esperando las credenciales de la API por parte de PedidosYa.
+
+### 🛑 Reglas (siguen vigentes)
+- ❌ **Nunca pegar `app.py` completo desde el chat** → se corta y rompe el sistema.
+- ❌ **Nunca `git add .`** → siempre `git add archivo_especifico`.
+- ✅ Verificar sintaxis antes de reiniciar: `python3 -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('SINTAXIS OK')"`.
+- ✅ **Servidor nuevo:** RackNerd `198.44.125.27` (puerto 22, root).
+- ✅ **Servidor viejo (DonWeb):** `149.50.154.101` (puerto 5028) — pendiente de baja.
+- ✅ **DNS:** Cloudflare (`rene.ns.cloudflare.com` / `saanvi.ns.cloudflare.com`).
