@@ -161,6 +161,11 @@ page-break-inside: avoid !important;
 {% endif %}
 </div>
 
+<div id="aviso-medianoche" style="display:none; background: #d32f2f; color: white; padding: 15px; text-align: center; font-weight: bold; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(211,47,47,0.4);">
+    ⚠️ ATENCIÓN: Ya pasó la medianoche. Las próximas ventas se registrarán con la fecha del día siguiente.
+    <br>Si estás cerrando el turno de ayer, hacé el Cierre de Caja ahora.
+</div>
+
 {% if comanda %}
 <div class="comanda-container" id="comanda-container">
 <div class="comanda">
@@ -256,7 +261,14 @@ Vuelva pronto 🙏
 🛵 Pedido de PedidosYa: los precios incluyen el aumento del 27.85% de la plataforma. No suma al cierre de caja físico.
 </div>
 <div class="productos-grid" id="productos-grid">
+{% set grupo_actual = namespace(nombre='') %}
 {% for p in productos %}
+{% if p[4] != grupo_actual.nombre %}
+</div>
+<h3 style="grid-column: 1 / -1; color: #f4a460; margin: 20px 0 10px 0; border-bottom: 2px solid #444; padding-bottom: 5px;">{{ p[4] }}</h3>
+<div class="productos-grid">
+{% set grupo_actual.nombre = p[4] %}
+{% endif %}
 <div class="producto-btn" onclick="abrirPersonalizacion({{ p[0] }}, '{{ p[1] }}', {{ p[2] }})">
 <div class="nombre">{{ p[3] }} {{ p[1] }}</div>
 <div class="precio" id="precio-{{ p[0] }}">${{ "%.0f"|format(p[2]) }}</div>
@@ -290,11 +302,19 @@ Vuelva pronto 🙏
 <span style="color:white; font-size:14px; font-weight:bold;">🎁 Canjear puntos por descuento</span>
 </label>
 </div>
-<select id="metodo_pago">
+<select id="metodo_pago" onchange="togglePagoMixto()">
 <option value="">-- Método de pago --</option>
 <option value="efectivo">💵 Efectivo</option>
 <option value="mercadopago">📱 Transferencia (MercadoPago)</option>
+<option value="mixto">💵📱 Mixto (Efectivo + MercadoPago)</option>
 </select>
+<div id="pago-mixto-campos" style="display:none; background:#1a1a1a; border:2px solid #f4a460; border-radius:10px; padding:12px; margin-top:10px;">
+<label style="color:#f4a460; font-size:14px; font-weight:bold;">Monto en efectivo:</label>
+<input type="number" id="monto_efectivo" placeholder="0" step="100" style="width:100%; padding:10px; background:#2a2a2a; color:white; border:1px solid #444; border-radius:8px; margin:5px 0 10px 0;">
+<label style="color:#f4a460; font-size:14px; font-weight:bold;">Monto en MercadoPago:</label>
+<input type="number" id="monto_mercadopago" placeholder="0" step="100" style="width:100%; padding:10px; background:#2a2a2a; color:white; border:1px solid #444; border-radius:8px; margin:5px 0;">
+<div style="color:#888; font-size:12px;">Los montos deben sumar el total de la venta.</div>
+</div>
 <button class="btn-confirmar" onclick="confirmarVenta()">✅ CONFIRMAR VENTA</button>
 </div>
 </details>
@@ -362,7 +382,7 @@ Vuelva pronto 🙏
 <div class="modal-box">
 <h2>✚ Nuevo cliente</h2>
 <input type="text" id="nc-nombre" placeholder="Nombre y apellido" style="width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px;">
-<input type="text" id="nc-telefono" placeholder="Teléfono (ej: 1155667788)" style="width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px;">
+<input type="text" id="nc-telefono" placeholder="Teléfono (Opcional)" style="width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 10px; font-size: 15px; margin-bottom: 10px;">
 <div id="nc-error" style="display: none; color: #f44336; font-size: 13px; margin-bottom: 10px; font-weight: bold;"></div>
 <button class="btn-agregar" onclick="guardarNuevoCliente()">💾 GUARDAR CLIENTE</button>
 <button class="btn-cancelar" onclick="cerrarModalCliente()">CANCELAR</button>
@@ -375,7 +395,31 @@ let productoActual = null;
 let personalizacionesActuales = [];
 let cantidadActual = 1;
 let origenActual = 'empleado';
-const MULT_PEDIDOSYA = 1.2785;
+const PRECIOS_PEDIDOSYA = {
+    'shawarma': 18000,
+    'FALAFEL': 14500,
+    'HUMUS': 9000,
+    'PAPAS FRITAS': 9000,
+    'FATAY': 5000,
+    'KEBBE': 13500,
+    'Agua': 5000,
+    'COCA COLA': 5000,
+    'COCA 0': 5000,
+    'Sprite': 5000,
+    'Sprite Zero': 5000,
+    'Fanta': 5000,
+    'Soda': 5000,
+    'Deditos Nuez': 3000,
+    'Deditos Pistacho': 3000,
+    'Combo shawarma + papas': 24500,
+    'Combo kebbe + papas': 19500,
+    'Combo falafel + papas': 19500,
+    'Combo fatay + papas': 11000,
+    '4 fatay + papas': 27000,
+    'Combo humus + papas': 14000,
+    'Baklava royal (2) + baileys': 12000,
+    '2 baklava pistacho + baileys': 12000,
+};
 
 function setOrigen(origen) {
     origenActual = origen;
@@ -386,7 +430,7 @@ function setOrigen(origen) {
     
     {% for p in productos %}
         let precioBase_{{ p[0] }} = {{ p[2] }};
-        let precioMostrar_{{ p[0] }} = (origen === 'pedidosya') ? Math.round(precioBase_{{ p[0] }} * MULT_PEDIDOSYA) : precioBase_{{ p[0] }};
+        let precioMostrar_{{ p[0] }} = (origen === 'pedidosya') ? (PRECIOS_PEDIDOSYA['{{ p[1] }}'] || precioBase_{{ p[0] }}) : precioBase_{{ p[0] }};
         document.getElementById('precio-{{ p[0] }}').innerText = '$' + precioMostrar_{{ p[0] }};
     {% endfor %}
 
@@ -411,7 +455,9 @@ function setOrigen(origen) {
 }
 
 function getPrecioActual(precioBase) {
-    return (origenActual === 'pedidosya') ? (precioBase * MULT_PEDIDOSYA) : precioBase;
+    if (origenActual !== 'pedidosya') return precioBase;
+    if (!productoActual) return Math.round(precioBase * 1.2785);
+    return (PRECIOS_PEDIDOSYA[productoActual.nombre] || Math.round(precioBase * 1.2785));
 }
 
 function getTipoPersonalizacion(nombre) {
@@ -439,6 +485,20 @@ function abrirPersonalizacion(id, nombre, precioBase) {
     document.getElementById('modal-cantidad').textContent = '1';
     const pers = getTipoPersonalizacion(nombre);
     const divOpciones = document.getElementById('modal-opciones');
+
+    if (nombre.toLowerCase() === 'x mayor') {
+        let selectHtml = '<div class="titulo-opciones">¿Qué producto es?</div><select id="select-xmayor" style="width:100%; margin-bottom:10px; padding:10px; border-radius:8px; background:#1a1a1a; color:white; border:1px solid #444;">';
+        {% for p in productos %}
+            if ('{{ p[1] }}'.toLowerCase() !== 'x mayor' && !'{{ p[1] }}'.toLowerCase().includes('combo')) {
+                selectHtml += '<option value="{{ p[0] }}" data-precio="{{ p[2] }}">{{ p[1] }} (Normal: ${{ p[2] }})</option>';
+            }
+        {% endfor %}
+        selectHtml += '</select>';
+        selectHtml += '<div class="titulo-opciones">Precio Mayorista (Total o Unitario):</div><input type="number" id="precio-xmayor" placeholder="Precio total" style="width:100%; padding:10px; border-radius:8px; background:#1a1a1a; color:white; border:1px solid #444;">';
+        divOpciones.innerHTML = selectHtml;
+        document.getElementById('modal-personalizacion').style.display = 'block';
+        return;
+    }
     if (pers) {
         divOpciones.innerHTML = `
             <div class="titulo-opciones">${pers.titulo}</div>
@@ -471,6 +531,30 @@ function cerrarModal() {
 
 function agregarAlCarrito() {
     if (!productoActual) return;
+
+    if (productoActual.nombre.toLowerCase() === 'x mayor') {
+        const select = document.getElementById('select-xmayor');
+        const prodId = parseInt(select.value);
+        const prodNombre = select.options[select.selectedIndex].text.split(' (')[0];
+        const precioInput = parseFloat(document.getElementById('precio-xmayor').value);
+        
+        if (!precioInput || precioInput <= 0) { alert('Ingresá un precio válido'); return; }
+        
+        // El precio que pone el empleado es el TOTAL. Lo dividimos por la cantidad para que el carrito lo multiplique de nuevo.
+        const precioUnitario = precioInput / cantidadActual;
+
+        carrito.push({
+            id: prodId,
+            nombre: prodNombre,
+            precio: precioUnitario,
+            cantidad: cantidadActual,
+            notas: 'Venta por Mayor'
+        });
+        renderizarCarrito();
+        cerrarModal();
+        return;
+    }
+
     const item = carrito.find(i => i.id === productoActual.id && i.notas === personalizacionesActuales.join(', '));
     if (item) { 
         item.cantidad += cantidadActual; 
@@ -519,8 +603,8 @@ function guardarNuevoCliente() {
     const nombre = document.getElementById('nc-nombre').value.trim();
     const telefono = document.getElementById('nc-telefono').value.trim();
     const errDiv = document.getElementById('nc-error');
-    if (!nombre || !telefono) {
-        errDiv.textContent = '⚠️ Completá nombre y teléfono';
+    if (!nombre) {
+        errDiv.textContent = '⚠️ Completá al menos el nombre';
         errDiv.style.display = 'block';
         return;
     }
@@ -561,6 +645,16 @@ function guardarNuevoCliente() {
     });
 }
 
+function togglePagoMixto() {
+    const metodo = document.getElementById('metodo_pago').value;
+    const campos = document.getElementById('pago-mixto-campos');
+    if (metodo === 'mixto') {
+        campos.style.display = 'block';
+    } else {
+        campos.style.display = 'none';
+    }
+}
+
 function confirmarVenta() {
     if (carrito.length === 0) { alert('Agregá al menos un producto'); return; }
     let metodo = document.getElementById('metodo_pago').value;
@@ -572,10 +666,21 @@ function confirmarVenta() {
     }
     const cliente_id = document.getElementById('cliente_id').value;
     const canjear = document.getElementById('canjear_puntos').checked;
+    let monto_efectivo = 0;
+    let monto_mercadopago = 0;
+    if (metodo === 'mixto') {
+        monto_efectivo = parseFloat(document.getElementById('monto_efectivo').value) || 0;
+        monto_mercadopago = parseFloat(document.getElementById('monto_mercadopago').value) || 0;
+        const totalCarrito = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+        if (Math.abs((monto_efectivo + monto_mercadopago) - totalCarrito) > 1) {
+            alert('Los montos no suman el total de la venta ($' + Math.round(totalCarrito) + ')');
+            return;
+        }
+    }
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/ventas';
-    const campos = { carrito: JSON.stringify(carrito), cliente_id: cliente_id, metodo_pago: metodo, canjear_puntos: canjear ? 'on' : '', origen: origenActual };
+    const campos = { carrito: JSON.stringify(carrito), cliente_id: cliente_id, metodo_pago: metodo, canjear_puntos: canjear ? 'on' : '', origen: origenActual, monto_efectivo: monto_efectivo, monto_mercadopago: monto_mercadopago };
     Object.keys(campos).forEach(key => {
         const input = document.createElement('input');
         input.type = 'hidden'; input.name = key; input.value = campos[key];
@@ -838,6 +943,25 @@ document.addEventListener('click', () => {
         audioContext.resume();
     } catch(e) {}
 }, { once: true });
+</script>
+<script>
+    // Comprobar si ya pasó la medianoche (entre 00:00 y 06:00 hs)
+    function checkMedianoche() {
+        const ahora = new Date();
+        const hora = ahora.getHours();
+        // Si es de madrugada (0 a 5 am), mostramos el aviso
+        if (hora >= 0 && hora < 6) {
+            document.getElementById('aviso-medianoche').style.display = 'block';
+            // Actualizamos la fecha que muestra el cartel
+            const fechaManana = new Date(ahora);
+            fechaManana.setDate(fechaManana.getDate() + 1);
+            const dia = String(fechaManana.getDate()).padStart(2, '0');
+            const mes = String(fechaManana.getMonth() + 1).padStart(2, '0');
+            const anio = fechaManana.getFullYear();
+            document.getElementById('aviso-medianoche').innerHTML = `⚠️ ATENCIÓN: Ya pasó la medianoche. Las próximas ventas se registrarán con la fecha del <strong>${dia}/${mes}/${anio}</strong>.<br>Si estás cerrando el turno de ayer, hacé el Cierre de Caja ahora.`;
+        }
+    }
+    checkMedianoche();
 </script>
 </body>
 </html>

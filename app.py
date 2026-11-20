@@ -148,7 +148,8 @@ def cierre_caja():
     if request.method == 'POST' and not cierre_existente:
         try:
             efectivo_contado = float(request.form.get('efectivo_contado', 0) or 0)
-            mercadopago_contado = float(request.form.get('mercadopago_contado', 0) or 0)
+            # Si no se ingresa MercadoPago, asumimos que se cobró todo (entra directo a la cuenta)
+            mercadopago_contado = mercadopago_esperado
             observaciones = request.form.get('observaciones', '')
             total_esperado = efectivo_esperado + mercadopago_esperado
             total_contado = efectivo_contado + mercadopago_contado
@@ -214,10 +215,13 @@ def productos():
                 conn.commit()
         else:
             nuevo_precio = request.form.get('precio')
+            nuevo_precio_pedidosya = request.form.get('precio_pedidosya')
             if producto_id and nuevo_precio:
                 cursor.execute("UPDATE productos SET precio = ? WHERE id = ?", (float(nuevo_precio), int(producto_id)))
+                if nuevo_precio_pedidosya:
+                    cursor.execute("UPDATE productos SET precio_pedidosya = ? WHERE id = ?", (float(nuevo_precio_pedidosya), int(producto_id)))
                 conn.commit()
-    cursor.execute("SELECT id, nombre, categoria, precio, stock FROM productos")
+    cursor.execute("SELECT id, nombre, categoria, precio, stock, COALESCE(precio_pedidosya, 0) FROM productos")
     productos_raw = cursor.fetchall()
     productos = sorted(productos_raw, key=lambda p: (orden_importancia(p[1]), p[1]))
     conn.close()
@@ -227,16 +231,27 @@ def productos():
 def resetear_stock():
     conn = get_db()
     cursor = conn.cursor()
-    
-    # Ponemos en 0 el stock de los productos (elaborados y revendidos)
+
+    # Ponemos en 0 el stock de TODOS los productos
     cursor.execute("UPDATE productos SET stock = 0")
-    
+
+    # Volvemos a poner en 9999 los productos de venta libre (combos, papas, postres)
+    cursor.execute('''UPDATE productos SET stock = 9999 WHERE LOWER(nombre) IN (
+        'shawarma', 'falafel', 'combo falafel', 'combo fatay + papas', 
+        'combo shaw papas', 'combo shawarma + papas', 'combo kebbe + papas', 
+        'combo falafel + papas', 'combo fatay + papas', 'combo humus + papas', 
+        '4 fatay + papas', 'nuggets/papas', 'papas fritas (combo)', 'papas fritas', 
+        '2 baklava pistacho + baileys', 'baklava + baileys', 
+        'baklava royal (2) + baileys', 'copa helado', 'adicional de pan'
+    )''')
+
     # Ponemos en 0 el stock de los ingredientes
     cursor.execute("UPDATE ingredientes SET stock_actual = 0")
-    
+
     conn.commit()
     conn.close()
     return redirect(url_for('productos'))
+
 @app.route('/agregar_producto', methods=['POST'])
 @login_requerido
 def agregar_producto():
@@ -286,6 +301,8 @@ def ventas():
         carrito_json = request.form.get('carrito')
         cliente_id = request.form.get('cliente_id')
         metodo_pago = request.form.get('metodo_pago')
+        monto_efectivo = float(request.form.get('monto_efectivo') or 0)
+        monto_mercadopago = float(request.form.get('monto_mercadopago') or 0)
         canjear_puntos = request.form.get('canjear_puntos') == 'on'
         origen = request.form.get('origen', 'empleado')
         if origen not in ('empleado', 'pedidosya'):
@@ -298,12 +315,12 @@ def ventas():
                 cantidad = int(item['cantidad'])
                 cursor.execute("SELECT nombre, precio, stock FROM productos WHERE id = ?", (producto_id,))
                 producto = cursor.fetchone()
-                if not producto or producto[2] < cantidad:
+                if item['nombre'].lower() != 'x mayor' and (not producto or producto[2] < cantidad):
                     conn.close()
                     return "Error: stock insuficiente para " + item['nombre'], 400
                 
                 if origen == 'pedidosya':
-                    total_general += (producto[1] * 1.2785) * cantidad
+                    total_general += (producto[2] if producto[2] > 0 else producto[1]) * cantidad
                 else:
                     total_general += producto[1] * cantidad
             
@@ -342,8 +359,10 @@ def ventas():
                 if descuento_aplicado > 0:
                     notas_completas += (" | " if notas_completas else "") + f"Descuento puntos: ${descuento_aplicado}"
                 
-                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, origen, numero_pedido))
+                cursor.execute('''INSERT INTO ventas (producto_id, cantidad, total, metodo_pago, notas, cliente_id, tipo_origen, numero_pedido, impreso, monto_efectivo, monto_mercadopago) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)''', (producto_id, cantidad, total_item, metodo_pago, notas_completas, cliente_id if cliente_id else None, origen, numero_pedido, monto_efectivo, monto_mercadopago))
                 
+                if item['nombre'].lower() == 'x mayor':
+                    continue
                 cursor.execute("SELECT ingrediente_id, cantidad FROM recetas WHERE producto_id = ?", (producto_id,))
                 receta = cursor.fetchall()
                 if receta:
@@ -372,10 +391,34 @@ def ventas():
             comanda = {'pedido_id': numero_pedido, 'fecha': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'productos_comanda': carrito, 'total': total_general, 'descuento': descuento_aplicado, 'metodo_pago': metodo_pago, 'cliente': nombre_cliente}
     cursor.execute('''SELECT v.id, p.nombre, v.cantidad, v.total, v.metodo_pago, v.notas, v.fecha, c.nombre as cliente_nombre FROM ventas v JOIN productos p ON v.producto_id = p.id LEFT JOIN clientes c ON v.cliente_id = c.id WHERE date(v.fecha) = date('now') ORDER BY v.fecha DESC''')
     ventas = cursor.fetchall()
-    cursor.execute("SELECT id, nombre, precio FROM productos")
+    cursor.execute("SELECT id, nombre, precio, categoria FROM productos WHERE categoria != 'Oculto'")
     productos_raw = cursor.fetchall()
-    productos_ordenados = sorted(productos_raw, key=lambda p: (orden_importancia(p[1]), p[1]))
-    productos = [(p[0], p[1], p[2], get_emoji(p[1])) for p in productos_ordenados]
+
+    def get_grupo_venta(nombre, cat_original):
+        n = nombre.lower()
+        c = cat_original.lower() if cat_original else ''
+        if 'cerveza' in n or 'cervezas' in c: return 3, 'CERVEZAS'
+        if 'vino' in n or 'vino' in c: return 5, 'VINOS'
+        if 'postre' in c or 'dedito' in n or 'baklava' in n or 'helado' in n: return 4, 'POSTRES'
+        if 'jugo' in n or 'smudis' in n: return 2, 'JUGOS'
+        if 'coca' in n or 'sprite' in n or 'fanta' in n or 'soda' in n or 'agua' in n or 'gaseosa' in n: return 1, 'GASEOSAS'
+        if 'fernet' in n or 'gin' in n or 'baileys' in n or 'gancia' in n or 'spritz' in n or 'anis' in n or 'aperitivo' in n or 'bebidas con alcohol' in c: return 6, 'VARIOS'
+        return 0, 'COMIDA'
+
+    def get_prioridad_comida(nombre):
+        n = nombre.lower().strip()
+        if n == 'shawarma': return 1
+        if n == 'falafel': return 2
+        if n == 'fatay': return 3
+        if n == 'humus': return 4
+        if n == 'kebbe': return 5
+        if n == 'papas fritas': return 6
+        if 'combo' in n: return 8
+        if 'pan' in n or 'x mayor' in n or 'adicional' in n: return 9
+        return 7
+
+    productos_ordenados = sorted(productos_raw, key=lambda p: (get_grupo_venta(p[1], p[3])[0], get_prioridad_comida(p[1]) if get_grupo_venta(p[1], p[3])[0] == 0 else 0, p[1]))
+    productos = [(p[0], p[1], p[2], get_emoji(p[1]), get_grupo_venta(p[1], p[3])[1]) for p in productos_ordenados]
     cursor.execute("SELECT id, nombre, puntos FROM clientes ORDER BY nombre")
     clientes = cursor.fetchall()
     conn.close()
@@ -471,9 +514,47 @@ def informe():
         fecha = dia[0]
         total = dia[1]
         pedidos = dia[2]
+        
+        # Buscamos desglose por método de pago (sin importar mayúsculas)
+        cursor.execute("SELECT LOWER(metodo_pago), SUM(total) FROM ventas WHERE date(fecha) = ? GROUP BY LOWER(metodo_pago)", (fecha,))
+        metodos = dict(cursor.fetchall())
+        ef = metodos.get('efectivo', 0)
+        mp = metodos.get('mercadopago', 0)
+        py = metodos.get('pedidosya', 0)
+        mixto = metodos.get('mixto', 0)
+        
+        # Buscamos si hay cierre de caja de ese día
+        cursor.execute("SELECT * FROM cierres_caja WHERE date(fecha) = ?", (fecha,))
+        cierre = cursor.fetchone()
+        
+        cierre_info = None
+        if cierre:
+            cierre_info = {
+                'efectivo_esperado': cierre[2],
+                'efectivo_contado': cierre[3],
+                'mp_esperado': cierre[4],
+                'mp_contado': cierre[5],
+                'dif_efectivo': cierre[6],
+                'dif_mp': cierre[7],
+                'total_esperado': cierre[8],
+                'total_contado': cierre[9],
+                'dif_total': cierre[10],
+                'obs': cierre[11]
+            }
+            # (El desglose de arriba ya se calcula de las ventas reales)
         cursor.execute("SELECT p.nombre, SUM(v.cantidad) as cantidad, SUM(v.total) as total FROM ventas v JOIN productos p ON v.producto_id = p.id WHERE date(v.fecha) = ? GROUP BY p.id ORDER BY total DESC", (fecha,))
         productos = cursor.fetchall()
-        historial.append({'fecha': fecha, 'total': total, 'pedidos': pedidos, 'productos': [{'nombre': p[0], 'cantidad': p[1], 'total': p[2]} for p in productos]})
+        historial.append({
+            'fecha': fecha, 
+            'total': total, 
+            'pedidos': pedidos, 
+            'efectivo': ef,
+            'mp': mp,
+            'py': py,
+            'mixto': mixto,
+            'cierre': cierre_info,
+            'productos': [{'nombre': p[0], 'cantidad': p[1], 'total': p[2]} for p in productos]
+        })
     cursor.execute("SELECT COALESCE(SUM(total), 0), COUNT(DISTINCT numero_pedido) FROM ventas WHERE tipo_origen = 'pedidosya' AND date(fecha) = date('now')")
     fila_py = cursor.fetchone()
     py_vendido = fila_py[0]
@@ -502,15 +583,19 @@ def informe_borrar_dia(fecha):
 def api_nuevo_cliente():
     nombre = request.form.get('nombre', '').strip()
     telefono = request.form.get('telefono', '').strip()
-    if not nombre or not telefono:
-        return json.dumps({"ok": False, "error": "Faltan nombre o telefono"})
+    if not nombre:
+        return json.dumps({"ok": False, "error": "Falta el nombre"})
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM clientes WHERE telefono = ?", (telefono,))
-    existente = cursor.fetchone()
-    if existente:
-        conn.close()
-        return json.dumps({"ok": False, "error": "Ya existe un cliente con ese telefono", "id": existente[0]})
+    
+    # Solo verificamos si existe si escribieron un teléfono real
+    if telefono:
+        cursor.execute("SELECT id FROM clientes WHERE telefono = ?", (telefono,))
+        existente = cursor.fetchone()
+        if existente:
+            conn.close()
+            return json.dumps({"ok": False, "error": "Ya existe un cliente con ese telefono", "id": existente[0]})
+            
     cursor.execute("INSERT INTO clientes (nombre, telefono, total_compras, cantidad_pedidos, puntos) VALUES (?, ?, 0, 0, 0)", (nombre, telefono))
     nuevo_id = cursor.lastrowid
     conn.commit()
@@ -625,16 +710,42 @@ def chat():
     if request.method == 'POST':
         pregunta = request.form.get('pregunta', '')
         if pregunta:
-            respuesta = preguntar_deepseek(pregunta)
+            pregunta_con_formato = pregunta + "\n\n[INSTRUCCIÓN DE SISTEMA: Responde en texto plano, sin usar tablas, sin usar negritas (**), sin usar títulos (##) y sin formato Markdown. Usá párrafos simples y viñetas con guiones si es necesario.]"
+            respuesta = preguntar_deepseek(pregunta_con_formato)
     return render_template('chat.html', respuesta=respuesta, pregunta=pregunta)
 
 @app.route('/pedido')
 def pedido_cliente():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, nombre, precio, categoria FROM productos ORDER BY categoria, nombre")
+    cursor.execute("SELECT id, nombre, precio, categoria FROM productos WHERE categoria != 'Oculto'")
     productos_raw = cursor.fetchall()
-    productos_json = json.dumps([{"id": p[0], "nombre": p[1], "precio": p[2], "categoria": p[3]} for p in productos_raw])
+
+    def get_grupo_venta(nombre, cat_original):
+        n = nombre.lower()
+        c = cat_original.lower() if cat_original else ''
+        if 'cerveza' in n or 'cervezas' in c: return 3, 'CERVEZAS'
+        if 'vino' in n or 'vino' in c: return 5, 'VINOS'
+        if 'postre' in c or 'dedito' in n or 'baklava' in n or 'helado' in n: return 4, 'POSTRES'
+        if 'jugo' in n or 'smudis' in n: return 2, 'JUGOS'
+        if 'coca' in n or 'sprite' in n or 'fanta' in n or 'soda' in n or 'agua' in n or 'gaseosa' in n: return 1, 'GASEOSAS'
+        if 'fernet' in n or 'gin' in n or 'baileys' in n or 'gancia' in n or 'spritz' in n or 'anis' in n or 'aperitivo' in n or 'bebidas con alcohol' in c: return 6, 'VARIOS'
+        return 0, 'COMIDA'
+
+    def get_prioridad_comida(nombre):
+        n = nombre.lower().strip()
+        if n == 'shawarma': return 1
+        if n == 'falafel': return 2
+        if n == 'fatay': return 3
+        if n == 'humus': return 4
+        if n == 'kebbe': return 5
+        if n == 'papas fritas': return 6
+        if 'combo' in n: return 8
+        if 'pan' in n or 'x mayor' in n or 'adicional' in n: return 9
+        return 7
+
+    productos_ordenados = sorted(productos_raw, key=lambda p: (get_grupo_venta(p[1], p[3])[0], get_prioridad_comida(p[1]) if get_grupo_venta(p[1], p[3])[0] == 0 else 0, p[1]))
+    productos_json = json.dumps([{"id": p[0], "nombre": p[1], "precio": p[2], "categoria": get_grupo_venta(p[1], p[3])[1]} for p in productos_ordenados])
     conn.close()
     return render_template('pedido_cliente.html', productos_json=productos_json)
 
